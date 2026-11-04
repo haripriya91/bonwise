@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.account import router as account_router
 
 from app.core.config import get_settings
 
@@ -27,7 +28,7 @@ app.add_middleware(
         "Idempotency-Key",
     ],
 )
-
+app.include_router(account_router)
 
 @app.get("/health")
 def health():
