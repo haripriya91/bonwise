@@ -1,11 +1,13 @@
 import hashlib
 import json
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_UP
+from typing import get_args
 from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
+from pydantic import ValidationError
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
@@ -19,7 +21,12 @@ from app.db.models import (
     PurchaseDraft,
     PurchaseItem,
 )
-from app.schemas.purchase import MAX_TOTAL, PurchaseContent
+from app.schemas.purchase import (
+    MAX_TOTAL,
+    AdjustmentInput,
+    Category,
+    PurchaseContent,
+)
 
 
 def digest(value):
@@ -411,5 +418,118 @@ def list_purchases(
             "purchases": [
                 purchase_view(db, purchase)
                 for purchase in purchases
+            ],
+        }
+
+
+def spending_summary(
+    db: Session,
+    household_id: UUID,
+    user_id: UUID,
+    start_date: date,
+    end_date: date,
+):
+    categories = get_args(Category)
+
+    with db.begin():
+        require_member(db, household_id, user_id)
+        if end_date < start_date:
+            raise HTTPException(
+                422,
+                "end_date must be on or after start_date.",
+            )
+
+        purchase_filters = (
+            Purchase.household_id == household_id,
+            Purchase.purchased_on >= start_date,
+            Purchase.purchased_on <= end_date,
+            PurchaseDraft.status == "confirmed",
+        )
+        purchases = db.scalars(
+            select(Purchase)
+            .join(
+                PurchaseDraft,
+                (PurchaseDraft.id == Purchase.draft_id)
+                & (PurchaseDraft.household_id == Purchase.household_id),
+            )
+            .where(*purchase_filters)
+        ).all()
+
+        item_totals = db.execute(
+            select(
+                PurchaseItem.purchase_id,
+                PurchaseItem.category,
+                func.sum(PurchaseItem.line_total_cents),
+            )
+            .join(Purchase, Purchase.id == PurchaseItem.purchase_id)
+            .join(
+                PurchaseDraft,
+                (PurchaseDraft.id == Purchase.draft_id)
+                & (PurchaseDraft.household_id == Purchase.household_id),
+            )
+            .where(*purchase_filters)
+            .group_by(PurchaseItem.purchase_id, PurchaseItem.category)
+        ).all()
+
+        totals_by_purchase: dict[UUID, dict[str, int]] = {}
+        for purchase_id, category, amount_cents in item_totals:
+            if category not in categories:
+                raise HTTPException(
+                    500,
+                    "Spending totals could not be reconciled with confirmed purchases.",
+                )
+            totals_by_purchase.setdefault(purchase_id, {})[category] = int(
+                amount_cents
+            )
+
+        category_totals = {category: 0 for category in categories}
+        total_cents = 0
+
+        for purchase in purchases:
+            purchase_categories = totals_by_purchase.get(purchase.id, {})
+            if not isinstance(purchase.adjustments, list):
+                raise HTTPException(
+                    500,
+                    "Spending totals could not be reconciled with confirmed purchases.",
+                )
+            try:
+                adjustments = [
+                    AdjustmentInput.model_validate(adjustment)
+                    for adjustment in purchase.adjustments
+                ]
+            except (ValidationError, TypeError):
+                raise HTTPException(
+                    500,
+                    "Spending totals could not be reconciled with confirmed purchases.",
+                ) from None
+
+            for adjustment in adjustments:
+                purchase_categories[adjustment.category] = (
+                    purchase_categories.get(adjustment.category, 0)
+                    + adjustment.amount_cents
+                )
+
+            if sum(purchase_categories.values()) != purchase.total_cents:
+                raise HTTPException(
+                    500,
+                    "Spending totals could not be reconciled with confirmed purchases.",
+                )
+
+            total_cents += purchase.total_cents
+            for category, amount_cents in purchase_categories.items():
+                category_totals[category] += amount_cents
+
+        return {
+            "start_date": start_date,
+            "end_date": end_date,
+            "currency": "EUR",
+            "purchase_count": len(purchases),
+            "total_cents": total_cents,
+            "categories": [
+                {
+                    "category": category,
+                    "total_cents": category_totals[category],
+                }
+                for category in categories
             ],
         }

@@ -22,6 +22,16 @@ type AppRoute = { kind: "main" } | { kind: "review"; draftId: string };
 type PurchasePage = components["schemas"]["PurchasePage"];
 type Purchase = components["schemas"]["PurchaseOut"];
 type DraftOut = components["schemas"]["DraftOut"];
+type SpendingSummaryData = components["schemas"]["SpendingSummary"];
+
+const categoryLabels: Record<SpendingSummaryData["categories"][number]["category"], string> = {
+  groceries: "Groceries",
+  household: "Household",
+  personal_care: "Personal care",
+  transport: "Transport",
+  dining_out: "Dining out",
+  other: "Other",
+};
 
 const pageSize = 20;
 const currency = new Intl.NumberFormat("de-DE", {
@@ -56,6 +66,21 @@ function parseHouseholds(value: unknown): HouseholdOption[] {
 
 function formatAmount(cents: number): string {
   return currency.format(cents / 100);
+}
+
+function formatLocalDateInput(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function currentMonthDateRange() {
+  const today = new Date();
+  return {
+    start_date: formatLocalDateInput(new Date(today.getFullYear(), today.getMonth(), 1)),
+    end_date: formatLocalDateInput(today),
+  };
 }
 
 function formatQuantity(quantity: string, unit: string): string {
@@ -210,6 +235,123 @@ function usePurchasePage(session: Session, household: HouseholdOption, offset = 
   });
 }
 
+function useSpendingSummary(
+  session: Session,
+  household: HouseholdOption,
+  startDate: string,
+  endDate: string,
+) {
+  return useQuery({
+    queryKey: [
+      "user",
+      session.user.id,
+      "household",
+      household.id,
+      "spending-summary",
+      startDate,
+      endDate,
+    ],
+    queryFn: ({ signal }) =>
+      apiRequest<SpendingSummaryData>(
+        `/households/${encodeURIComponent(household.id)}/spending-summary?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`,
+        session.access_token,
+        { signal },
+      ),
+  });
+}
+
+function HomeSpendingSummary({
+  session,
+  household,
+}: {
+  session: Session;
+  household: HouseholdOption;
+}) {
+  const [initialRange] = useState(currentMonthDateRange);
+  const [startDate, setStartDate] = useState(initialRange.start_date);
+  const [endDate, setEndDate] = useState(initialRange.end_date);
+  const [appliedRange, setAppliedRange] = useState(initialRange);
+  const rangeError = startDate && endDate && endDate < startDate
+    ? "To date must be on or after From date."
+    : null;
+  const { data, error, isPending, isFetching, refetch } = useSpendingSummary(
+    session,
+    household,
+    appliedRange.start_date,
+    appliedRange.end_date,
+  );
+
+  function applyDateRange(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (rangeError || !startDate || !endDate) return;
+    setAppliedRange({ start_date: startDate, end_date: endDate });
+  }
+
+  return (
+    <section className="spending-summary" aria-labelledby="spending-summary-title">
+      <div className="spending-summary-heading">
+        <h2 id="spending-summary-title">Spending summary</h2>
+        {data && (
+          <span className="spending-purchase-count">
+            {data.purchase_count} {data.purchase_count === 1 ? "purchase" : "purchases"}
+          </span>
+        )}
+      </div>
+      <form className="spending-date-form" onSubmit={applyDateRange}>
+        <label>
+          <span>From</span>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(event) => setStartDate(event.target.value)}
+            required
+          />
+        </label>
+        <label>
+          <span>To</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(event) => setEndDate(event.target.value)}
+            required
+            aria-invalid={Boolean(rangeError)}
+            aria-describedby={rangeError ? "spending-date-error" : undefined}
+          />
+        </label>
+        <button className="button button-primary spending-apply-button" type="submit" disabled={Boolean(rangeError) || !startDate || !endDate}>
+          Apply
+        </button>
+      </form>
+      {rangeError && <p className="spending-date-error" id="spending-date-error" role="alert">{rangeError}</p>}
+      {isPending && <p className="status-message" role="status">Loading spending summary…</p>}
+      {error && (
+        <div className="error-block" role="alert">
+          <p>{getErrorText(error)}</p>
+          <button className="button button-outline" onClick={() => void refetch()} disabled={isFetching}>
+            {isFetching ? "Trying again…" : "Try again"}
+          </button>
+        </div>
+      )}
+      {data && (
+        <>
+          <div className="spending-summary-total">
+            <span>Total spending</span>
+            <strong>{formatAmount(data.total_cents)}</strong>
+          </div>
+          <ul className="spending-category-list" aria-label="Spending by category">
+            {data.categories.map((category) => (
+              <li key={category.category}>
+                <span>{categoryLabels[category.category]}</span>
+                <span>{formatAmount(category.total_cents)}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </section>
+  );
+}
+
 function Purchases({
   session,
   household,
@@ -297,6 +439,7 @@ function Home({
         householdId={household.id}
         onDraftCreated={onDraftCreated}
       />
+      <HomeSpendingSummary session={session} household={household} />
       <section className="recent-section" aria-labelledby="recent-title">
         <div className="recent-heading">
           <h2 id="recent-title">Recent purchases</h2>

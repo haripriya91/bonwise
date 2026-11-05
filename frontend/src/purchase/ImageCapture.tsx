@@ -513,7 +513,7 @@ export function ImageCapture({
             <span>I checked this image and removed personal details.</span>
           </label>
           <div className="step-actions">
-            <button className="button button-outline" type="button" onClick={onBack} disabled={extracting}>Back to capture options</button>
+            <button className="button button-outline" type="button" onClick={onBack} disabled={extracting}>Back</button>
             <button
               className="button button-primary"
               type="button"
@@ -528,7 +528,7 @@ export function ImageCapture({
       )}
       {!prepared && (
         <div className="step-actions image-back-action">
-          <button className="button button-outline" type="button" onClick={onBack} disabled={preparing}>Back to capture options</button>
+          <button className="button button-outline" type="button" onClick={onBack} disabled={preparing}>Back</button>
         </div>
       )}
     </section>

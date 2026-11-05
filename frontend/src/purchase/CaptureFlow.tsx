@@ -7,6 +7,7 @@ import { getDraftScopeKey, getPendingDraftSubmission, prepareDraftSubmission } f
 import type { SourceContext } from "./workflow";
 import { ImageCapture } from "./ImageCapture";
 import { PurchaseEditor } from "./PurchaseEditor";
+import { VoiceCapture } from "./VoiceCapture";
 import {
   formFromExtraction,
   validatePurchaseForm,
@@ -17,9 +18,12 @@ type Extraction = components["schemas"]["ExtractionOut"] | components["schemas"]
 type ImageExtraction = components["schemas"]["ImageExtractionOut"];
 type ImageExtractionRequest = components["schemas"]["ImageExtractionRequest"];
 type PrivacyPreview = components["schemas"]["PrivacyPreview"];
+type TranscriptionOut = components["schemas"]["TranscriptionOut"];
+type TranscriptionRequest = components["schemas"]["TranscriptionRequest"];
 type DraftOut = components["schemas"]["DraftOut"];
 type DraftCreate = components["schemas"]["DraftCreate"];
-type CaptureStep = "choices" | "image" | "text" | "privacy" | "details";
+type CaptureMode = "image" | "voice" | "text";
+type CaptureStep = CaptureMode | "privacy" | "details";
 
 function isAbort(error: unknown): boolean {
   return error instanceof DOMException && error.name === "AbortError";
@@ -52,21 +56,26 @@ export function CaptureFlow({
   onDraftCreated: (draft: DraftOut, source: SourceContext) => void;
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [step, setStep] = useState<CaptureStep>("choices");
+  const [step, setStep] = useState<CaptureStep>("image");
   const [sourceText, setSourceText] = useState("");
   const [preview, setPreview] = useState<PrivacyPreview | null>(null);
   const [reviewedText, setReviewedText] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState("");
+  const [voicePreview, setVoicePreview] = useState<PrivacyPreview | null>(null);
+  const [voiceReviewedText, setVoiceReviewedText] = useState("");
+  const [voiceAcknowledged, setVoiceAcknowledged] = useState(false);
   const [extraction, setExtraction] = useState<Extraction | null>(null);
   const [source, setSource] = useState<SourceContext | undefined>();
   const [form, setForm] = useState<PurchaseForm | null>(null);
   const [imageHasWork, setImageHasWork] = useState(false);
-  const [busy, setBusy] = useState<"privacy" | "extraction" | "draft" | null>(null);
+  const [voiceHasWork, setVoiceHasWork] = useState(false);
+  const [busy, setBusy] = useState<"privacy" | "transcription" | "extraction" | "draft" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showErrors, setShowErrors] = useState(false);
   const controller = useRef<AbortController | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
-  const launchButton = useRef<HTMLButtonElement>(null);
+  const launchButton = useRef<HTMLElement | null>(null);
   const currentScopeKey = useRef(getDraftScopeKey(session.user.id, householdId));
   const scopeKey = getDraftScopeKey(session.user.id, householdId);
   const pendingSubmission = getPendingDraftSubmission(scopeKey);
@@ -75,15 +84,20 @@ export function CaptureFlow({
   function resetCapture() {
     controller.current?.abort();
     controller.current = null;
-    setStep("choices");
+    setStep("image");
     setSourceText("");
     setPreview(null);
     setReviewedText("");
     setAcknowledged(false);
+    setVoiceTranscript("");
+    setVoicePreview(null);
+    setVoiceReviewedText("");
+    setVoiceAcknowledged(false);
     setExtraction(null);
     setSource(undefined);
     setForm(null);
     setImageHasWork(false);
+    setVoiceHasWork(false);
     setBusy(null);
     setError(null);
     setShowErrors(false);
@@ -104,6 +118,8 @@ export function CaptureFlow({
   }, [dialogOpen]);
 
   const reportImageWork = useCallback((hasWork: boolean) => setImageHasWork(hasWork), []);
+  const reportVoiceWork = useCallback((hasWork: boolean) => setVoiceHasWork(hasWork), []);
+  const activeMode: CaptureMode = step === "privacy" ? "text" : step === "details" ? "image" : step;
 
   async function imageRequestData(dataUrl: string): Promise<string> {
     const match = /^data:(image\/(?:jpeg|png));base64,([A-Za-z0-9+/]+={0,2})$/.exec(dataUrl);
@@ -134,7 +150,7 @@ export function CaptureFlow({
     return match[2];
   }
 
-  function beginRequest(kind: "privacy" | "extraction" | "draft") {
+  function beginRequest(kind: "privacy" | "transcription" | "extraction" | "draft") {
     controller.current?.abort();
     const requestController = new AbortController();
     controller.current = requestController;
@@ -143,10 +159,11 @@ export function CaptureFlow({
     return requestController;
   }
 
-  async function requestPrivacyPreview(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!sourceText.trim()) return;
-    const unreviewedText = sourceText;
+  async function requestPrivacyPreview(
+    unreviewedText: string,
+    onSuccess: (result: PrivacyPreview) => void,
+  ) {
+    if (!unreviewedText.trim()) return;
     const request = beginRequest("privacy");
     try {
       const result = await apiRequest<PrivacyPreview>(
@@ -155,12 +172,8 @@ export function CaptureFlow({
         { method: "POST", body: { text: unreviewedText }, signal: request.signal },
       );
       if (request.signal.aborted) return;
-      setPreview(result);
-      setReviewedText(result.reviewed_text);
-      setSourceText("");
-      setAcknowledged(false);
+      onSuccess(result);
       setError(null);
-      setStep("privacy");
     } catch (requestError) {
       if (!isAbort(requestError)) setError(getErrorText(requestError));
     } finally {
@@ -168,9 +181,26 @@ export function CaptureFlow({
     }
   }
 
-  async function requestExtraction() {
-    if (!preview || !acknowledged || !reviewedText.trim()) return;
-    const exactSubmittedText = reviewedText;
+  async function requestTextPrivacyPreview(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await requestPrivacyPreview(sourceText, (result) => {
+      setPreview(result);
+      setReviewedText(result.reviewed_text);
+      setSourceText("");
+      setAcknowledged(false);
+      setStep("privacy");
+    });
+  }
+
+  async function requestVoicePrivacyPreview() {
+    await requestPrivacyPreview(voiceTranscript, (result) => {
+      setVoicePreview(result);
+      setVoiceReviewedText(result.reviewed_text);
+      setVoiceAcknowledged(false);
+    });
+  }
+
+  async function extractReviewedText(exactSubmittedText: string, sourceType: "text" | "voice") {
     const request = beginRequest("extraction");
     try {
       const result = await apiRequest<Extraction>(
@@ -186,7 +216,7 @@ export function CaptureFlow({
       setExtraction(result);
       setForm(formFromExtraction(result));
       setSource({
-        type: "text",
+        type: sourceType,
         text: exactSubmittedText,
         receiptLineTotalsCents: result.extracted.items.map((item) => item.line_total_cents),
       });
@@ -194,6 +224,44 @@ export function CaptureFlow({
       setStep("details");
     } catch (requestError) {
       if (!isAbort(requestError)) setError(getErrorText(requestError));
+    } finally {
+      if (!request.signal.aborted) setBusy(null);
+    }
+  }
+
+  async function requestTextExtraction() {
+    if (!preview || !acknowledged || !reviewedText.trim()) return;
+    await extractReviewedText(reviewedText, "text");
+  }
+
+  async function requestVoiceExtraction() {
+    if (!voicePreview || !voiceAcknowledged || !voiceReviewedText.trim()) return;
+    await extractReviewedText(voiceReviewedText, "voice");
+  }
+
+  async function requestTranscription(audioBase64: string, audioFormat: TranscriptionRequest["audio_format"]): Promise<string> {
+    const body: TranscriptionRequest = {
+      audio_base64: audioBase64,
+      audio_format: audioFormat,
+      language_hint: null,
+      transcription_requested: true,
+    };
+    const request = beginRequest("transcription");
+    try {
+      const result = await apiRequest<TranscriptionOut>(
+        `/households/${encodeURIComponent(householdId)}/capture/transcribe`,
+        session.access_token,
+        { method: "POST", body, signal: request.signal },
+      );
+      if (request.signal.aborted) throw new DOMException("The transcription was cancelled.", "AbortError");
+      setVoicePreview(null);
+      setVoiceReviewedText("");
+      setVoiceAcknowledged(false);
+      setError(null);
+      return result.transcript;
+    } catch (requestError) {
+      if (!isAbort(requestError)) setError(getErrorText(requestError));
+      throw requestError;
     } finally {
       if (!request.signal.aborted) setBusy(null);
     }
@@ -267,14 +335,17 @@ export function CaptureFlow({
     if (pending) await submitDraft(pending);
   }
 
-  function openDialog() {
+  function openDialog(mode: CaptureMode, trigger: HTMLElement) {
     setError(null);
+    setStep(mode);
+    launchButton.current = trigger;
     setDialogOpen(true);
   }
 
   function closeDialog() {
     const hasWork = Boolean(
-      sourceText.trim() || preview || reviewedText.trim() || extraction || form || imageHasWork,
+      sourceText.trim() || preview || reviewedText.trim() || voiceTranscript.trim()
+      || voicePreview || voiceReviewedText.trim() || extraction || form || imageHasWork || voiceHasWork,
     );
     if (hasWork && !window.confirm("Close capture and discard this unsaved purchase?")) return;
     resetCapture();
@@ -283,12 +354,12 @@ export function CaptureFlow({
     requestAnimationFrame(() => launchButton.current?.focus());
   }
 
-  function goBackToChoices() {
+  function selectMode(mode: CaptureMode) {
+    controller.current?.abort();
+    controller.current = null;
+    setBusy(null);
     setError(null);
-    if (step === "privacy" && reviewedText) {
-      setSourceText(reviewedText);
-    }
-    setStep("choices");
+    setStep(mode === "text" && preview ? "privacy" : mode);
   }
 
   function backFromDetails() {
@@ -297,19 +368,42 @@ export function CaptureFlow({
       setStep("privacy");
       return;
     }
-    setStep("choices");
+    if (source?.type === "voice") {
+      setStep("voice");
+      return;
+    }
+    setStep("image");
   }
 
   return (
     <>
       <section className="capture-launch entry-surface" aria-labelledby="capture-title">
-        <p className="capture-eyebrow">Purchase capture</p>
-        <h1 id="capture-title">Start with your purchases.</h1>
-        <h2>Add a purchase</h2>
-        <p className="capture-intro">Scan a receipt or describe what you bought. Review the details before anything is recorded.</p>
-        <button ref={launchButton} className="button button-lime capture-receipt-action" type="button" onClick={openDialog}>
-          Add a purchase
+        <p className="capture-eyebrow">Your purchases are the starting point</p>
+        <h1 id="capture-title">Add a purchase, your way.</h1>
+        <p className="capture-intro">Check the details before anything enters your purchase history.</p>
+        <button
+          className="capture-receipt-action"
+          type="button"
+          onClick={(event) => openDialog("image", event.currentTarget)}
+          aria-label="Scan or upload a receipt"
+        >
+          <span className="capture-action-copy">
+            <strong>Scan or upload a receipt</strong>
+            <span>German or English · review before saving</span>
+          </span>
+          <span className="capture-action-arrow" aria-hidden="true">↗</span>
         </button>
+        <div className="capture-secondary-actions">
+          <button type="button" onClick={(event) => openDialog("voice", event.currentTarget)}>
+            <strong>Describe your purchase</strong>
+            <span>Short voice entry</span>
+          </button>
+          <button type="button" onClick={(event) => openDialog("text", event.currentTarget)}>
+            <strong>Enter purchase details</strong>
+            <span>Type what you bought</span>
+          </button>
+        </div>
+        <footer className="capture-panel-footer">Photo, voice and text → the same review</footer>
       </section>
 
       {dialogOpen && (
@@ -326,50 +420,117 @@ export function CaptureFlow({
             <div>
               <p className="capture-eyebrow">Purchase capture</p>
               <h2 id="capture-dialog-title">
-                {step === "choices" && "Choose how to add a purchase"}
                 {step === "image" && "Receipt"}
                 {step === "text" && "Text"}
-                {step === "privacy" && "Review the text"}
+                {step === "voice" && "Voice"}
+                {step === "privacy" && "Review text privacy"}
                 {step === "details" && "Correct purchase details"}
               </h2>
             </div>
-            <button className="button button-outline" type="button" onClick={closeDialog} disabled={busy !== null}>
+            <button className="button button-outline" type="button" onClick={closeDialog} disabled={busy === "draft"}>
               Close
             </button>
           </div>
 
-          {step === "choices" && (
-            <section className="capture-mode-choices" aria-label="Capture choices">
-              <button className="capture-mode-option" type="button" onClick={() => { setStep("image"); setError(null); }}>
-                <strong>Receipt</strong>
-                <span>Choose or take a JPEG/PNG photo, check it, then extract details.</span>
-              </button>
-              <button className="capture-mode-option" type="button" onClick={() => { setStep("text"); setError(null); }}>
-                <strong>Text</strong>
-                <span>Describe your purchase in German or English.</span>
-              </button>
-              {extraction && form && (
-                <button className="button button-outline" type="button" onClick={() => setStep("details")}>
-                  Continue correcting extracted details
+          {step !== "details" && (
+            <div className="capture-mode-tabs" role="tablist" aria-label="Purchase entry method" onKeyDown={(event) => {
+              const modes: CaptureMode[] = ["image", "voice", "text"];
+              const currentIndex = modes.indexOf(activeMode);
+              const nextIndex = event.key === "ArrowRight"
+                ? (currentIndex + 1) % modes.length
+                : event.key === "ArrowLeft"
+                  ? (currentIndex + modes.length - 1) % modes.length
+                  : event.key === "Home"
+                    ? 0
+                    : event.key === "End"
+                      ? modes.length - 1
+                      : -1;
+              if (nextIndex < 0) return;
+              event.preventDefault();
+              selectMode(modes[nextIndex]);
+              requestAnimationFrame(() => document.getElementById(`capture-tab-${modes[nextIndex]}`)?.focus());
+            }}>
+              {([
+                ["image", "Receipt"],
+                ["voice", "Voice"],
+                ["text", "Text"],
+              ] as const).map(([mode, label]) => (
+                <button
+                  key={mode}
+                  id={`capture-tab-${mode}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeMode === mode}
+                  aria-controls={`capture-panel-${mode}`}
+                  tabIndex={activeMode === mode ? 0 : -1}
+                  onClick={() => selectMode(mode)}
+                  disabled={busy === "draft"}
+                >
+                  {label}
                 </button>
-              )}
-            </section>
+              ))}
+            </div>
           )}
 
           {dialogOpen && step !== "details" && (
-            <div hidden={step !== "image"}>
+            <>
+            <div id="capture-panel-image" role="tabpanel" aria-labelledby="capture-tab-image" hidden={activeMode !== "image"}>
               <ImageCapture
                 extracting={busy === "extraction"}
                 error={error}
                 onExtract={(dataUrl) => void requestImageExtraction(dataUrl)}
-                onBack={goBackToChoices}
+                onBack={closeDialog}
                 onWorkChange={reportImageWork}
               />
             </div>
+
+            <div id="capture-panel-voice" role="tabpanel" aria-labelledby="capture-tab-voice" hidden={activeMode !== "voice"}>
+              <VoiceCapture
+              active={activeMode === "voice"}
+              transcript={voiceTranscript}
+              onTranscriptChange={(value) => {
+                setVoiceTranscript(value);
+                setVoicePreview(null);
+                setVoiceReviewedText("");
+                setVoiceAcknowledged(false);
+              }}
+              preview={voicePreview}
+              reviewedText={voiceReviewedText}
+              acknowledged={voiceAcknowledged}
+              onReviewedTextChange={(value) => {
+                setVoiceReviewedText(value);
+                setVoiceAcknowledged(false);
+              }}
+              onAcknowledgedChange={setVoiceAcknowledged}
+              onTranscribe={requestTranscription}
+              onReviewPrivacy={() => void requestVoicePrivacyPreview()}
+              onExtract={() => void requestVoiceExtraction()}
+              onBack={closeDialog}
+              onEnterText={(transcript) => {
+                if (transcript.trim() && sourceText.trim() && sourceText !== transcript) {
+                  if (!window.confirm("Replace the text purchase with what we heard? Your typed text remains available if you cancel.")) {
+                    return;
+                  }
+                }
+                if (transcript.trim()) setSourceText(transcript);
+                setVoicePreview(null);
+                setVoiceReviewedText("");
+                setVoiceAcknowledged(false);
+                setError(null);
+                setStep("text");
+              }}
+              onWorkChange={reportVoiceWork}
+              busy={busy === "transcription" || busy === "privacy" || busy === "extraction" ? busy : null}
+              error={error}
+            />
+            </div>
+            </>
           )}
 
-          {step === "text" && (
-            <form className="entry-surface capture-text-step" onSubmit={(event) => void requestPrivacyPreview(event)}>
+          {dialogOpen && step !== "details" && (
+            <div id="capture-panel-text" role="tabpanel" aria-labelledby="capture-tab-text" hidden={activeMode !== "text"}>
+            {step === "text" && (
+            <form className="capture-text-step" onSubmit={(event) => void requestTextPrivacyPreview(event)}>
               <h3>Purchase description</h3>
               <p className="capture-intro">Describe what you bought in German or English.</p>
               <label htmlFor="purchase-entry">Purchase description</label>
@@ -378,22 +539,22 @@ export function CaptureFlow({
                 rows={5}
                 value={sourceText}
                 onChange={(event) => setSourceText(event.target.value)}
-                placeholder="For example: 2 cartons of milk at 1,19 EUR each"
+                placeholder="For example: Markt, 5 November — 2 packs of milk at 1,19 EUR and 1 loaf of bread at 2,49 EUR"
                 required
                 maxLength={16000}
                 disabled={busy !== null}
               />
               {error && <p className="workflow-error" role="alert">{error}</p>}
               <div className="capture-dialog-actions">
-                <button className="button button-outline" type="button" onClick={goBackToChoices} disabled={busy !== null}>
-                  Back to Receipt or Text
+                <button className="button button-outline" type="button" onClick={closeDialog} disabled={busy === "draft"}>
+                  Back
                 </button>
                 <button className="button button-primary" type="submit" disabled={!sourceText.trim() || busy !== null}>
                   {busy === "privacy" ? "Checking text…" : "Review privacy"}
                 </button>
               </div>
             </form>
-          )}
+            )}
 
           {step === "privacy" && preview && (
             <section className="workflow-surface privacy-step" aria-labelledby="privacy-title">
@@ -437,12 +598,14 @@ export function CaptureFlow({
               {error && <p className="workflow-error" role="alert">{error}</p>}
               <div className="capture-dialog-actions">
                 <button className="button button-outline" type="button" onClick={() => { setSourceText(reviewedText); setStep("text"); }} disabled={busy !== null}>Back to Text</button>
-                <button className="button button-primary" type="button" onClick={() => void requestExtraction()} disabled={!acknowledged || !reviewedText.trim() || busy !== null}>
+                <button className="button button-primary" type="button" onClick={() => void requestTextExtraction()} disabled={!acknowledged || !reviewedText.trim() || busy !== null}>
                   {busy === "extraction" ? "Extracting…" : "Extract purchase"}
                 </button>
               </div>
               {busy === "extraction" && <p className="long-running-note" role="status">Extraction can take a little while. Please keep this dialog open.</p>}
             </section>
+          )}
+            </div>
           )}
 
           {step === "details" && extraction && form && result && source && (

@@ -1,3 +1,4 @@
+from datetime import date
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -12,6 +13,7 @@ from app.schemas.purchase import (
     DraftUpdate,
     PurchaseOut,
     PurchasePage,
+    SpendingSummary,
 )
 from app.services import purchases as service
 
@@ -98,4 +100,24 @@ def history(
 ):
     return service.list_purchases(
         db, household_id, user.id, limit, offset
+    )
+
+
+@router.get(
+    "/spending-summary",
+    response_model=SpendingSummary,
+)
+def spending_summary(
+    household_id: UUID,
+    start_date: date = Query(...),
+    end_date: date = Query(...),
+    user: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return service.spending_summary(
+        db,
+        household_id,
+        user.id,
+        start_date,
+        end_date,
     )

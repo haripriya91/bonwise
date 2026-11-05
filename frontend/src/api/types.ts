@@ -107,6 +107,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{household_id}/spending-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Spending Summary */
+        get: operations["spending_summary_households__household_id__spending_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{household_id}/extraction/image": {
         parameters: {
             query?: never;
@@ -118,6 +135,23 @@ export interface paths {
         put?: never;
         /** Image Extraction */
         post: operations["image_extraction_households__household_id__extraction_image_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/capture/transcribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Transcribe Audio */
+        post: operations["transcribe_audio_households__household_id__capture_transcribe_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -213,7 +247,7 @@ export interface components {
              * @default text
              * @enum {string}
              */
-            source_type: "text" | "image";
+            source_type: "text" | "image" | "voice";
             content: components["schemas"]["PurchaseContent-Input"];
         };
         /** DraftOut */
@@ -571,6 +605,84 @@ export interface components {
             /** Purchases */
             purchases: components["schemas"]["PurchaseOut"][];
         };
+        /** SpendingCategoryTotal */
+        SpendingCategoryTotal: {
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "groceries" | "household" | "personal_care" | "transport" | "dining_out" | "other";
+            /** Total Cents */
+            total_cents: number;
+        };
+        /** SpendingSummary */
+        SpendingSummary: {
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "EUR";
+            /** Purchase Count */
+            purchase_count: number;
+            /** Total Cents */
+            total_cents: number;
+            /** Categories */
+            categories: components["schemas"]["SpendingCategoryTotal"][];
+        };
+        /** TranscriptionOut */
+        TranscriptionOut: {
+            /** Transcript */
+            transcript: string;
+            /**
+             * Needs Review
+             * @constant
+             */
+            needs_review: true;
+            /** Run Id */
+            run_id: string;
+            /** Model */
+            model: string;
+            /** Latency Ms */
+            latency_ms: number;
+            /** Usage */
+            usage: {
+                [key: string]: number;
+            };
+            /** Trace Sent */
+            trace_sent: boolean;
+            /**
+             * Saved
+             * @constant
+             */
+            saved: false;
+        };
+        /** TranscriptionRequest */
+        TranscriptionRequest: {
+            /** Audio Base64 */
+            audio_base64: string;
+            /**
+             * Audio Format
+             * @enum {string}
+             */
+            audio_format: "webm" | "wav" | "mp3" | "m4a" | "mp4" | "ogg" | "flac";
+            /** Language Hint */
+            language_hint?: ("de" | "en") | null;
+            /**
+             * Transcription Requested
+             * @constant
+             */
+            transcription_requested: true;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -817,6 +929,40 @@ export interface operations {
             };
         };
     };
+    spending_summary_households__household_id__spending_summary_get: {
+        parameters: {
+            query: {
+                start_date: string;
+                end_date: string;
+            };
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpendingSummary"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     image_extraction_households__household_id__extraction_image_post: {
         parameters: {
             query?: never;
@@ -839,6 +985,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImageExtractionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    transcribe_audio_households__household_id__capture_transcribe_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TranscriptionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TranscriptionOut"];
                 };
             };
             /** @description Validation Error */

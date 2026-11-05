@@ -88,7 +88,7 @@ class PurchaseContent(InputModel):
 
 class DraftCreate(InputModel):
     client_request_id: UUID
-    source_type: Literal["text", "image"] = "text"
+    source_type: Literal["text", "image", "voice"] = "text"
     content: PurchaseContent
 
 
@@ -136,3 +136,17 @@ class PurchasePage(BaseModel):
     limit: int
     offset: int
     purchases: list[PurchaseOut]
+
+
+class SpendingCategoryTotal(BaseModel):
+    category: Category
+    total_cents: int
+
+
+class SpendingSummary(BaseModel):
+    start_date: date
+    end_date: date
+    currency: Literal["EUR"]
+    purchase_count: int
+    total_cents: int
+    categories: list[SpendingCategoryTotal]

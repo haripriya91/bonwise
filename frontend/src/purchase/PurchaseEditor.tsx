@@ -83,6 +83,14 @@ export function PurchaseEditor({
   const [sourceZoom, setSourceZoom] = useState(1);
   const sourceDialog = useRef<HTMLDialogElement>(null);
   const sourceTrigger = useRef<HTMLButtonElement>(null);
+  const imageSource = source?.type === "image";
+  const voiceSource = source?.type === "voice";
+  const sourceTitle = imageSource ? "Reviewed receipt" : voiceSource ? "Reviewed voice transcript" : "Reviewed source text";
+  const sourceDescription = imageSource
+    ? "Prepared image sent for extraction. Read-only."
+    : voiceSource
+      ? "Exact reviewed voice transcript sent for extraction. Read-only."
+      : "Exact reviewed text sent for extraction. Read-only.";
 
   useEffect(() => {
     if (sourceOpen && sourceDialog.current && !sourceDialog.current.open) sourceDialog.current.showModal();
@@ -122,15 +130,15 @@ export function PurchaseEditor({
           type="button"
           onClick={() => setSourceOpen(true)}
         >
-          {source.type === "image" ? "View receipt" : "View source text"}
+          {imageSource ? "View receipt" : voiceSource ? "View voice transcript" : "View source text"}
         </button>
       )}
       <div className={`purchase-editor-layout${source ? "" : " source-missing"}`}>
         {source && (
           <aside className="review-source-pane" aria-labelledby={`${idPrefix}-source-title`}>
-            <h2 id={`${idPrefix}-source-title`}>{source.type === "image" ? "Reviewed receipt" : "Reviewed source text"}</h2>
-            <p>{source.type === "image" ? "Prepared image sent for extraction. Read-only." : "Exact reviewed text sent for extraction. Read-only."}</p>
-            {source.type === "image" ? (
+            <h2 id={`${idPrefix}-source-title`}>{sourceTitle}</h2>
+            <p>{sourceDescription}</p>
+            {imageSource ? (
               <div className="review-image-wrap">
                 <div className="image-viewer-controls" aria-label="Receipt zoom controls">
                   <button type="button" className="button button-outline" onClick={() => setSourceZoom((value) => Math.max(0.5, value - 0.25))} disabled={sourceZoom <= 0.5}>Zoom out</button>
@@ -439,7 +447,7 @@ export function PurchaseEditor({
           }}
         >
           <div className="source-dialog-header">
-            <h2 id={`${idPrefix}-source-dialog-title`}>{source.type === "image" ? "Reviewed receipt" : "Reviewed source text"}</h2>
+            <h2 id={`${idPrefix}-source-dialog-title`}>{sourceTitle}</h2>
             <button className="button button-outline" type="button" onClick={closeSourceViewer}>Close</button>
           </div>
           <ReadOnlySource source={source} zoom={sourceZoom} setZoom={setSourceZoom} />
