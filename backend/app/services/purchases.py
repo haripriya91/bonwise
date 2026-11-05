@@ -10,6 +10,8 @@ from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
+from app.core.privacy import has_detectable_pii
+
 from app.db.models import (
     HouseholdMember,
     Product,
@@ -86,6 +88,14 @@ def require_member(db, household_id, user_id, lock=False):
 
 
 def check_products(db, content):
+
+    if has_detectable_pii(content.model_dump(mode="json")):
+        raise HTTPException(
+            422,
+            "Remove personal information from purchase fields "
+            "before saving.",
+        )
+
     product_ids = {
         item.product_id
         for item in content.items
