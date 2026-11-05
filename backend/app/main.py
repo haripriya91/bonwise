@@ -8,6 +8,8 @@ from fastapi.exceptions import RequestValidationError
 from app.api.extraction import router as extraction_router
 from app.core.errors import safe_validation_error
 
+from app.api.image_capture import router as image_capture_router
+
 from app.core.config import get_settings
 
 
@@ -36,6 +38,7 @@ app.add_middleware(
 )
 app.include_router(account_router)
 app.include_router(purchases_router)
+app.include_router(image_capture_router)
 
 app.add_exception_handler(
     RequestValidationError,

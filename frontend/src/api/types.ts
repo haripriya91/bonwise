@@ -107,6 +107,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{household_id}/extraction/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Image Extraction */
+        post: operations["image_extraction_households__household_id__extraction_image_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{household_id}/extraction/privacy-preview": {
         parameters: {
             query?: never;
@@ -194,9 +211,9 @@ export interface components {
             /**
              * Source Type
              * @default text
-             * @constant
+             * @enum {string}
              */
-            source_type: "text";
+            source_type: "text" | "image";
             content: components["schemas"]["PurchaseContent-Input"];
         };
         /** DraftOut */
@@ -319,6 +336,48 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** ImageExtractionOut */
+        ImageExtractionOut: {
+            extracted: components["schemas"]["ExtractedPurchase"];
+            /** Missing Fields */
+            missing_fields: string[];
+            /** Warnings */
+            warnings: string[];
+            candidate: components["schemas"]["PurchaseContent-Output"] | null;
+            /** Can Create Draft */
+            can_create_draft: boolean;
+            /** Run Id */
+            run_id: string;
+            /** Model */
+            model: string;
+            /** Latency Ms */
+            latency_ms: number;
+            /** Usage */
+            usage: {
+                [key: string]: number;
+            };
+            /** Trace Sent */
+            trace_sent: boolean;
+            /**
+             * Saved
+             * @constant
+             */
+            saved: false;
+            /** Source Image Data Url */
+            source_image_data_url: string;
+            /** Source Sha256 */
+            source_sha256: string;
+        };
+        /** ImageExtractionRequest */
+        ImageExtractionRequest: {
+            /** Image Base64 */
+            image_base64: string;
+            /**
+             * Privacy Reviewed
+             * @constant
+             */
+            privacy_reviewed: true;
         };
         /** ItemInput */
         "ItemInput-Input": {
@@ -745,6 +804,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PurchasePage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    image_extraction_households__household_id__extraction_image_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageExtractionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImageExtractionOut"];
                 };
             };
             /** @description Validation Error */

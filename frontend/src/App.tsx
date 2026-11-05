@@ -9,6 +9,7 @@ import { hasSupabaseConfig, supabase } from "./auth/supabase";
 import { CaptureFlow } from "./purchase/CaptureFlow";
 import { DraftReview } from "./purchase/DraftReview";
 import { clearPendingDraftSubmission, getDraftScopeKey, getSourceSnapshotKey } from "./purchase/workflow";
+import type { SourceContext } from "./purchase/workflow";
 
 type HouseholdOption = {
   id: string;
@@ -285,7 +286,7 @@ function Home({
   session: Session;
   household: HouseholdOption;
   onViewPurchases: () => void;
-  onDraftCreated: (draft: DraftOut, sourceText: string) => void;
+  onDraftCreated: (draft: DraftOut, source: SourceContext) => void;
 }) {
   const { data, error, isPending, isFetching, refetch } = usePurchasePage(session, household);
 
@@ -326,7 +327,7 @@ function Home({
 function App({ queryClient }: { queryClient: QueryClient }) {
   const [session, setSession] = useState<Session | null>(null);
   const sessionUserId = useRef<string | null>(null);
-  const sourceSnapshots = useRef(new Map<string, string>());
+  const sourceSnapshots = useRef(new Map<string, SourceContext>());
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [page, setPage] = useState<Page>("home");
@@ -420,12 +421,12 @@ function App({ queryClient }: { queryClient: QueryClient }) {
     setPage(nextPage);
   }
 
-  function navigateToDraft(draft: DraftOut, sourceText: string) {
+  function navigateToDraft(draft: DraftOut, source: SourceContext) {
     if (!selectedHousehold || !session) return;
     clearPendingDraftSubmission(getDraftScopeKey(session.user.id, selectedHousehold.id));
     sourceSnapshots.current.set(
       getSourceSnapshotKey(session.user.id, selectedHousehold.id, draft.id),
-      sourceText,
+      source,
     );
     const nextPath = `/review/${encodeURIComponent(draft.id)}`;
     window.history.pushState(null, "", nextPath);
@@ -527,7 +528,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
               session={session}
               householdId={selectedHousehold.id}
               draftId={route.draftId}
-              sourceText={sourceSnapshots.current.get(
+              source={sourceSnapshots.current.get(
                 getSourceSnapshotKey(session.user.id, selectedHousehold.id, route.draftId),
               )}
               onBackToPurchases={() => navigateToPage("purchases")}

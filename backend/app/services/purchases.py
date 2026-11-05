@@ -213,7 +213,7 @@ def create_draft(
                 household_id=household_id,
                 created_by=user_id,
                 client_request_id=body.client_request_id,
-                source_type="text",
+                source_type=body.source_type,
                 status="pending",
                 data={
                     "schema_version": 1,
@@ -243,7 +243,7 @@ def create_draft(
 
             if (
                 draft.data.get("creation_digest") != creation_digest
-                or draft.source_type != "text"
+                or draft.source_type != body.source_type
             ):
                 raise HTTPException(
                     409,

@@ -88,7 +88,7 @@ class PurchaseContent(InputModel):
 
 class DraftCreate(InputModel):
     client_request_id: UUID
-    source_type: Literal["text"] = "text"
+    source_type: Literal["text", "image"] = "text"
     content: PurchaseContent
 
 

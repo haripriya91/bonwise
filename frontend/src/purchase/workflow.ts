@@ -8,6 +8,10 @@ type PendingSubmission = {
   body: DraftCreate;
 };
 
+export type SourceContext =
+  | { type: "text"; text: string; receiptLineTotalsCents: (number | null)[] }
+  | { type: "image"; dataUrl: string; receiptLineTotalsCents: (number | null)[] };
+
 const pendingSubmissions = new Map<string, PendingSubmission>();
 
 export function getDraftScopeKey(userId: string, householdId: string): string {

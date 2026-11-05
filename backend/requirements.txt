@@ -27,6 +27,7 @@ openai==3.45.0
 opentelemetry-api==1.45.2
 orjson==3.13.0
 packaging==26.3
+pillow==13.0.0
 pinecone==10.3.0
 psycopg==3.3.8
 psycopg-binary==3.3.8

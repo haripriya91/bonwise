@@ -10,3 +10,4 @@ pinecone
 openai
 langsmith
 PyJWT[crypto]
+Pillow
