@@ -261,6 +261,7 @@ export interface components {
              * Format: date
              */
             end_date: string;
+            conversation_context?: components["schemas"]["ConversationContext"] | null;
         };
         /** AnalysisOut */
         AnalysisOut: {
@@ -300,11 +301,87 @@ export interface components {
             trace_sent: boolean;
             /** Calculation Note */
             calculation_note?: string | null;
+            conversation_context?: components["schemas"]["ConversationContext"] | null;
+        };
+        /** AnalysisPlan */
+        AnalysisPlan: {
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "clarify" | "unsupported";
+            /**
+             * Language
+             * @enum {string}
+             */
+            language: "en" | "de";
+            /** Start Date */
+            start_date: string | null;
+            /** End Date */
+            end_date: string | null;
+            /** Category */
+            category: ("groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other") | null;
+            /** Product Query */
+            product_query: string | null;
+            /** Merchant Query */
+            merchant_query: string | null;
+            /**
+             * Metric
+             * @enum {string}
+             */
+            metric: "spending" | "purchase_frequency";
+            /** Top N */
+            top_n: number;
+            /** Comparison Start Date */
+            comparison_start_date: string | null;
+            /** Comparison End Date */
+            comparison_end_date: string | null;
+            /**
+             * Clarification Reason
+             * @enum {string}
+             */
+            clarification_reason: "ranking" | "period" | "scope" | "none";
+            /** Clarification Target */
+            clarification_target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare") | null;
         };
         /** ConfirmDraft */
         ConfirmDraft: {
             /** Revision */
             revision: string;
+        };
+        /** ContextPeriod */
+        ContextPeriod: {
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+        };
+        /**
+         * ConversationContext
+         * @description Untrusted client-supplied filters, never authorization or evidence.
+         */
+        ConversationContext: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+            last_plan?: components["schemas"]["AnalysisPlan"] | null;
+            pending?: components["schemas"]["PendingAnalysisContext"] | null;
+            selected_period?: components["schemas"]["ContextPeriod"] | null;
+            /** Focus Category */
+            focus_category?: ("groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other") | null;
+            /** Focus Product */
+            focus_product?: string | null;
+            /** Focus Merchant */
+            focus_merchant?: string | null;
         };
         /** DraftCreate */
         DraftCreate: {
@@ -601,6 +678,35 @@ export interface components {
             id: string;
             /** Line Total Cents */
             line_total_cents: number;
+        };
+        /** PendingAnalysisContext */
+        PendingAnalysisContext: {
+            /** Target */
+            target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare") | null;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "ranking" | "period";
+            /** Category */
+            category?: ("groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other") | null;
+            /** Product Query */
+            product_query?: string | null;
+            /** Merchant Query */
+            merchant_query?: string | null;
+            /** Start Date */
+            start_date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /** Comparison Start Date */
+            comparison_start_date?: string | null;
+            /** Comparison End Date */
+            comparison_end_date?: string | null;
+            /**
+             * Top N
+             * @default 1
+             */
+            top_n: number;
         };
         /** PrivacyInput */
         PrivacyInput: {

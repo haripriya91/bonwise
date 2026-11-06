@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { FormEvent } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import type { FormEvent, ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { apiRequest, getErrorText } from "../api/client";
 import type { components } from "../api/types";
@@ -8,6 +8,7 @@ import { VoiceCapture } from "../purchase/VoiceCapture";
 type HouseholdOption = { id: string };
 type AnalysisInput = components["schemas"]["AnalysisInput"];
 type AnalysisOut = components["schemas"]["AnalysisOut"];
+type ConversationContext = components["schemas"]["ConversationContext"];
 type EvidenceReference = components["schemas"]["EvidenceReference"];
 type AudioFormat = components["schemas"]["TranscriptionRequest"]["audio_format"];
 type TranscriptionOut = components["schemas"]["TranscriptionOut"];
@@ -19,6 +20,133 @@ type AnswerEntry = {
   endDate: string;
   result: AnalysisOut;
 };
+
+type AnalysisChatState = {
+  entries: AnswerEntry[];
+  question: string;
+  pending: boolean;
+  error: string | null;
+  updateQuestion: (value: string) => void;
+  submitQuestion: (value: string, startDate: string, endDate: string) => Promise<void>;
+  newConversation: () => void;
+};
+
+const AnalysisChatContext = createContext<AnalysisChatState | null>(null);
+
+export function AnalysisChatProvider({
+  session,
+  householdId,
+  children,
+}: {
+  session: Session;
+  householdId: string;
+  children: ReactNode;
+}) {
+  const [entries, setEntries] = useState<AnswerEntry[]>([]);
+  const [question, setQuestion] = useState("");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [conversationContext, setConversationContext] = useState<ConversationContext | null | undefined>(undefined);
+  const [hasConversationTurn, setHasConversationTurn] = useState(false);
+  const generation = useRef(0);
+  const requestController = useRef<AbortController | null>(null);
+  const mounted = useRef(true);
+  const owner = useRef({ userId: session.user.id, householdId });
+  owner.current = { userId: session.user.id, householdId };
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      generation.current += 1;
+      requestController.current?.abort();
+      requestController.current = null;
+    };
+  }, []);
+
+  const updateQuestion = useCallback((value: string) => {
+    setQuestion(value);
+  }, []);
+
+  const submitQuestion = useCallback(async (value: string, startDate: string, endDate: string) => {
+    const submittedQuestion = value.trim();
+    if (
+      pending ||
+      requestController.current ||
+      submittedQuestion.length < 3 ||
+      !householdId
+    ) return;
+
+    const requestOwner = {
+      userId: session.user.id,
+      householdId,
+      generation: generation.current,
+    };
+    const isCurrentOwner = () =>
+      mounted.current &&
+      owner.current.userId === requestOwner.userId &&
+      owner.current.householdId === requestOwner.householdId &&
+      generation.current === requestOwner.generation;
+    const body: AnalysisInput = {
+      question: submittedQuestion,
+      start_date: startDate,
+      end_date: endDate,
+      ...(hasConversationTurn ? { conversation_context: conversationContext } : {}),
+    };
+    const controller = new AbortController();
+    requestController.current = controller;
+    setPending(true);
+    setError(null);
+    try {
+      const result = await apiRequest<AnalysisOut>(
+        `/households/${encodeURIComponent(householdId)}/analysis/ask`,
+        session.access_token,
+        { method: "POST", body, signal: controller.signal },
+      );
+      if (controller.signal.aborted || !isCurrentOwner()) return;
+      setEntries((current) => [
+        ...current,
+        { question: submittedQuestion, startDate, endDate, result },
+      ]);
+      setConversationContext(result.conversation_context);
+      setHasConversationTurn(true);
+      setQuestion((current) => current.trim() === submittedQuestion ? "" : current);
+    } catch (requestError) {
+      if (!controller.signal.aborted && isCurrentOwner()) setError(getErrorText(requestError));
+    } finally {
+      if (requestController.current === controller) {
+        requestController.current = null;
+        if (!controller.signal.aborted && isCurrentOwner()) setPending(false);
+      }
+    }
+  }, [conversationContext, hasConversationTurn, householdId, pending, session]);
+
+  const newConversation = useCallback(() => {
+    generation.current += 1;
+    requestController.current?.abort();
+    requestController.current = null;
+    setEntries([]);
+    setQuestion("");
+    setPending(false);
+    setError(null);
+    setConversationContext(undefined);
+    setHasConversationTurn(false);
+  }, []);
+
+  return (
+    <AnalysisChatContext.Provider
+      value={{ entries, question, pending, error, updateQuestion, submitQuestion, newConversation }}
+    >
+      {children}
+    </AnalysisChatContext.Provider>
+  );
+}
+
+function useAnalysisChat(): AnalysisChatState {
+  const chat = useContext(AnalysisChatContext);
+  if (!chat) throw new Error("Ask Bonwise must be rendered inside its authenticated chat provider.");
+  return chat;
+}
 
 const suggestedQuestions = [
   "How much did we spend on groceries?",
@@ -156,68 +284,28 @@ export function AskBonwise({
   endDate: string;
 }) {
   const [expanded, setExpanded] = useState(true);
-  const [question, setQuestion] = useState("");
-  const questionRef = useRef("");
-  const [entries, setEntries] = useState<AnswerEntry[]>([]);
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    entries,
+    question,
+    pending,
+    error,
+    updateQuestion: chatUpdateQuestion,
+    submitQuestion,
+    newConversation,
+  } = useAnalysisChat();
   const [voiceActive, setVoiceActive] = useState(false);
   const [transcriptionBusy, setTranscriptionBusy] = useState(false);
   const [transcriptionError, setTranscriptionError] = useState<string | null>(null);
   const [recordingWork, setRecordingWork] = useState(false);
-  const requestController = useRef<AbortController | null>(null);
   const transcriptionController = useRef<AbortController | null>(null);
 
   useEffect(() => () => {
-    requestController.current?.abort();
     transcriptionController.current?.abort();
   }, []);
 
   const updateRecordingWork = useCallback((hasWork: boolean) => {
     setRecordingWork(hasWork);
   }, []);
-
-  async function ask(value: string) {
-    const submittedQuestion = value.trim();
-    if (pending || requestController.current || recordingWork || submittedQuestion.length < 3) return;
-
-    const appliedStartDate = startDate;
-    const appliedEndDate = endDate;
-    const body: AnalysisInput = {
-      question: submittedQuestion,
-      start_date: appliedStartDate,
-      end_date: appliedEndDate,
-    };
-    const controller = new AbortController();
-    requestController.current = controller;
-    setPending(true);
-    setError(null);
-    try {
-      const result = await apiRequest<AnalysisOut>(
-        `/households/${encodeURIComponent(household.id)}/analysis/ask`,
-        session.access_token,
-        { method: "POST", body, signal: controller.signal },
-      );
-      if (controller.signal.aborted) return;
-      setEntries((current) => [
-        ...current,
-        {
-          question: submittedQuestion,
-          startDate: appliedStartDate,
-          endDate: appliedEndDate,
-          result,
-        },
-      ]);
-      if (questionRef.current.trim() === submittedQuestion) updateQuestion("");
-    } catch (requestError) {
-      if (!controller.signal.aborted) setError(getErrorText(requestError));
-    } finally {
-      if (requestController.current === controller) {
-        requestController.current = null;
-        if (!controller.signal.aborted) setPending(false);
-      }
-    }
-  }
 
   async function transcribe(audioBase64: string, audioFormat: AudioFormat): Promise<string> {
     const controller = new AbortController();
@@ -255,12 +343,11 @@ export function AskBonwise({
   }
 
   function updateQuestion(value: string) {
-    questionRef.current = value;
-    setQuestion(value);
+    chatUpdateQuestion(value);
   }
 
   function insertTranscript(value: string) {
-    const currentQuestion = questionRef.current;
+    const currentQuestion = question;
     const separator = currentQuestion && !/\s$/.test(currentQuestion) ? " " : "";
     const availableCharacters = Math.max(0, 2000 - currentQuestion.length - separator.length);
     updateQuestion(`${currentQuestion}${separator}${value.slice(0, availableCharacters)}`);
@@ -295,26 +382,36 @@ export function AskBonwise({
 
   function submitTypedQuestion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void ask(question);
+    void submitQuestion(question, startDate, endDate);
+  }
+
+  function startNewConversation() {
+    cancelVoice();
+    newConversation();
   }
 
   return (
     <section className="analysis-ask-panel" aria-labelledby="ask-bonwise-title">
-      <button
-        className="analysis-panel-toggle"
-        type="button"
-        aria-expanded={expanded}
-        aria-controls="ask-bonwise-content"
-        onClick={toggleExpanded}
-      >
-        <span className="analysis-ask-heading">
-          <span className="analysis-panel-title" id="ask-bonwise-title" role="heading" aria-level={2}>Ask Bonwise</span>
-          <span className="analysis-panel-helper">Type or use your voice</span>
-        </span>
-        <svg className="analysis-panel-chevron" aria-hidden="true" viewBox="0 0 20 20">
-          <path d="m5 7.5 5 5 5-5" />
-        </svg>
-      </button>
+      <div className="analysis-ask-header">
+        <button
+          className="analysis-panel-toggle"
+          type="button"
+          aria-expanded={expanded}
+          aria-controls="ask-bonwise-content"
+          onClick={toggleExpanded}
+        >
+          <span className="analysis-ask-heading">
+            <span className="analysis-panel-title" id="ask-bonwise-title" role="heading" aria-level={2}>Ask Bonwise</span>
+            <span className="analysis-panel-helper">Type or use your voice</span>
+          </span>
+          <svg className="analysis-panel-chevron" aria-hidden="true" viewBox="0 0 20 20">
+            <path d="m5 7.5 5 5 5-5" />
+          </svg>
+        </button>
+        <button className="analysis-new-conversation" type="button" onClick={startNewConversation}>
+          New conversation
+        </button>
+      </div>
 
       <div id="ask-bonwise-content" className="analysis-ask-content" hidden={!expanded}>
         <div className="analysis-suggestions" aria-label="Suggested questions">
@@ -376,7 +473,6 @@ export function AskBonwise({
         {pending && <p className="status-message" role="status">Checking confirmed purchases…</p>}
         {error && <p className="analysis-ask-error" role="alert">{error}</p>}
 
-        <p className="analysis-independence-note">Each question is answered independently.</p>
         <form className="analysis-question-form" onSubmit={submitTypedQuestion}>
           {voiceActive ? (
             <span className="analysis-question-label">Your question</span>

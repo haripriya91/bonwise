@@ -6,7 +6,7 @@ import type { Session } from "@supabase/supabase-js";
 import { apiRequest, getErrorText } from "./api/client";
 import type { components } from "./api/types";
 import { hasSupabaseConfig, supabase } from "./auth/supabase";
-import { AskBonwise } from "./analysis/AskBonwise";
+import { AnalysisChatProvider, AskBonwise } from "./analysis/AskBonwise";
 import { CaptureFlow } from "./purchase/CaptureFlow";
 import { DraftReview } from "./purchase/DraftReview";
 import { clearPendingDraftSubmission, getDraftScopeKey, getSourceSnapshotKey } from "./purchase/workflow";
@@ -624,11 +624,11 @@ function App({ queryClient }: { queryClient: QueryClient }) {
 
   async function changeHousehold(householdId: string) {
     if (householdId === selectedHouseholdId || !session) return;
+    setSelectedHouseholdId(householdId);
     await queryClient.cancelQueries({ queryKey: ["user", session.user.id, "household"] });
     queryClient.removeQueries({ queryKey: ["user", session.user.id, "household"] });
     sourceSnapshots.current.clear();
     clearPendingDraftSubmission();
-    setSelectedHouseholdId(householdId);
     if (route.kind === "review") {
       window.history.pushState(null, "", "/");
       setRoute({ kind: "main" });
@@ -679,6 +679,11 @@ function App({ queryClient }: { queryClient: QueryClient }) {
   }
 
   return (
+    <AnalysisChatProvider
+      key={`${session.user.id}:${selectedHousehold?.id ?? ""}`}
+      session={session}
+      householdId={selectedHousehold?.id ?? ""}
+    >
     <div className="app-shell">
       <aside className="sidebar">
         <a className="wordmark" href="#home" onClick={(event) => { event.preventDefault(); setPage("home"); }}>
@@ -786,6 +791,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
         </nav>
       </div>
     </div>
+    </AnalysisChatProvider>
   );
 }
 

@@ -1,5 +1,6 @@
 """Deterministic analysis over confirmed, reconciled purchase snapshots."""
 import unicodedata
+from decimal import Decimal, InvalidOperation
 from typing import get_args
 
 from app.schemas.analysis import EvidenceReference
@@ -85,14 +86,87 @@ def purchase_ref(p, plan, item=None):
         total_cents=item["line_total_cents"] if item else p["total_cents"],
         category=item["category"] if item else None,
         item_description=item["description"] if item else None,
-        item_id=item["id"] if item else None)
+        item_id=item["id"] if item else None,
+        quantity=str(item["quantity"]) if item else None,
+        quantity_unit=item["quantity_unit"] if item else None)
 
 
-def filtered_lines(records, plan):
+def filtered_lines(records, plan, include_other_units=False):
     return [(p, i) for p in records for i in p["items"]
             if (plan.category is None or i["category"] == plan.category)
             and matches(i["description"], plan.product_query, product=True)
-            and matches(p["merchant"], plan.merchant_query)]
+            and matches(p["merchant"], plan.merchant_query)
+            and (include_other_units or getattr(plan, "quantity_unit", None) is None
+                 or i["quantity_unit"] == plan.quantity_unit)]
+
+
+def quantity_text(value):
+    whole, _, fraction = format(value, "f").partition(".")
+    fraction = fraction.rstrip("0")
+    return f"{int(whole):,}".replace(",", ".") + ("," + fraction if fraction else "")
+
+
+def unit_text(unit, value, german):
+    if german:
+        return {"pack": "Packung" if value == 1 else "Packungen",
+                "each": "Stück", "kg": "kg", "l": "Liter"}[unit]
+    return {"pack": "pack" if value == 1 else "packs",
+            "each": "item" if value == 1 else "items", "kg": "kg",
+            "l": "litre" if value == 1 else "litres"}[unit]
+
+
+def quantity_answer(plan, records):
+    de = plan.language == "de"
+    base = {"status": "answered", "evidence": [], "summaries": [],
+            "evidence_truncated": False, "quantity_totals": []}
+    # Gather all matching units before selecting the requested one. Never hide
+    # litres/each or silently treat them as packs.
+    lines = filtered_lines(records, plan, include_other_units=True)
+    if not lines:
+        return {**base, "status": "no_data", "answer": (
+            f"Für diesen Zeitraum sind keine Einkäufe von „{plan.product_query}“ gespeichert."
+            if de else f"No purchases of “{plan.product_query}” are recorded for this period.")}
+    totals = {}
+    try:
+        for _, item in lines:
+            unit = item["quantity_unit"]
+            if unit not in {"pack", "each", "kg", "l"}:
+                raise ValueError("Unknown recorded unit")
+            value = Decimal(str(item["quantity"]))
+            if not value.is_finite() or value <= 0:
+                raise ValueError("Invalid recorded quantity")
+            totals[unit] = totals.get(unit, Decimal("0")) + value
+    except (InvalidOperation, ValueError, TypeError, KeyError):
+        return {**base, "status": "clarification_required", "answer": (
+            "Bei einigen passenden Artikeln fehlt eine gültige Menge oder Einheit. Bitte prüfen Sie die Einkaufsdetails."
+            if de else "Some matching items need their quantity or unit checked. Please review their purchase details.")}
+    base["quantity_totals"] = [{"quantity": format(totals[u].normalize(), "f"),
+                                "quantity_unit": u} for u in sorted(totals)]
+    base["evidence"] = [purchase_ref(p, plan, item) for p, item in lines[:20]]
+    base["evidence_truncated"] = len(lines) > 20
+    requested = plan.quantity_unit
+    def label(unit):
+        return f"{quantity_text(totals[unit])} {unit_text(unit, totals[unit], de)}"
+    if requested is None:
+        quantities = join_names([label(u) for u in sorted(totals)], de)
+        answer = (f"Ihre gespeicherten Einkäufe von „{plan.product_query}“ ergeben {quantities}."
+                  if de else f"Your saved purchases of “{plan.product_query}” total {quantities}.")
+    elif requested in totals:
+        answer = (f"Sie haben {label(requested)} {plan.product_query} gekauft."
+                  if de else f"You bought {label(requested)} of {plan.product_query}.")
+    else:
+        quantities = join_names([label(u) for u in sorted(totals)], de)
+        answer = (f"Gespeichert sind {quantities} „{plan.product_query}“. Die angefragte Einheit ist nicht erfasst."
+                  if de else f"Your purchases show {quantities} of “{plan.product_query}”, but not the requested unit.")
+    others = [label(u) for u in sorted(totals) if requested and u != requested]
+    if requested in totals and others:
+        answer += (" Zusätzlich getrennt erfasst: " if de else " Also recorded separately: ") + join_names(others, de) + "."
+    if requested and others:
+        base["calculation_note"] = (
+            "Unterschiedliche Einheiten werden nicht ineinander umgerechnet; für Packungen fehlt eine verlässliche Größenangabe."
+            if de else "Different units are kept separate. A pack count cannot be inferred from weight or volume without a verified pack size.")
+    base["answer"] = answer
+    return base
 
 
 def execute(plan, records, baseline=None):
@@ -107,6 +181,9 @@ def execute(plan, records, baseline=None):
     if plan.merchant_query:
         qualifier = (f" Für Händler mit „{plan.merchant_query}“ im Namen." if de else
                      f" For stores with “{plan.merchant_query}” in their name.")
+
+    if plan.operation == "quantity":
+        return quantity_answer(plan, records)
 
     if not records:
         return {**base, "status": "no_data", "answer": (
