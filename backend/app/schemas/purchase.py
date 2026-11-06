@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Category = Literal[
     "groceries",
+    "clothing",
     "household",
     "personal_care",
     "transport",

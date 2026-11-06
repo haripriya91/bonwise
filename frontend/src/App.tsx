@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { FormEvent } from "react";
+import type { CSSProperties, FormEvent } from "react";
 import type { QueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import type { Session } from "@supabase/supabase-js";
 import { apiRequest, getErrorText } from "./api/client";
 import type { components } from "./api/types";
 import { hasSupabaseConfig, supabase } from "./auth/supabase";
+import { AskBonwise } from "./analysis/AskBonwise";
 import { CaptureFlow } from "./purchase/CaptureFlow";
 import { DraftReview } from "./purchase/DraftReview";
 import { clearPendingDraftSubmission, getDraftScopeKey, getSourceSnapshotKey } from "./purchase/workflow";
@@ -17,7 +18,7 @@ type HouseholdOption = {
   role: string;
 };
 
-type Page = "home" | "purchases";
+type Page = "home" | "purchases" | "analysis";
 type AppRoute = { kind: "main" } | { kind: "review"; draftId: string };
 type PurchasePage = components["schemas"]["PurchasePage"];
 type Purchase = components["schemas"]["PurchaseOut"];
@@ -26,6 +27,7 @@ type SpendingSummaryData = components["schemas"]["SpendingSummary"];
 
 const categoryLabels: Record<SpendingSummaryData["categories"][number]["category"], string> = {
   groceries: "Groceries",
+  clothing: "Clothing & accessories",
   household: "Household",
   personal_care: "Personal care",
   transport: "Transport",
@@ -260,7 +262,7 @@ function useSpendingSummary(
   });
 }
 
-function HomeSpendingSummary({
+function Analysis({
   session,
   household,
 }: {
@@ -271,6 +273,7 @@ function HomeSpendingSummary({
   const [startDate, setStartDate] = useState(initialRange.start_date);
   const [endDate, setEndDate] = useState(initialRange.end_date);
   const [appliedRange, setAppliedRange] = useState(initialRange);
+  const [overviewExpanded, setOverviewExpanded] = useState(true);
   const rangeError = startDate && endDate && endDate < startDate
     ? "To date must be on or after From date."
     : null;
@@ -287,67 +290,145 @@ function HomeSpendingSummary({
     setAppliedRange({ start_date: startDate, end_date: endDate });
   }
 
+  const categories = data?.categories ?? [];
+  const highestAmount = Math.max(0, ...categories.map(({ total_cents }) => total_cents));
+  const lowestAmount = Math.min(0, ...categories.map(({ total_cents }) => total_cents));
+  const amountRange = highestAmount - lowestAmount;
+  const verticalZero = amountRange > 0 ? highestAmount / amountRange : 1;
+  const horizontalZero = amountRange > 0 ? Math.abs(lowestAmount) / amountRange : 0;
+
   return (
-    <section className="spending-summary" aria-labelledby="spending-summary-title">
-      <div className="spending-summary-heading">
-        <h2 id="spending-summary-title">Spending summary</h2>
-        {data && (
-          <span className="spending-purchase-count">
-            {data.purchase_count} {data.purchase_count === 1 ? "purchase" : "purchases"}
-          </span>
-        )}
-      </div>
-      <form className="spending-date-form" onSubmit={applyDateRange}>
-        <label>
-          <span>From</span>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(event) => setStartDate(event.target.value)}
-            required
-          />
-        </label>
-        <label>
-          <span>To</span>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(event) => setEndDate(event.target.value)}
-            required
-            aria-invalid={Boolean(rangeError)}
-            aria-describedby={rangeError ? "spending-date-error" : undefined}
-          />
-        </label>
-        <button className="button button-primary spending-apply-button" type="submit" disabled={Boolean(rangeError) || !startDate || !endDate}>
-          Apply
-        </button>
-      </form>
-      {rangeError && <p className="spending-date-error" id="spending-date-error" role="alert">{rangeError}</p>}
-      {isPending && <p className="status-message" role="status">Loading spending summary…</p>}
-      {error && (
-        <div className="error-block" role="alert">
-          <p>{getErrorText(error)}</p>
-          <button className="button button-outline" onClick={() => void refetch()} disabled={isFetching}>
-            {isFetching ? "Trying again…" : "Try again"}
-          </button>
+    <section className="page-section analysis-page" aria-labelledby="spending-summary-title">
+      <header className="analysis-page-heading">
+        <div className="analysis-page-title">
+          <p className="analysis-eyebrow">Spending insights · confirmed purchases</p>
+          <h1 id="spending-summary-title">Spending analysis</h1>
         </div>
-      )}
-      {data && (
-        <>
-          <div className="spending-summary-total">
-            <span>Total spending</span>
-            <strong>{formatAmount(data.total_cents)}</strong>
+        <div className="analysis-period-controls">
+          <form className="spending-date-form" onSubmit={applyDateRange}>
+            <label>
+              <span>From</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(event) => setStartDate(event.target.value)}
+                required
+              />
+            </label>
+            <label>
+              <span>To</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(event) => setEndDate(event.target.value)}
+                required
+                aria-invalid={Boolean(rangeError)}
+                aria-describedby={rangeError ? "spending-date-error" : undefined}
+              />
+            </label>
+            <button className="button button-primary spending-apply-button" type="submit" disabled={Boolean(rangeError) || !startDate || !endDate}>
+              Apply
+            </button>
+          </form>
+          {rangeError && <p className="spending-date-error" id="spending-date-error" role="alert">{rangeError}</p>}
+        </div>
+      </header>
+      <section className="analysis-overview-panel" aria-labelledby="spending-overview-title">
+        <button
+          className="analysis-panel-toggle"
+          type="button"
+          aria-expanded={overviewExpanded}
+          aria-controls="spending-overview-content"
+          onClick={() => setOverviewExpanded((expanded) => !expanded)}
+        >
+          <span className="analysis-panel-title" id="spending-overview-title" role="heading" aria-level={2}>Spending overview</span>
+          {!overviewExpanded && (
+            <span className="analysis-collapsed-summary">
+              <span>
+                {dateFormat.format(new Date(`${appliedRange.start_date}T12:00:00`))} –{" "}
+                {dateFormat.format(new Date(`${appliedRange.end_date}T12:00:00`))}
+              </span>
+              <strong>{data ? formatAmount(data.total_cents) : isPending ? "Loading total…" : "Total unavailable"}</strong>
+            </span>
+          )}
+          <svg className="analysis-panel-chevron" aria-hidden="true" viewBox="0 0 20 20">
+            <path d="m5 7.5 5 5 5-5" />
+          </svg>
+        </button>
+        <div id="spending-overview-content" className="analysis-overview-content" hidden={!overviewExpanded}>
+        {isPending && <p className="status-message" role="status">Loading spending analysis…</p>}
+        {error && (
+          <div className="error-block" role="alert">
+            <p>{getErrorText(error)}</p>
+            <button className="button button-outline" onClick={() => void refetch()} disabled={isFetching}>
+              {isFetching ? "Trying again…" : "Try again"}
+            </button>
           </div>
-          <ul className="spending-category-list" aria-label="Spending by category">
-            {data.categories.map((category) => (
-              <li key={category.category}>
-                <span>{categoryLabels[category.category]}</span>
-                <span>{formatAmount(category.total_cents)}</span>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+        )}
+        {data && (
+          <>
+            <div className="analysis-total-row">
+              <div className="analysis-total">
+                <span>Confirmed spending</span>
+                <strong>{formatAmount(data.total_cents)}</strong>
+              </div>
+              <div className="analysis-purchase-count">
+                <strong>{data.purchase_count}</strong>
+                <span>{data.purchase_count === 1 ? "purchase" : "purchases"}</span>
+              </div>
+            </div>
+            {data.purchase_count === 0 && (
+              <p className="analysis-empty" role="status">No confirmed purchases in this period.</p>
+            )}
+            <section className="analysis-category-surface" aria-labelledby="category-chart-title">
+              <div className="analysis-category-heading">
+                <div>
+                  <h2 id="category-chart-title">Spending by category</h2>
+                  <p>Category totals from confirmed purchases</p>
+                </div>
+                <strong>{formatAmount(categories.reduce((sum, item) => sum + item.total_cents, 0))} total</strong>
+              </div>
+              <ul
+                className="analysis-category-chart"
+                aria-label="Category spending chart"
+                style={{ "--vertical-zero": `${verticalZero * 100}%`, "--horizontal-zero": `${horizontalZero * 100}%` } as CSSProperties}
+              >
+                {categories.map((category) => {
+                  const amount = category.total_cents;
+                  const barSize = amountRange > 0 ? Math.abs(amount) / amountRange * 100 : 0;
+                  const verticalTop = amount >= 0 ? (verticalZero - barSize / 100) * 100 : verticalZero * 100;
+                  const horizontalLeft = amount >= 0 ? horizontalZero * 100 : (horizontalZero - barSize / 100) * 100;
+                  return (
+                    <li className="analysis-category-bar" key={category.category}>
+                      <strong className="analysis-category-amount">{formatAmount(amount)}</strong>
+                      <div className="analysis-bar-plot" aria-hidden="true">
+                        <span className="analysis-zero-axis" />
+                        <span
+                          className={`analysis-bar${amount < 0 ? " negative" : amount === 0 ? " zero" : ""}`}
+                          style={{
+                            "--vertical-top": `${verticalTop}%`,
+                            "--bar-size": `${barSize}%`,
+                            "--horizontal-left": `${horizontalLeft}%`,
+                          } as CSSProperties}
+                        />
+                      </div>
+                      <span className="analysis-category-label">{categoryLabels[category.category]}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+              {isFetching && !isPending && <p className="analysis-refreshing" role="status">Updating analysis…</p>}
+            </section>
+          </>
+        )}
+        </div>
+      </section>
+      <AskBonwise
+        session={session}
+        household={household}
+        startDate={appliedRange.start_date}
+        endDate={appliedRange.end_date}
+      />
     </section>
   );
 }
@@ -439,7 +520,6 @@ function Home({
         householdId={household.id}
         onDraftCreated={onDraftCreated}
       />
-      <HomeSpendingSummary session={session} household={household} />
       <section className="recent-section" aria-labelledby="recent-title">
         <div className="recent-heading">
           <h2 id="recent-title">Recent purchases</h2>
@@ -608,6 +688,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
         <nav className="side-navigation" aria-label="Main navigation">
           <button className={page === "home" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("home")}>Home</button>
           <button className={page === "purchases" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("purchases")}>Purchases</button>
+          <button className={page === "analysis" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("analysis")}>Analysis</button>
         </nav>
         <div className="sidebar-account">
           {meQuery.isPending && <span className="household-loading">Loading household…</span>}
@@ -632,7 +713,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
       <div className="workspace">
         <header className="app-header">
           <span className="topbar-household">{selectedHousehold?.name ?? "Your household"}</span>
-          <span className="topbar-page">{page === "home" ? "Home" : "Purchases"}</span>
+          <span className="topbar-page">{page === "home" ? "Home" : page === "purchases" ? "Purchases" : "Analysis"}</span>
           <div className="mobile-account-controls">
             {selectedHousehold && households.length > 1 && (
               <label className="household-select-label">
@@ -690,10 +771,18 @@ function App({ queryClient }: { queryClient: QueryClient }) {
           {selectedHousehold && route.kind === "main" && page === "purchases" && (
             <Purchases session={session} household={selectedHousehold} />
           )}
+          {selectedHousehold && route.kind === "main" && page === "analysis" && (
+            <Analysis
+              key={`${session.user.id}:${selectedHousehold.id}`}
+              session={session}
+              household={selectedHousehold}
+            />
+          )}
         </main>
         <nav className="mobile-navigation" aria-label="Main navigation">
           <button className={page === "home" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("home")}>Home</button>
           <button className={page === "purchases" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("purchases")}>Purchases</button>
+          <button className={page === "analysis" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("analysis")}>Analysis</button>
         </nav>
       </div>
     </div>

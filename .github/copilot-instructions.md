@@ -11,8 +11,10 @@ frontend work only. Read existing repository instructions before changes.
 - Generate frontend/src/api/types.ts from OpenAPI. Use actual schema names.
   UI-only form/view state is allowed when explicitly mapped to API fields.
 - Build only working features requested in the task. No fake budgets, offers,
-  charts, success statuses, confidence scores or duplicate-check results.
-- Today's navigation: Home and Purchases. Roadmap pages stay out of production UI.
+  trends, success statuses, confidence scores or duplicate-check results. Charts
+  must use real API data.
+- Supported navigation: Home, Purchases and Analysis. Other roadmap pages stay
+  out of production UI.
 - Preserve existing backend behavior, dependency locks and frontend configuration.
   Explain important decisions before editing. Never print secrets or open .env files
   to extract values; use documented variable names and .env.example instead.
@@ -54,8 +56,9 @@ frontend work only. Read existing repository instructions before changes.
   use a high-contrast token such as muted for essential control outlines.
 
 ## Data, privacy and trust
-- Category enum: groceries, household, personal_care, transport, dining_out, other.
-  Labels: Groceries, Household, Personal care, Transport, Dining out, Other.
+- Category enum: groceries, clothing, household, personal_care, transport,
+  dining_out, other. Labels: Groceries, Clothing & accessories, Household,
+  Personal care, Transport, Dining out, Other.
 - Display amounts using Intl.NumberFormat('de-DE', {style:'currency',currency:'EUR'}).
   Keep integer cents at API boundaries and decimal-string quantities, e.g. 0,578 kg.
 - Parse edited money without floating-point errors; blank means unknown, never 0.

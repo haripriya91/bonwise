@@ -22,8 +22,8 @@ from app.db.base import Base, Record
 
 
 CATEGORY_CHECK = (
-    "category IN ('groceries','household','personal_care',"
-    "'transport','dining_out','other')"
+    "category IN ('groceries','clothing','household',"
+    "'personal_care','transport','dining_out','other')"
 )
 
 # Reference only. Supabase owns and manages this table.

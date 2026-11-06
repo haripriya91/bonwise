@@ -158,6 +158,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{household_id}/analysis/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ask */
+        post: operations["ask_households__household_id__analysis_ask_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{household_id}/extraction/privacy-preview": {
         parameters: {
             query?: never;
@@ -228,7 +245,61 @@ export interface components {
              * Category
              * @enum {string}
              */
-            category: "groceries" | "household" | "personal_care" | "transport" | "dining_out" | "other";
+            category: "groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other";
+        };
+        /** AnalysisInput */
+        AnalysisInput: {
+            /** Question */
+            question: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+        };
+        /** AnalysisOut */
+        AnalysisOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "answered" | "clarification_required" | "unsupported" | "no_data";
+            /** Answer */
+            answer: string;
+            /** Evidence */
+            evidence: components["schemas"]["EvidenceReference"][];
+            /** Summaries */
+            summaries: components["schemas"]["SpendingSummary"][];
+            /** Evidence Truncated */
+            evidence_truncated: boolean;
+            /** Tool Activity */
+            tool_activity: components["schemas"]["ToolActivity"][];
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /** Model */
+            model: string;
+            /** Model Calls */
+            model_calls: number;
+            /** Model Latency Ms */
+            model_latency_ms: number;
+            /** Latency Ms */
+            latency_ms: number;
+            /** Usage */
+            usage: {
+                [key: string]: number;
+            };
+            /** Trace Sent */
+            trace_sent: boolean;
+            /** Calculation Note */
+            calculation_note?: string | null;
         };
         /** ConfirmDraft */
         ConfirmDraft: {
@@ -290,6 +361,42 @@ export interface components {
             revision: string;
             content: components["schemas"]["PurchaseContent-Input"];
         };
+        /** EvidenceReference */
+        EvidenceReference: {
+            /** Evidence Id */
+            evidence_id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "summary" | "purchase";
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Category */
+            category?: ("groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other") | null;
+            /** Total Cents */
+            total_cents: number;
+            /** Purchase Count */
+            purchase_count?: number | null;
+            /** Purchase Id */
+            purchase_id?: string | null;
+            /** Merchant */
+            merchant?: string | null;
+            /** Purchased On */
+            purchased_on?: string | null;
+            /** Item Description */
+            item_description?: string | null;
+            /** Item Id */
+            item_id?: string | null;
+        };
         /** ExtractedItem */
         ExtractedItem: {
             /** Original Text */
@@ -306,7 +413,7 @@ export interface components {
              * Category
              * @enum {string}
              */
-            category: "groceries" | "household" | "personal_care" | "transport" | "dining_out" | "other";
+            category: "groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other";
         };
         /** ExtractedPurchase */
         ExtractedPurchase: {
@@ -436,7 +543,7 @@ export interface components {
              * Category
              * @enum {string}
              */
-            category: "groceries" | "household" | "personal_care" | "transport" | "dining_out" | "other";
+            category: "groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other";
         };
         /** ItemInput */
         "ItemInput-Output": {
@@ -461,7 +568,7 @@ export interface components {
              * Category
              * @enum {string}
              */
-            category: "groceries" | "household" | "personal_care" | "transport" | "dining_out" | "other";
+            category: "groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other";
         };
         /** ItemOut */
         ItemOut: {
@@ -486,7 +593,7 @@ export interface components {
              * Category
              * @enum {string}
              */
-            category: "groceries" | "household" | "personal_care" | "transport" | "dining_out" | "other";
+            category: "groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other";
             /**
              * Id
              * Format: uuid
@@ -611,7 +718,7 @@ export interface components {
              * Category
              * @enum {string}
              */
-            category: "groceries" | "household" | "personal_care" | "transport" | "dining_out" | "other";
+            category: "groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other";
             /** Total Cents */
             total_cents: number;
         };
@@ -638,6 +745,13 @@ export interface components {
             total_cents: number;
             /** Categories */
             categories: components["schemas"]["SpendingCategoryTotal"][];
+        };
+        /** ToolActivity */
+        ToolActivity: {
+            /** Name */
+            name: string;
+            /** Latency Ms */
+            latency_ms: number;
         };
         /** TranscriptionOut */
         TranscriptionOut: {
@@ -1020,6 +1134,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TranscriptionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_households__household_id__analysis_ask_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnalysisInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisOut"];
                 };
             };
             /** @description Validation Error */

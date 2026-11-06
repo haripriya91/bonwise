@@ -47,6 +47,7 @@ export type PurchaseFormResult = {
 
 export const categories: { value: Category; label: string }[] = [
   { value: "groceries", label: "Groceries" },
+  { value: "clothing", label: "Clothing & accessories" },
   { value: "household", label: "Household" },
   { value: "personal_care", label: "Personal care" },
   { value: "transport", label: "Transport" },

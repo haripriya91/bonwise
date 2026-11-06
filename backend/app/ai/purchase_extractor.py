@@ -16,7 +16,7 @@ from app.schemas.purchase import PurchaseContent
 from app.services.purchases import calculate
 
 
-PROMPT_VERSION = "purchase-extraction-v2"
+PROMPT_VERSION = "purchase-extraction-v3"
 
 PROMPT = """
 Extract structured purchase details from German or English purchase notes,
@@ -46,6 +46,9 @@ Understand German decimal commas and English decimal points.
 Do not infer currency from language alone.
 Leave genuinely unknown fields null instead of inventing values.
 Use the defined category enum. Categories are suggestions; use other if uncertain.
+Use the defined category enum. Categories are suggestions; use other if uncertain.
+Use clothing for clothing, shoes and fashion accessories.
+Use personal_care for toiletries and grooming products.
 Copy printed prices and line amounts. Code performs financial calculations.
 
 Receipt quantity and price semantics:

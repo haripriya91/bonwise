@@ -5,6 +5,38 @@ type AudioFormat = components["schemas"]["TranscriptionRequest"]["audio_format"]
 type PrivacyPreview = components["schemas"]["PrivacyPreview"];
 type RecordingType = { mimeType: string };
 
+type VoiceCaptureCommonProps = {
+  active: boolean;
+  transcript: string;
+  onTranscriptChange: (value: string) => void;
+  onTranscribe: (audioBase64: string, format: AudioFormat) => Promise<string>;
+  onWorkChange: (hasWork: boolean) => void;
+};
+
+type PurchaseVoiceCaptureProps = VoiceCaptureCommonProps & {
+  mode?: "purchase";
+  preview: PrivacyPreview | null;
+  reviewedText: string;
+  acknowledged: boolean;
+  onReviewedTextChange: (value: string) => void;
+  onAcknowledgedChange: (value: boolean) => void;
+  onReviewPrivacy: () => void;
+  onExtract: () => void;
+  onBack: () => void;
+  onEnterText: (transcript: string) => void;
+  busy: "transcription" | "privacy" | "extraction" | null;
+  error: string | null;
+};
+
+type AnalysisVoiceCaptureProps = VoiceCaptureCommonProps & {
+  mode: "question";
+  busy: "transcription" | null;
+  error: string | null;
+  onCancel: () => void;
+};
+
+type VoiceCaptureProps = PurchaseVoiceCaptureProps | AnalysisVoiceCaptureProps;
+
 const maximumAudioBytes = 2_000_000;
 const maximumRecordingSeconds = 60;
 const privacyFindingLabels: Record<string, string> = {
@@ -67,41 +99,12 @@ function formatElapsed(seconds: number): string {
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
-export function VoiceCapture({
-  active,
-  transcript,
-  onTranscriptChange,
-  preview,
-  reviewedText,
-  acknowledged,
-  onReviewedTextChange,
-  onAcknowledgedChange,
-  onTranscribe,
-  onReviewPrivacy,
-  onExtract,
-  onBack,
-  onEnterText,
-  onWorkChange,
-  busy,
-  error,
-}: {
-  active: boolean;
-  transcript: string;
-  onTranscriptChange: (value: string) => void;
-  preview: PrivacyPreview | null;
-  reviewedText: string;
-  acknowledged: boolean;
-  onReviewedTextChange: (value: string) => void;
-  onAcknowledgedChange: (value: boolean) => void;
-  onTranscribe: (audioBase64: string, format: AudioFormat) => Promise<string>;
-  onReviewPrivacy: () => void;
-  onExtract: () => void;
-  onBack: () => void;
-  onEnterText: (transcript: string) => void;
-  onWorkChange: (hasWork: boolean) => void;
-  busy: "transcription" | "privacy" | "extraction" | null;
-  error: string | null;
-}) {
+export function VoiceCapture(props: VoiceCaptureProps) {
+  const { active, transcript, onTranscriptChange, onTranscribe, onWorkChange, busy, error } = props;
+  const isQuestionMode = props.mode === "question";
+  const textAlternative = isQuestionMode
+    ? "or type your question."
+    : "or enter the purchase as text.";
   const [recording, setRecording] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
   const [requestingPermission, setRequestingPermission] = useState(false);
@@ -121,6 +124,7 @@ export function VoiceCapture({
   const captureSequence = useRef(0);
   const transcribing = useRef(false);
   const recorderFailed = useRef(false);
+  const questionCaptureStarted = useRef(false);
 
   useEffect(() => {
     mounted.current = true;
@@ -138,11 +142,12 @@ export function VoiceCapture({
       chunks.current = [];
       if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
       objectUrl.current = null;
+      questionCaptureStarted.current = false;
     };
   }, []);
 
   useEffect(() => {
-    onWorkChange(recording || finalizing || audio !== null);
+    onWorkChange(requestingPermission || recording || finalizing || audio !== null);
   }, [recording, finalizing, requestingPermission, audio, onWorkChange]);
 
   function clearAudio() {
@@ -177,15 +182,21 @@ export function VoiceCapture({
     if (recording) stopRecording();
   }, [active, recording]);
 
+  useEffect(() => {
+    if (props.mode !== "question" || !active || questionCaptureStarted.current) return;
+    questionCaptureStarted.current = true;
+    void startRecording();
+  }, [active, props.mode]);
+
   async function startRecording() {
     setRecordError(null);
     if (!navigator.mediaDevices?.getUserMedia) {
-      setRecordError("Microphone recording is not available in this browser.");
+      setRecordError(`Microphone recording is not available in this browser; ${textAlternative}`);
       return;
     }
     const supportedType = supportedRecordingType();
     if (!supportedType) {
-      setRecordError("This browser does not support a compatible audio recording format.");
+      setRecordError(`This browser does not support a compatible audio recording format; ${textAlternative}`);
       return;
     }
     if (transcript.trim() && !window.confirm("Start a new recording and replace what we heard?")) return;
@@ -228,25 +239,46 @@ export function VoiceCapture({
         if (recorderFailed.current) {
           recorderFailed.current = false;
           setRecordError("Recording stopped because of a microphone error. Please try again.");
+          if (isQuestionMode) {
+            setFinalizing(false);
+            onWorkChange(false);
+          }
           return;
         }
         const format = actualAudioFormat(blob.type);
         if (!format) {
-          setRecordError("The browser produced an unsupported audio container. Try another browser or enter the purchase as text.");
+          setRecordError(`The browser produced an unsupported audio container. Try another browser, ${textAlternative}`);
+          if (isQuestionMode) {
+            setFinalizing(false);
+            onWorkChange(false);
+          }
           return;
         }
         if (!blob.size) {
           setRecordError("The recording is empty. Please record again.");
+          if (isQuestionMode) {
+            setFinalizing(false);
+            onWorkChange(false);
+          }
           return;
         }
         if (blob.size > maximumAudioBytes) {
           setRecordError("This recording is larger than 2 MB. Please record a shorter note.");
+          if (isQuestionMode) {
+            setFinalizing(false);
+            onWorkChange(false);
+          }
           return;
         }
-        const url = URL.createObjectURL(blob);
-        objectUrl.current = url;
-        setAudio(blob);
-        setAudioUrl(url);
+        if (isQuestionMode) {
+          setFinalizing(true);
+          void transcribeAudio(blob);
+        } else {
+          const url = URL.createObjectURL(blob);
+          objectUrl.current = url;
+          setAudio(blob);
+          setAudioUrl(url);
+        }
       };
       mediaRecorder.start();
       if (transcript.trim()) onTranscriptChange("");
@@ -272,24 +304,36 @@ export function VoiceCapture({
       if (activeRecorder && activeRecorder.state !== "inactive") activeRecorder.stop();
       finishTracks();
       if (failure instanceof DOMException && failure.name === "NotAllowedError") {
-        setRecordError("Microphone access was denied. Allow microphone access in your browser settings, or enter the purchase as text.");
+        setRecordError(`Microphone access was denied. Allow microphone access in your browser settings, ${textAlternative}`);
       } else if (failure instanceof DOMException && (failure.name === "NotFoundError" || failure.name === "DevicesNotFoundError")) {
-        setRecordError("No microphone was found. Connect a microphone, or enter the purchase as text.");
+        setRecordError(`No microphone was found. Connect a microphone, ${textAlternative}`);
       } else if (failure instanceof DOMException && failure.name === "NotSupportedError") {
-        setRecordError("This browser cannot record in a compatible audio format. Try another browser or enter the purchase as text.");
+        setRecordError(`This browser cannot record in a compatible audio format. Try another browser, ${textAlternative}`);
       } else {
-        setRecordError("The microphone could not be started. Check browser permissions and try again.");
+        setRecordError(`The microphone could not be started. Check browser permissions and try again, ${textAlternative}`);
       }
+      if (isQuestionMode) onWorkChange(false);
     } finally {
       if (mounted.current && requestId === microphoneRequestId.current) setRequestingPermission(false);
     }
   }
 
-  async function transcribe() {
-    if (!audio || busy !== null || transcribing.current) return;
-    const format = actualAudioFormat(audio.type);
+  async function transcribeAudio(recordingBlob: Blob) {
+    if (busy !== null || transcribing.current) {
+      if (isQuestionMode) {
+        setRecordError("A transcription is already in progress. Please try again when it finishes.");
+        setFinalizing(false);
+        onWorkChange(false);
+      }
+      return;
+    }
+    const format = actualAudioFormat(recordingBlob.type);
     if (!format) {
       setRecordError("The recording format is not supported. Please record again.");
+      if (isQuestionMode) {
+        setFinalizing(false);
+        onWorkChange(false);
+      }
       return;
     }
     const sequence = ++captureSequence.current;
@@ -297,7 +341,7 @@ export function VoiceCapture({
     try {
       let base64: string;
       try {
-        base64 = await blobToBase64(audio);
+        base64 = await blobToBase64(recordingBlob);
       } catch {
         if (mounted.current && sequence === captureSequence.current) {
           setRecordError("The recording could not be prepared for upload. It is still available to retry.");
@@ -309,12 +353,20 @@ export function VoiceCapture({
       if (!mounted.current || sequence !== captureSequence.current) return;
       onTranscriptChange(result);
       clearAudio();
+      onWorkChange(false);
       setRecordError(null);
     } catch {
-      // The parent displays authenticated transcription errors; keep the recording for a deliberate retry.
+      // The parent displays authenticated transcription errors.
     } finally {
       transcribing.current = false;
+      if (isQuestionMode && mounted.current) setFinalizing(false);
+      if (isQuestionMode) onWorkChange(false);
     }
+  }
+
+  async function transcribe() {
+    if (!audio) return;
+    await transcribeAudio(audio);
   }
 
   function recordAgain() {
@@ -325,9 +377,54 @@ export function VoiceCapture({
     onTranscriptChange("");
   }
 
-  function enterText() {
-    onEnterText(transcript);
+  if (props.mode === "question") {
+    return (
+      <div className="analysis-voice-capture" role="group" aria-label="Voice recording controls">
+        {requestingPermission && (
+          <>
+            <span role="status">Waiting for microphone permission…</span>
+            <button className="button button-outline" type="button" onClick={props.onCancel}>Cancel</button>
+          </>
+        )}
+        {recording && (
+          <>
+            <span className="analysis-recording-timer" role="timer" aria-label={`Recording ${formatElapsed(elapsedSeconds)}`}>
+              {formatElapsed(elapsedSeconds)}
+            </span>
+            <button className="button button-primary" type="button" onClick={stopRecording}>Stop</button>
+            <button className="button button-outline" type="button" onClick={props.onCancel}>Cancel</button>
+          </>
+        )}
+        {finalizing && (
+          <>
+            <span role="status">{busy === "transcription" ? "Transcribing…" : "Finishing recording…"}</span>
+            <button className="button button-outline" type="button" onClick={props.onCancel}>Cancel</button>
+          </>
+        )}
+        {!requestingPermission && !recording && !finalizing && (
+          <>
+            {(recordError || error) && <span className="workflow-error" role="alert">{recordError ?? error}</span>}
+            <button className="button button-outline" type="button" onClick={() => void startRecording()} disabled={busy !== null}>
+              Try recording again
+            </button>
+            <button className="button button-outline" type="button" onClick={props.onCancel}>Cancel</button>
+          </>
+        )}
+      </div>
+    );
   }
+
+  const {
+    preview,
+    reviewedText,
+    acknowledged,
+    onReviewedTextChange,
+    onAcknowledgedChange,
+    onReviewPrivacy,
+    onExtract,
+    onBack,
+    onEnterText,
+  } = props;
 
   return (
     <section className="workflow-surface voice-capture" aria-labelledby="voice-capture-title">
@@ -419,7 +516,7 @@ export function VoiceCapture({
         <button className="button button-outline" type="button" onClick={onBack} disabled={busy === "privacy" || busy === "extraction"}>
           Back
         </button>
-        <button className="text-link" type="button" onClick={enterText} disabled={busy !== null}>
+        <button className="text-link" type="button" onClick={() => onEnterText(transcript)} disabled={busy !== null}>
           Enter as text
         </button>
       </div>
