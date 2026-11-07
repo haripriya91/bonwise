@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Session } from "@supabase/supabase-js";
 import { apiRequest, ApiError, getErrorText } from "../api/client";
 import type { components } from "../api/types";
+import { AuthenticatedReceiptImage } from "./AuthenticatedReceiptImage";
 import type { SourceContext } from "./workflow";
 import { PurchaseEditor } from "./PurchaseEditor";
 import { formFromDraft, moneyFormat, purchaseFormSignature, validatePurchaseForm } from "./purchaseForm";
@@ -19,29 +20,39 @@ export function DraftReview({
   householdId,
   draftId,
   source,
+  initialReceiptError,
+  requiresReviewOnLoad = false,
+  initialKeepReceipt,
   onBackToPurchases,
   onReenterSource,
+  onViewPurchase,
 }: {
   session: Session;
   householdId: string;
   draftId: string;
   source: SourceContext | undefined;
+  initialReceiptError?: string;
+  requiresReviewOnLoad?: boolean;
+  initialKeepReceipt?: boolean;
   onBackToPurchases: () => void;
   onReenterSource: () => void;
+  onViewPurchase: (purchaseId: string) => void;
 }) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<PurchaseForm | null>(null);
   const [baseline, setBaseline] = useState<PurchaseForm | null>(null);
   const [reviewAttempted, setReviewAttempted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialReceiptError ?? null);
   const [conflict, setConflict] = useState(false);
-  const [requiresReview, setRequiresReview] = useState(false);
+  const [requiresReview, setRequiresReview] = useState(requiresReviewOnLoad);
   const [hasReviewed, setHasReviewed] = useState(false);
+  const [keepReceipt, setKeepReceipt] = useState(false);
   const [confirmUncertain, setConfirmUncertain] = useState(false);
   const [busy, setBusy] = useState<"reload" | "save" | "confirm" | null>(null);
   const [confirmedPurchase, setConfirmedPurchase] = useState<components["schemas"]["PurchaseOut"] | null>(null);
   const requestController = useRef<AbortController | null>(null);
   const loadedRevision = useRef<string | null>(null);
+  const initializedDraft = useRef(false);
   const uncertainRevision = useRef<string | null>(null);
   const draftQueryKey = ["user", session.user.id, "household", householdId, "draft", draftId] as const;
 
@@ -64,9 +75,16 @@ export function DraftReview({
     setForm(initial);
     setBaseline(initial);
     setReviewAttempted(false);
-    setRequiresReview(false);
+    if (!initializedDraft.current) {
+      initializedDraft.current = true;
+      setKeepReceipt(draft.receipt_available || (initialKeepReceipt ?? source?.type === "image"));
+      setRequiresReview(requiresReviewOnLoad);
+      setError(initialReceiptError ?? null);
+    } else {
+      setRequiresReview(false);
+    }
     setHasReviewed(false);
-  }, [draftQuery.data, source]);
+  }, [draftQuery.data, source, initialReceiptError, requiresReviewOnLoad, initialKeepReceipt]);
 
   useEffect(() => () => requestController.current?.abort(), []);
 
@@ -106,6 +124,78 @@ export function DraftReview({
     return controller;
   }
 
+  async function synchronizeReceipt(draft: DraftOut, signal: AbortSignal): Promise<DraftOut> {
+    if (draft.receipt_available === keepReceipt) return draft;
+    let updated: DraftOut;
+    if (keepReceipt) {
+      if (source?.type !== "image") {
+        throw new Error("The reviewed image is unavailable. It cannot be attached to this draft.");
+      }
+      updated = await apiRequest<DraftOut>(
+        `/households/${encodeURIComponent(householdId)}/purchase-drafts/${encodeURIComponent(draftId)}/receipt`,
+        session.access_token,
+        {
+          method: "PUT",
+          body: {
+            revision: draft.revision,
+            image_base64: source.imageBase64,
+            source_sha256: source.sourceSha256,
+            privacy_reviewed: true,
+          },
+          signal,
+        },
+      );
+    } else {
+      updated = await apiRequest<DraftOut>(
+        `/households/${encodeURIComponent(householdId)}/purchase-drafts/${encodeURIComponent(draftId)}/receipt`,
+        session.access_token,
+        { method: "DELETE", body: { revision: draft.revision }, signal },
+      );
+    }
+    if (
+      updated.id !== draftId
+      || updated.household_id !== householdId
+      || updated.receipt_available !== keepReceipt
+    ) {
+      throw new Error("The receipt response did not confirm the requested change for this household and draft.");
+    }
+    queryClient.setQueryData(draftQueryKey, updated);
+    loadedRevision.current = updated.revision;
+    setKeepReceipt(updated.receipt_available);
+    return updated;
+  }
+
+  async function refreshAfterReceiptUncertainty(controller: AbortController) {
+    setConflict(true);
+    setRequiresReview(true);
+    setHasReviewed(false);
+    setError("The receipt change could not be confirmed. Reloading the latest draft before any retry.");
+    try {
+      const latest = await apiRequest<DraftOut>(
+        `/households/${encodeURIComponent(householdId)}/purchase-drafts/${encodeURIComponent(draftId)}`,
+        session.access_token,
+        { signal: controller.signal },
+      );
+      if (controller.signal.aborted) return;
+      if (latest.id !== draftId || latest.household_id !== householdId) {
+        setError("The refreshed draft does not match this household. Reload before continuing.");
+        return;
+      }
+      queryClient.setQueryData(draftQueryKey, latest);
+      loadedRevision.current = latest.revision;
+      const latestForm = formFromDraft(latest.content, source?.receiptLineTotalsCents);
+      setForm(latestForm);
+      setBaseline(latestForm);
+      setKeepReceipt(latest.receipt_available);
+      setConflict(false);
+      setRequiresReview(true);
+      setError("The latest draft is loaded. Review it before retrying the receipt change or confirming.");
+    } catch (refreshError) {
+      if (isAbort(refreshError)) return;
+      setError(`The receipt change could not be confirmed, and the latest draft could not be loaded: ${getErrorText(refreshError)}`);
+    }
+  }
+
   async function reloadAfterConflict() {
     const controller = startRequest("reload");
     try {
@@ -127,6 +217,7 @@ export function DraftReview({
       const latestForm = formFromDraft(result.data.content, source?.receiptLineTotalsCents);
       setForm(latestForm);
       setBaseline(latestForm);
+      setKeepReceipt(result.data.receipt_available);
       setReviewAttempted(false);
       setConflict(false);
       setRequiresReview(true);
@@ -148,8 +239,9 @@ export function DraftReview({
     if (result.errors.length > 0) return;
 
     const controller = startRequest("save");
+    let attachmentChangeAttempted = false;
     try {
-      const updated = await apiRequest<DraftOut>(
+      let updated = await apiRequest<DraftOut>(
         `/households/${encodeURIComponent(householdId)}/purchase-drafts/${encodeURIComponent(draftId)}`,
         session.access_token,
         {
@@ -170,13 +262,23 @@ export function DraftReview({
       setBaseline(savedForm);
       setReviewAttempted(false);
       setRequiresReview(false);
-      setHasReviewed(true);
       setConflict(false);
       setConfirmUncertain(false);
       uncertainRevision.current = null;
+      attachmentChangeAttempted = updated.receipt_available !== keepReceipt;
+      updated = await synchronizeReceipt(updated, controller.signal);
+      if (controller.signal.aborted) return;
+      setHasReviewed(true);
       setError(null);
     } catch (requestError) {
       if (isAbort(requestError)) return;
+      if (attachmentChangeAttempted) {
+        const status = requestError instanceof ApiError ? requestError.status : undefined;
+        if (status === undefined || status === 409 || status >= 500) {
+          await refreshAfterReceiptUncertainty(controller);
+          return;
+        }
+      }
       if (requestError instanceof ApiError && requestError.status === 409) {
         setConflict(true);
         setRequiresReview(true);
@@ -329,7 +431,22 @@ export function DraftReview({
             <strong>Purchase confirmed</strong>
             <span>{confirmedPurchase.merchant?.trim() || "Purchase"} · {moneyFormat.format(confirmedPurchase.total_cents / 100)}</span>
           </div>
-          <button className="button button-primary" onClick={onBackToPurchases}>View purchases</button>
+          <button className="button button-primary" onClick={() => onViewPurchase(confirmedPurchase.id)}>View purchase details</button>
+        </div>
+      )}
+
+      {data.status === "confirmed" && !confirmedPurchase && (
+        <div className="confirmed-notice" role="status">
+          <div>
+            <strong>Purchase confirmed</strong>
+            <span>{data.content.merchant?.trim() || "Purchase"} · {moneyFormat.format(data.calculated_total_cents / 100)}</span>
+          </div>
+          <button
+            className="button button-primary"
+            onClick={() => data.purchase_id ? onViewPurchase(data.purchase_id) : onBackToPurchases()}
+          >
+            {data.purchase_id ? "View purchase details" : "Back to purchases"}
+          </button>
         </div>
       )}
 
@@ -338,6 +455,33 @@ export function DraftReview({
           The reviewed source is unavailable in this session. It cannot be retrieved or reconstructed from the draft. Return Home to provide and review the source again.
           <button className="text-link" onClick={onReenterSource}>Return Home to review the source again</button>
         </div>
+      )}
+
+      {data.receipt_available && (
+        <section className="draft-receipt-preview" aria-labelledby="draft-receipt-title">
+          <h2 id="draft-receipt-title">Saved reviewed receipt</h2>
+          <AuthenticatedReceiptImage
+            session={session}
+            path={`/households/${encodeURIComponent(householdId)}/purchase-drafts/${encodeURIComponent(draftId)}/receipt`}
+            alt="Saved reviewed receipt"
+          />
+        </section>
+      )}
+
+      {data.receipt_available && source?.type !== "image" && !readOnly && (
+        <label className="receipt-keep-option receipt-existing-toggle">
+          <input
+            type="checkbox"
+            checked={keepReceipt}
+            onChange={(event) => {
+              setKeepReceipt(event.target.checked);
+              setHasReviewed(false);
+              setError(null);
+            }}
+            disabled={busy !== null || conflict}
+          />
+          <span>Keep this reviewed receipt with this purchase</span>
+        </label>
       )}
 
       {form && (
@@ -356,6 +500,15 @@ export function DraftReview({
             totalLabel="Calculated total"
             totalCents={dirty ? result.calculatedTotalCents ?? data.calculated_total_cents : data.calculated_total_cents}
             totalAwaiting={dirty}
+            keepReceipt={source?.type === "image" ? keepReceipt : undefined}
+            onKeepReceiptChange={source?.type === "image"
+              ? (keep) => {
+                setKeepReceipt(keep);
+                setHasReviewed(false);
+                setError(null);
+              }
+              : undefined}
+            receiptOptionDisabled={busy !== null || conflict || readOnly}
           >
             {reviewAttempted && result.errors.length > 0 && (
               <div className="validation-errors" role="alert">

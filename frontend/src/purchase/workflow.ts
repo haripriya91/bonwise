@@ -11,7 +11,13 @@ type PendingSubmission = {
 export type SourceContext =
   | { type: "text"; text: string; receiptLineTotalsCents: (number | null)[] }
   | { type: "voice"; text: string; receiptLineTotalsCents: (number | null)[] }
-  | { type: "image"; dataUrl: string; receiptLineTotalsCents: (number | null)[] };
+  | {
+    type: "image";
+    dataUrl: string;
+    imageBase64: string;
+    sourceSha256: string;
+    receiptLineTotalsCents: (number | null)[];
+  };
 
 const pendingSubmissions = new Map<string, PendingSubmission>();
 

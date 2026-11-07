@@ -192,6 +192,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{household_id}/purchases/{purchase_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Details */
+        get: operations["details_households__household_id__purchases__purchase_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/purchases/{purchase_id}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Receipt */
+        get: operations["receipt_households__household_id__purchases__purchase_id__receipt_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/purchase-drafts/{draft_id}/receipt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Draft Receipt */
+        get: operations["draft_receipt_households__household_id__purchase_drafts__draft_id__receipt_get"];
+        /** Attach */
+        put: operations["attach_households__household_id__purchase_drafts__draft_id__receipt_put"];
+        post?: never;
+        /** Remove */
+        delete: operations["remove_households__household_id__purchase_drafts__draft_id__receipt_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{household_id}/extraction/privacy-preview": {
         parameters: {
             query?: never;
@@ -453,6 +506,11 @@ export interface components {
             warnings: string[];
             /** Purchase Id */
             purchase_id: string | null;
+            /**
+             * Receipt Available
+             * @default false
+             */
+            receipt_available: boolean;
         };
         /** DraftUpdate */
         DraftUpdate: {
@@ -705,6 +763,22 @@ export interface components {
             /** Line Total Cents */
             line_total_cents: number;
         };
+        /** LinkedProductOut */
+        LinkedProductOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Brand */
+            brand: string | null;
+            /** Pack Base Quantity */
+            pack_base_quantity: string | null;
+            /** Base Unit */
+            base_unit: string | null;
+        };
         /** PendingAnalysisContext */
         PendingAnalysisContext: {
             /** Target */
@@ -864,6 +938,51 @@ export interface components {
             /** Reported Total Cents */
             reported_total_cents?: number | null;
         };
+        /** PurchaseDetailsOut */
+        PurchaseDetailsOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Household Id
+             * Format: uuid
+             */
+            household_id: string;
+            /**
+             * Draft Id
+             * Format: uuid
+             */
+            draft_id: string;
+            /** Merchant */
+            merchant: string | null;
+            /**
+             * Purchased On
+             * Format: date
+             */
+            purchased_on: string;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "EUR";
+            /** Total Cents */
+            total_cents: number;
+            /** Adjustments */
+            adjustments: components["schemas"]["AdjustmentInput"][];
+            /** Items */
+            items: components["schemas"]["ItemOut"][];
+            /**
+             * Source Type
+             * @enum {string}
+             */
+            source_type: "image" | "text" | "voice" | "seed";
+            /** Receipt Available */
+            receipt_available: boolean;
+            /** Products */
+            products: components["schemas"]["LinkedProductOut"][];
+        };
         /** PurchaseOut */
         PurchaseOut: {
             /**
@@ -920,6 +1039,25 @@ export interface components {
              * @enum {string}
              */
             quantity_unit: "pack" | "each" | "kg" | "l";
+        };
+        /** ReceiptAttachInput */
+        ReceiptAttachInput: {
+            /** Image Base64 */
+            image_base64: string;
+            /**
+             * Privacy Reviewed
+             * @constant
+             */
+            privacy_reviewed: true;
+            /** Revision */
+            revision: string;
+            /** Source Sha256 */
+            source_sha256: string;
+        };
+        /** ReceiptRemoveInput */
+        ReceiptRemoveInput: {
+            /** Revision */
+            revision: string;
         };
         /** SpendingCategoryTotal */
         SpendingCategoryTotal: {
@@ -1413,6 +1551,174 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProductSuggestionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    details_households__household_id__purchases__purchase_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                purchase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseDetailsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    receipt_households__household_id__purchases__purchase_id__receipt_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                purchase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    draft_receipt_households__household_id__purchase_drafts__draft_id__receipt_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/jpeg": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    attach_households__household_id__purchase_drafts__draft_id__receipt_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiptAttachInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_households__household_id__purchase_drafts__draft_id__receipt_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                draft_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiptRemoveInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
                 };
             };
             /** @description Validation Error */

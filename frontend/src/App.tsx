@@ -8,6 +8,7 @@ import type { components } from "./api/types";
 import { hasSupabaseConfig, supabase } from "./auth/supabase";
 import { AnalysisChatProvider, AskBonwise } from "./analysis/AskBonwise";
 import { CaptureFlow } from "./purchase/CaptureFlow";
+import { ConfirmedPurchaseDetails } from "./purchase/ConfirmedPurchaseDetails";
 import { DraftReview } from "./purchase/DraftReview";
 import { clearPendingDraftSubmission, getDraftScopeKey, getSourceSnapshotKey } from "./purchase/workflow";
 import type { SourceContext } from "./purchase/workflow";
@@ -19,7 +20,15 @@ type HouseholdOption = {
 };
 
 type Page = "home" | "purchases" | "analysis";
-type AppRoute = { kind: "main" } | { kind: "review"; draftId: string };
+type AppRoute =
+  | { kind: "main" }
+  | {
+    kind: "review";
+    draftId: string;
+    receiptError?: string;
+    requiresReview?: boolean;
+    keepReviewedReceipt?: boolean;
+  };
 type PurchasePage = components["schemas"]["PurchasePage"];
 type Purchase = components["schemas"]["PurchaseOut"];
 type DraftOut = components["schemas"]["DraftOut"];
@@ -173,54 +182,67 @@ function SignIn({
   );
 }
 
-function PurchaseRow({ purchase }: { purchase: Purchase }) {
+function PurchaseRow({
+  purchase,
+  onViewDetails,
+}: {
+  purchase: Purchase;
+  onViewDetails?: () => void;
+}) {
   const merchant = purchase.merchant?.trim() || "Purchase";
   return (
     <li className="purchase-record">
-      <details className="purchase-details">
-        <summary className="purchase-row">
-          <span className="purchase-description">
-            <span className="purchase-merchant">{merchant}</span>
-            <span className="purchase-date">{dateFormat.format(new Date(`${purchase.purchased_on}T12:00:00`))}</span>
-          </span>
-          <span className="purchase-row-meta">
-            <span className="purchase-total">{formatAmount(purchase.total_cents)}</span>
-            <span className="expand-label">
-              <span className="when-closed">View items</span>
-              <span className="when-open">Hide items</span>
+      <div className={`purchase-record-row${onViewDetails ? " has-details-action" : ""}`}>
+        <details className="purchase-details">
+          <summary className="purchase-row">
+            <span className="purchase-description">
+              <span className="purchase-merchant">{merchant}</span>
+              <span className="purchase-date">{dateFormat.format(new Date(`${purchase.purchased_on}T12:00:00`))}</span>
             </span>
-          </span>
-        </summary>
-        <div className="item-breakdown">
-          <div className="breakdown-header" aria-hidden="true">
-            <span>Item</span>
-            <span>Quantity</span>
-            <span>Unit price</span>
-            <span>Line total</span>
-          </div>
-          <ul className="breakdown-list" aria-label={`${merchant} items`}>
-            {purchase.items.map((item) => (
-              <li className="breakdown-row" key={item.id}>
-                <span className="breakdown-item">{item.original_text}</span>
-                <span data-label="Quantity">{formatQuantity(item.quantity, item.quantity_unit)}</span>
-                <span data-label="Unit price">{formatAmount(item.unit_price_cents)}</span>
-                <span data-label="Line total">{formatAmount(item.line_total_cents)}</span>
-              </li>
-            ))}
-          </ul>
-          {purchase.adjustments.length > 0 && (
-            <ul className="adjustment-list" aria-label={`${merchant} adjustments`}>
-              {purchase.adjustments.map((adjustment, index) => (
-                <li className="adjustment-row" key={`${adjustment.kind}-${adjustment.label}-${index}`}>
-                  <span>{adjustment.label}</span>
-                  <span>{adjustment.kind === "discount" ? "Discount" : "Deposit"}</span>
-                  <span>{formatAmount(adjustment.amount_cents)}</span>
+            <span className="purchase-row-meta">
+              <span className="purchase-total">{formatAmount(purchase.total_cents)}</span>
+              <span className="expand-label">
+                <span className="when-closed">View items</span>
+                <span className="when-open">Hide items</span>
+              </span>
+            </span>
+          </summary>
+          <div className="item-breakdown">
+            <div className="breakdown-header" aria-hidden="true">
+              <span>Item</span>
+              <span>Quantity</span>
+              <span>Unit price</span>
+              <span>Line total</span>
+            </div>
+            <ul className="breakdown-list" aria-label={`${merchant} items`}>
+              {purchase.items.map((item) => (
+                <li className="breakdown-row" key={item.id}>
+                  <span className="breakdown-item">{item.original_text}</span>
+                  <span data-label="Quantity">{formatQuantity(item.quantity, item.quantity_unit)}</span>
+                  <span data-label="Unit price">{formatAmount(item.unit_price_cents)}</span>
+                  <span data-label="Line total">{formatAmount(item.line_total_cents)}</span>
                 </li>
               ))}
             </ul>
-          )}
-        </div>
-      </details>
+            {purchase.adjustments.length > 0 && (
+              <ul className="adjustment-list" aria-label={`${merchant} adjustments`}>
+                {purchase.adjustments.map((adjustment, index) => (
+                  <li className="adjustment-row" key={`${adjustment.kind}-${adjustment.label}-${index}`}>
+                    <span>{adjustment.label}</span>
+                    <span>{adjustment.kind === "discount" ? "Discount" : "Deposit"}</span>
+                    <span>{formatAmount(adjustment.amount_cents)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </details>
+        {onViewDetails && (
+          <button className="text-link purchase-view-details" type="button" onClick={onViewDetails}>
+            View details
+          </button>
+        )}
+      </div>
     </li>
   );
 }
@@ -436,15 +458,33 @@ function Analysis({
 function Purchases({
   session,
   household,
+  selectedPurchaseId,
+  onSelectPurchase,
+  onBackToPurchases,
 }: {
   session: Session;
   household: HouseholdOption;
+  selectedPurchaseId: string | null;
+  onSelectPurchase: (purchaseId: string) => void;
+  onBackToPurchases: () => void;
 }) {
   const [offset, setOffset] = useState(0);
   const { data, error, isPending, isFetching, refetch } = usePurchasePage(session, household, offset);
 
   const total = data?.total ?? 0;
   const pageCount = Math.ceil(total / pageSize);
+
+  if (selectedPurchaseId) {
+    return (
+      <ConfirmedPurchaseDetails
+        key={selectedPurchaseId}
+        session={session}
+        householdId={household.id}
+        purchaseId={selectedPurchaseId}
+        onBack={onBackToPurchases}
+      />
+    );
+  }
 
   return (
     <section className="page-section" aria-labelledby="purchases-title">
@@ -468,7 +508,13 @@ function Purchases({
         {data && data.purchases.length > 0 && (
           <>
             <ul className="purchase-list" aria-label="Purchase history">
-              {data.purchases.map((purchase) => <PurchaseRow key={purchase.id} purchase={purchase} />)}
+              {data.purchases.map((purchase) => (
+                <PurchaseRow
+                  key={purchase.id}
+                  purchase={purchase}
+                  onViewDetails={() => onSelectPurchase(purchase.id)}
+                />
+              ))}
             </ul>
             {pageCount > 1 && (
               <div className="pagination">
@@ -555,6 +601,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
   const [authError, setAuthError] = useState<string | null>(null);
   const [page, setPage] = useState<Page>("home");
   const [route, setRoute] = useState<AppRoute>(currentRoute);
+  const [selectedPurchaseId, setSelectedPurchaseId] = useState<string | null>(null);
   const [selectedHouseholdId, setSelectedHouseholdId] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
@@ -625,6 +672,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
   async function changeHousehold(householdId: string) {
     if (householdId === selectedHouseholdId || !session) return;
     setSelectedHouseholdId(householdId);
+    setSelectedPurchaseId(null);
     await queryClient.cancelQueries({ queryKey: ["user", session.user.id, "household"] });
     queryClient.removeQueries({ queryKey: ["user", session.user.id, "household"] });
     sourceSnapshots.current.clear();
@@ -637,6 +685,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
   }
 
   function navigateToPage(nextPage: Page) {
+    setSelectedPurchaseId(null);
     if (route.kind === "review") {
       window.history.pushState(null, "", "/");
       setRoute({ kind: "main" });
@@ -644,7 +693,13 @@ function App({ queryClient }: { queryClient: QueryClient }) {
     setPage(nextPage);
   }
 
-  function navigateToDraft(draft: DraftOut, source: SourceContext) {
+  function navigateToDraft(
+    draft: DraftOut,
+    source: SourceContext,
+    receiptError?: string,
+    requiresReview?: boolean,
+    keepReviewedReceipt?: boolean,
+  ) {
     if (!selectedHousehold || !session) return;
     clearPendingDraftSubmission(getDraftScopeKey(session.user.id, selectedHousehold.id));
     sourceSnapshots.current.set(
@@ -653,7 +708,16 @@ function App({ queryClient }: { queryClient: QueryClient }) {
     );
     const nextPath = `/review/${encodeURIComponent(draft.id)}`;
     window.history.pushState(null, "", nextPath);
-    setRoute({ kind: "review", draftId: draft.id });
+    setRoute({ kind: "review", draftId: draft.id, receiptError, requiresReview, keepReviewedReceipt });
+  }
+
+  function openPurchaseDetails(purchaseId: string) {
+    if (route.kind === "review") {
+      window.history.pushState(null, "", "/");
+      setRoute({ kind: "main" });
+    }
+    setPage("purchases");
+    setSelectedPurchaseId(purchaseId);
   }
 
   async function signOut() {
@@ -754,14 +818,19 @@ function App({ queryClient }: { queryClient: QueryClient }) {
           )}
           {selectedHousehold && route.kind === "review" && (
             <DraftReview
+              key={`${session.user.id}:${selectedHousehold.id}:${route.draftId}`}
               session={session}
               householdId={selectedHousehold.id}
               draftId={route.draftId}
               source={sourceSnapshots.current.get(
                 getSourceSnapshotKey(session.user.id, selectedHousehold.id, route.draftId),
               )}
+              initialReceiptError={route.receiptError}
+              requiresReviewOnLoad={route.requiresReview}
+              initialKeepReceipt={route.keepReviewedReceipt}
               onBackToPurchases={() => navigateToPage("purchases")}
               onReenterSource={() => navigateToPage("home")}
+              onViewPurchase={openPurchaseDetails}
             />
           )}
           {selectedHousehold && route.kind === "main" && page === "home" && (
@@ -774,7 +843,14 @@ function App({ queryClient }: { queryClient: QueryClient }) {
             />
           )}
           {selectedHousehold && route.kind === "main" && page === "purchases" && (
-            <Purchases session={session} household={selectedHousehold} />
+            <Purchases
+              key={`${session.user.id}:${selectedHousehold.id}`}
+              session={session}
+              household={selectedHousehold}
+              selectedPurchaseId={selectedPurchaseId}
+              onSelectPurchase={setSelectedPurchaseId}
+              onBackToPurchases={() => setSelectedPurchaseId(null)}
+            />
           )}
           {selectedHousehold && route.kind === "main" && page === "analysis" && (
             <Analysis

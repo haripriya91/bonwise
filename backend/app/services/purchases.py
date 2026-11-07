@@ -39,6 +39,16 @@ def digest(value):
     return hashlib.sha256(encoded.encode()).hexdigest()
 
 
+def draft_revision(draft):
+    # Preserve existing revision tokens for drafts without a saved receipt.
+    if not draft.file_sha256:
+        return digest(draft.data["content"])
+    return digest({
+        "content": draft.data["content"],
+        "receipt_sha256": draft.file_sha256,
+    })
+
+
 def calculate(content):
     lines = [
         int(
@@ -161,7 +171,8 @@ def draft_view(db, draft):
         "status": draft.status,
         "source_type": draft.source_type,
         "client_request_id": draft.client_request_id,
-        "revision": digest(draft.data["content"]),
+        "revision": draft_revision(draft),
+        "receipt_available": bool(draft.file_key and draft.file_sha256),
         "content": content.model_dump(mode="json"),
         "calculated_total_cents": total,
         "warnings": warnings,
@@ -281,7 +292,7 @@ def update_draft(db, household_id, user_id, draft_id, body):
                 "Only pending drafts can be edited.",
             )
 
-        if body.revision != digest(draft.data["content"]):
+        if body.revision != draft_revision(draft):
             raise HTTPException(
                 409,
                 "Draft changed. Reload it before editing.",
@@ -303,7 +314,7 @@ def confirm_draft(db, household_id, user_id, draft_id, body):
         require_member(db, household_id, user_id, lock=True)
         draft = load_draft(db, household_id, draft_id, lock=True)
 
-        if body.revision != digest(draft.data["content"]):
+        if body.revision != draft_revision(draft):
             raise HTTPException(
                 409,
                 "Draft changed. Review its current details before confirming.",

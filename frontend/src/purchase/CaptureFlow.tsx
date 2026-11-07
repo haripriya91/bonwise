@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { apiRequest, getErrorText } from "../api/client";
+import { ApiError, apiRequest, getErrorText } from "../api/client";
 import type { components } from "../api/types";
 import { getDraftScopeKey, getPendingDraftSubmission, prepareDraftSubmission } from "./workflow";
 import type { SourceContext } from "./workflow";
@@ -53,7 +53,13 @@ export function CaptureFlow({
 }: {
   session: Session;
   householdId: string;
-  onDraftCreated: (draft: DraftOut, source: SourceContext) => void;
+  onDraftCreated: (
+    draft: DraftOut,
+    source: SourceContext,
+    receiptError?: string,
+    requiresReview?: boolean,
+    keepReviewedReceipt?: boolean,
+  ) => void;
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [step, setStep] = useState<CaptureStep>("image");
@@ -68,6 +74,7 @@ export function CaptureFlow({
   const [extraction, setExtraction] = useState<Extraction | null>(null);
   const [source, setSource] = useState<SourceContext | undefined>();
   const [form, setForm] = useState<PurchaseForm | null>(null);
+  const [keepReceipt, setKeepReceipt] = useState(true);
   const [imageHasWork, setImageHasWork] = useState(false);
   const [voiceHasWork, setVoiceHasWork] = useState(false);
   const [busy, setBusy] = useState<"privacy" | "transcription" | "extraction" | "draft" | null>(null);
@@ -96,6 +103,7 @@ export function CaptureFlow({
     setExtraction(null);
     setSource(undefined);
     setForm(null);
+    setKeepReceipt(true);
     setImageHasWork(false);
     setVoiceHasWork(false);
     setBusy(null);
@@ -279,13 +287,18 @@ export function CaptureFlow({
         { method: "POST", body, signal: request.signal },
       );
       if (request.signal.aborted) return;
+      const reviewedImageBase64 = await imageRequestData(result.source_image_data_url);
+      if (request.signal.aborted) return;
       setExtraction(result);
       setForm(formFromExtraction(result));
       setSource({
         type: "image",
         dataUrl: result.source_image_data_url,
+        imageBase64: reviewedImageBase64,
+        sourceSha256: result.source_sha256,
         receiptLineTotalsCents: result.extracted.items.map((item) => item.line_total_cents),
       });
+      setKeepReceipt(true);
       setShowErrors(true);
       setStep("details");
     } catch (requestError) {
@@ -298,7 +311,7 @@ export function CaptureFlow({
   async function submitDraft(body: DraftCreate) {
     const request = beginRequest("draft");
     try {
-      const draft = await apiRequest<DraftOut>(
+      let draft = await apiRequest<DraftOut>(
         `/households/${encodeURIComponent(householdId)}/purchase-drafts`,
         session.access_token,
         { method: "POST", body, signal: request.signal },
@@ -308,10 +321,63 @@ export function CaptureFlow({
         setError("The reviewed source is no longer available. Return to capture and review the source again.");
         return;
       }
+      let receiptError: string | undefined;
+      let requiresReview = false;
+      if (source.type === "image" && keepReceipt) {
+        try {
+          const attached = await apiRequest<DraftOut>(
+            `/households/${encodeURIComponent(householdId)}/purchase-drafts/${encodeURIComponent(draft.id)}/receipt`,
+            session.access_token,
+            {
+              method: "PUT",
+              body: {
+                revision: draft.revision,
+                image_base64: source.imageBase64,
+                source_sha256: source.sourceSha256,
+                privacy_reviewed: true,
+              },
+              signal: request.signal,
+            },
+          );
+          if (
+            attached.id !== draft.id
+            || attached.household_id !== householdId
+            || !attached.receipt_available
+          ) {
+            throw new Error("The receipt response does not match this household and draft.");
+          }
+          draft = attached;
+        } catch (requestError) {
+          if (isAbort(requestError)) return;
+          receiptError = `The draft was created, but the reviewed receipt was not saved: ${getErrorText(requestError)}`;
+          const status = requestError instanceof ApiError ? requestError.status : undefined;
+          const uncertain = status === undefined || status === 409 || status >= 500;
+          if (uncertain) {
+            requiresReview = true;
+            try {
+              const latest = await apiRequest<DraftOut>(
+                `/households/${encodeURIComponent(householdId)}/purchase-drafts/${encodeURIComponent(draft.id)}`,
+                session.access_token,
+                { signal: request.signal },
+              );
+              if (request.signal.aborted) return;
+              if (latest.id === draft.id && latest.household_id === householdId) {
+                draft = latest;
+                receiptError = "The receipt save could not be confirmed. The latest draft has been loaded; review it before trying again.";
+              } else {
+                receiptError = "The receipt save could not be confirmed, and the refreshed draft did not match this household. Return to Purchases and reload the draft before continuing.";
+              }
+            } catch (refreshError) {
+              if (isAbort(refreshError)) return;
+              receiptError = `The receipt save could not be confirmed, and the latest draft could not be loaded: ${getErrorText(refreshError)}`;
+            }
+          }
+        }
+      }
       onDraftCreated(draft, {
         ...source,
         receiptLineTotalsCents: form.items.map((item) => item.receiptAmountCents),
-      });
+      }, receiptError, requiresReview, source.type === "image" && keepReceipt);
     } catch (requestError) {
       if (!isAbort(requestError)) setError(getErrorText(requestError));
     } finally {
@@ -636,6 +702,9 @@ export function CaptureFlow({
                 disabled={busy !== null}
                 totalLabel="Provisional calculated total"
                 totalCents={result.calculatedTotalCents}
+                keepReceipt={source.type === "image" ? keepReceipt : undefined}
+                onKeepReceiptChange={source.type === "image" ? setKeepReceipt : undefined}
+                receiptOptionDisabled={busy !== null}
               >
                 {error && (
                   <div className="error-block" role="alert">

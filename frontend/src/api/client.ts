@@ -10,6 +10,14 @@ export class ApiError extends Error {
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, "");
 
+type ApiFetchOptions = {
+  method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+  body?: unknown;
+  signal?: AbortSignal;
+  accept?: string;
+  cache?: RequestCache;
+};
+
 function getErrorMessage(body: unknown): string | undefined {
   if (typeof body !== "object" || body === null || !("detail" in body)) {
     return undefined;
@@ -33,15 +41,11 @@ function getErrorMessage(body: unknown): string | undefined {
   return undefined;
 }
 
-export async function apiRequest<T>(
+async function fetchApiResponse(
   path: string,
   accessToken: string,
-  options: {
-    method?: "GET" | "POST" | "PATCH";
-    body?: unknown;
-    signal?: AbortSignal;
-  } = {},
-): Promise<T> {
+  options: ApiFetchOptions,
+): Promise<Response> {
   if (!apiBaseUrl) {
     throw new ApiError("The API URL is not configured.");
   }
@@ -51,12 +55,13 @@ export async function apiRequest<T>(
     response = await fetch(`${apiBaseUrl}${path}`, {
       method: options.method ?? "GET",
       headers: {
-        Accept: "application/json",
+        Accept: options.accept ?? "application/json",
         Authorization: `Bearer ${accessToken}`,
         ...(options.body === undefined ? {} : { "Content-Type": "application/json" }),
       },
       body: options.body === undefined ? undefined : JSON.stringify(options.body),
       signal: options.signal,
+      cache: options.cache,
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
@@ -75,11 +80,34 @@ export async function apiRequest<T>(
     throw new ApiError(message ?? `The request failed (${response.status}).`, response.status);
   }
 
+  return response;
+}
+
+export async function apiRequest<T>(
+  path: string,
+  accessToken: string,
+  options: ApiFetchOptions = {},
+): Promise<T> {
+  const response = await fetchApiResponse(path, accessToken, options);
   if (response.status === 204) {
     return undefined as T;
   }
 
   return (await response.json()) as T;
+}
+
+export async function apiBinaryRequest(
+  path: string,
+  accessToken: string,
+  options: { signal?: AbortSignal } = {},
+): Promise<Blob> {
+  const response = await fetchApiResponse(path, accessToken, {
+    method: "GET",
+    accept: "image/jpeg",
+    cache: "no-store",
+    signal: options.signal,
+  });
+  return response.blob();
 }
 
 export function getErrorText(error: unknown): string {

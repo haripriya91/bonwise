@@ -29,6 +29,31 @@ function issueFor(errors: FieldIssue[], id: string): string | undefined {
   return errors.find((error) => error.id === id)?.message;
 }
 
+function ReceiptKeepControl({
+  checked,
+  disabled,
+  onChange,
+}: {
+  checked: boolean;
+  disabled: boolean;
+  onChange: (keep: boolean) => void;
+}) {
+  return (
+    <div className="receipt-keep-control">
+      <label className="receipt-keep-option">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(event) => onChange(event.target.checked)}
+          disabled={disabled}
+        />
+        <span>Keep this reviewed receipt with this purchase</span>
+      </label>
+      <p>Only the reviewed copy will be saved.</p>
+    </div>
+  );
+}
+
 function FieldError({ id, errors, prefix }: { id: string; errors: FieldIssue[]; prefix: string }) {
   const message = issueFor(errors, id);
   return message ? <span className="field-error" id={`${prefix}-error`}>{message}</span> : null;
@@ -38,10 +63,16 @@ function ReadOnlySource({
   source,
   zoom,
   setZoom,
+  keepReceipt,
+  onKeepReceiptChange,
+  receiptOptionDisabled,
 }: {
   source: SourceContext;
   zoom: number;
   setZoom: (update: (value: number) => number) => void;
+  keepReceipt?: boolean;
+  onKeepReceiptChange?: (keep: boolean) => void;
+  receiptOptionDisabled: boolean;
 }) {
   const image = source.type === "image";
   return (
@@ -55,11 +86,20 @@ function ReadOnlySource({
         </div>
       ) : null}
       {image ? (
-        <div className="review-image-viewport" tabIndex={0} role="region" aria-label="Scrollable reviewed receipt image. Use zoom controls and scroll to read.">
-          <div className="review-image-stage" style={{ width: `${zoom * 100}%` }}>
-            <img src={source.dataUrl} alt="Read-only prepared receipt image sent for extraction" />
+        <>
+          <div className="review-image-viewport" tabIndex={0} role="region" aria-label="Scrollable reviewed receipt image. Use zoom controls and scroll to read.">
+            <div className="review-image-stage" style={{ width: `${zoom * 100}%` }}>
+              <img src={source.dataUrl} alt="Read-only prepared receipt image sent for extraction" />
+            </div>
           </div>
-        </div>
+          {keepReceipt !== undefined && onKeepReceiptChange && (
+            <ReceiptKeepControl
+              checked={keepReceipt}
+              disabled={receiptOptionDisabled}
+              onChange={onKeepReceiptChange}
+            />
+          )}
+        </>
       ) : (
         <pre>{source.text}</pre>
       )}
@@ -199,6 +239,9 @@ export function PurchaseEditor({
   totalLabel = "Calculated total",
   totalCents,
   totalAwaiting = false,
+  keepReceipt,
+  onKeepReceiptChange,
+  receiptOptionDisabled = false,
   children,
 }: {
   form: PurchaseForm;
@@ -213,6 +256,9 @@ export function PurchaseEditor({
   totalLabel?: string;
   totalCents: number | null;
   totalAwaiting?: boolean;
+  keepReceipt?: boolean;
+  onKeepReceiptChange?: (keep: boolean) => void;
+  receiptOptionDisabled?: boolean;
   children?: ReactNode;
 }) {
   const [sourceOpen, setSourceOpen] = useState(false);
@@ -427,9 +473,16 @@ export function PurchaseEditor({
                 </div>
                 <div className="review-image-viewport" tabIndex={0} role="region" aria-label="Scrollable reviewed receipt image. Use zoom controls and scroll to read.">
                   <div className="review-image-stage" style={{ width: `${sourceZoom * 100}%` }}>
-                    <img src={source.dataUrl} alt="Read-only prepared receipt image sent for extraction" />
+                    <img src={source.dataUrl} alt="Reviewed receipt" />
                   </div>
                 </div>
+                {keepReceipt !== undefined && onKeepReceiptChange && (
+                  <ReceiptKeepControl
+                    checked={keepReceipt}
+                    disabled={receiptOptionDisabled}
+                    onChange={onKeepReceiptChange}
+                  />
+                )}
               </div>
             ) : (
               <pre>{source.text}</pre>
@@ -803,7 +856,14 @@ export function PurchaseEditor({
             <h2 id={`${idPrefix}-source-dialog-title`}>{sourceTitle}</h2>
             <button className="button button-outline" type="button" onClick={closeSourceViewer}>Close</button>
           </div>
-          <ReadOnlySource source={source} zoom={sourceZoom} setZoom={setSourceZoom} />
+          <ReadOnlySource
+            source={source}
+            zoom={sourceZoom}
+            setZoom={setSourceZoom}
+            keepReceipt={keepReceipt}
+            onKeepReceiptChange={onKeepReceiptChange}
+            receiptOptionDisabled={receiptOptionDisabled}
+          />
         </dialog>
       )}
     </div>

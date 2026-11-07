@@ -113,6 +113,7 @@ class DraftOut(BaseModel):
     calculated_total_cents: int
     warnings: list[str]
     purchase_id: UUID | None
+    receipt_available: bool = False
 
 
 class ItemOut(ItemInput):

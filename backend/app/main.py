@@ -13,6 +13,7 @@ from app.api.voice_capture import router as voice_capture_router
 from app.api.analysis import router as analysis_router
 
 from app.api.product_matching import router as product_matching_router
+from app.api.purchase_details import router as purchase_details_router
 
 from app.core.config import get_settings
 
@@ -46,6 +47,7 @@ app.include_router(image_capture_router)
 app.include_router(voice_capture_router)
 app.include_router(analysis_router)
 app.include_router(product_matching_router)
+app.include_router(purchase_details_router)
 
 app.add_exception_handler(
     RequestValidationError,
