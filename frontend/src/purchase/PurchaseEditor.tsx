@@ -1,16 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import type { Session } from "@supabase/supabase-js";
+import { ApiError, apiRequest, getErrorText } from "../api/client";
+import type { components } from "../api/types";
 import type { SourceContext } from "./workflow";
 import {
   apiQuantityFromGrams,
   categories,
   lineTotalForItem,
   moneyFormat,
+  newPurchaseItemId,
   parseCents,
   quantityToGrams,
   units,
 } from "./purchaseForm";
 import type { FieldIssue, PurchaseForm } from "./purchaseForm";
+
+type ProductSuggestion = components["schemas"]["ProductSuggestionOut"];
+type ProductCandidate = components["schemas"]["ProductCandidateOut"];
+type ProductSuggestionInput = components["schemas"]["ProductSuggestionInput"];
+
+type ProductSuggestionState =
+  | { status: "loading"; signature: string }
+  | { status: "error"; signature: string; message: string }
+  | { status: "result"; signature: string; result: ProductSuggestion };
 
 function issueFor(errors: FieldIssue[], id: string): string | undefined {
   return errors.find((error) => error.id === id)?.message;
@@ -54,9 +67,130 @@ function ReadOnlySource({
   );
 }
 
+function formatPackageContents(candidate: ProductCandidate): string {
+  const quantity = candidate.pack_base_quantity?.trim().replace(",", ".");
+  if (!quantity || !candidate.base_unit || /^0+(?:\.0+)?$/.test(quantity)) return "Size not recorded";
+  const [whole, fraction] = quantity.split(".");
+  const amount = fraction
+    ? `${whole},${fraction.replace(/0+$/, "")}`.replace(/,$/, "")
+    : whole;
+  return `${amount} ${candidate.base_unit}`;
+}
+
+function ProductCandidateRow({
+  candidate,
+  resultStatus,
+  suggestedProductId,
+  onUseProduct,
+}: {
+  candidate: ProductCandidate;
+  resultStatus: ProductSuggestion["status"];
+  suggestedProductId: string | null | undefined;
+  onUseProduct: (productId: string) => void;
+}) {
+  const isSuggested = resultStatus === "suggested"
+    && (candidate.product_id === suggestedProductId || suggestedProductId == null);
+  const needsReview = resultStatus === "review_required" || candidate.status === "check_details";
+
+  return (
+    <li className="review-product-candidate">
+      <div className="review-product-candidate-facts">
+        <span className={`review-product-badge${needsReview ? " needs-review" : ""}`}>
+          {isSuggested ? "Suggested product" : needsReview ? "Check details" : "Product option"}
+        </span>
+        <strong>{candidate.name_de || candidate.name}</strong>
+        {candidate.brand && <span>{candidate.brand}</span>}
+        <span>{formatPackageContents(candidate)}</span>
+        {candidate.source === "synthetic" && <small>Demo catalogue</small>}
+        {candidate.checks.length > 0 && (
+          <ul className="review-product-checks" aria-label="Product checks">
+            {candidate.checks.map((check, index) => <li key={`${check}-${index}`}>{check}</li>)}
+          </ul>
+        )}
+      </div>
+      <button className="button button-primary review-use-product" type="button" onClick={() => onUseProduct(candidate.product_id)}>
+        Use product
+      </button>
+    </li>
+  );
+}
+
+function ProductSuggestionResults({
+  itemId,
+  result,
+  onUseProduct,
+  onKeepUnmatched,
+}: {
+  itemId: string;
+  result: ProductSuggestion;
+  onUseProduct: (productId: string) => void;
+  onKeepUnmatched: () => void;
+}) {
+  const [showOtherOptions, setShowOtherOptions] = useState(false);
+  const candidates = result.candidates?.slice(0, 3) ?? [];
+  const primaryCandidate = result.suggested_product_id
+    ? candidates.find(({ product_id }) => product_id === result.suggested_product_id) ?? candidates[0]
+    : candidates[0];
+  const otherCandidates = candidates.filter((candidate) => candidate !== primaryCandidate);
+
+  return (
+    <div className="review-product-results" aria-live="polite">
+      {result.status === "no_match" ? (
+        <>
+          <p className="review-product-message">{result.message}</p>
+          <button className="button button-outline review-keep-unmatched" type="button" onClick={onKeepUnmatched}>
+            Keep unmatched
+          </button>
+        </>
+      ) : (
+        <>
+          {primaryCandidate && (
+            <ul className="review-product-candidate-list">
+              <ProductCandidateRow
+                candidate={primaryCandidate}
+                resultStatus={result.status}
+                suggestedProductId={result.suggested_product_id}
+                onUseProduct={onUseProduct}
+              />
+            </ul>
+          )}
+          {otherCandidates.length > 0 && (
+            <>
+              <button
+                className="review-product-options-toggle"
+                type="button"
+                aria-expanded={showOtherOptions}
+                aria-controls={`${itemId}-other-product-options`}
+                onClick={() => setShowOtherOptions((current) => !current)}
+              >
+                {showOtherOptions ? "Hide other options" : `Other options (${otherCandidates.length})`}
+              </button>
+              {showOtherOptions && (
+                <ul className="review-product-candidate-list review-product-other-options" id={`${itemId}-other-product-options`}>
+                  {otherCandidates.map((candidate) => (
+                    <ProductCandidateRow
+                      key={candidate.product_id}
+                      candidate={candidate}
+                      resultStatus={result.status}
+                      suggestedProductId={result.suggested_product_id}
+                      onUseProduct={onUseProduct}
+                    />
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 export function PurchaseEditor({
   form,
   onChange,
+  session,
+  householdId,
   source,
   idPrefix,
   errors,
@@ -69,6 +203,8 @@ export function PurchaseEditor({
 }: {
   form: PurchaseForm;
   onChange: (form: PurchaseForm) => void;
+  session: Session;
+  householdId: string;
   source: SourceContext | undefined;
   idPrefix: string;
   errors: FieldIssue[];
@@ -81,8 +217,17 @@ export function PurchaseEditor({
 }) {
   const [sourceOpen, setSourceOpen] = useState(false);
   const [sourceZoom, setSourceZoom] = useState(1);
+  const [productSuggestions, setProductSuggestions] = useState<Record<string, ProductSuggestionState>>({});
+  const [openProductFinders, setOpenProductFinders] = useState<Set<string>>(() => new Set());
   const sourceDialog = useRef<HTMLDialogElement>(null);
   const sourceTrigger = useRef<HTMLButtonElement>(null);
+  const suggestionControllers = useRef(new Map<string, AbortController>());
+  const currentForm = useRef(form);
+  const currentOwner = useRef({ userId: session.user.id, householdId });
+  const ownerIdentity = JSON.stringify([session.user.id, householdId]);
+  const previousOwnerIdentity = useRef(ownerIdentity);
+  currentForm.current = form;
+  currentOwner.current = { userId: session.user.id, householdId };
   const imageSource = source?.type === "image";
   const voiceSource = source?.type === "voice";
   const sourceTitle = imageSource ? "Reviewed receipt" : voiceSource ? "Reviewed voice transcript" : "Reviewed source text";
@@ -96,6 +241,34 @@ export function PurchaseEditor({
     if (sourceOpen && sourceDialog.current && !sourceDialog.current.open) sourceDialog.current.showModal();
   }, [sourceOpen]);
 
+  useEffect(() => {
+    const itemIds = new Set(form.items.map(({ localId }) => localId));
+    for (const [localId, controller] of suggestionControllers.current) {
+      if (!itemIds.has(localId)) {
+        controller.abort();
+        suggestionControllers.current.delete(localId);
+      }
+    }
+    setProductSuggestions((current) => Object.fromEntries(
+      Object.entries(current).filter(([localId]) => itemIds.has(localId)),
+    ));
+    setOpenProductFinders((current) => new Set([...current].filter((localId) => itemIds.has(localId))));
+  }, [form.items]);
+
+  useEffect(() => () => {
+    suggestionControllers.current.forEach((controller) => controller.abort());
+    suggestionControllers.current.clear();
+  }, []);
+
+  useEffect(() => {
+    if (previousOwnerIdentity.current === ownerIdentity) return;
+    previousOwnerIdentity.current = ownerIdentity;
+    suggestionControllers.current.forEach((controller) => controller.abort());
+    suggestionControllers.current.clear();
+    setProductSuggestions({});
+    setOpenProductFinders(new Set());
+  }, [ownerIdentity]);
+
   function closeSourceViewer() {
     sourceDialog.current?.close();
     setSourceOpen(false);
@@ -107,7 +280,113 @@ export function PurchaseEditor({
   }
 
   function updateItem(index: number, patch: Partial<PurchaseForm["items"][number]>) {
-    update("items", form.items.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item));
+    const item = form.items[index];
+    if (!item) return;
+    const matchingInputChanged =
+      (patch.description !== undefined && patch.description !== item.description) ||
+      (patch.category !== undefined && patch.category !== item.category) ||
+      (patch.unit !== undefined && patch.unit !== item.unit);
+    if (matchingInputChanged) clearProductSuggestion(item.localId, true);
+    update("items", form.items.map((currentItem, itemIndex) => itemIndex === index
+      ? { ...currentItem, ...patch, ...(matchingInputChanged ? { productId: null } : {}) }
+      : currentItem));
+  }
+
+  function clearProductSuggestion(localId: string, closeFinder = false) {
+    suggestionControllers.current.get(localId)?.abort();
+    suggestionControllers.current.delete(localId);
+    setProductSuggestions((current) => {
+      if (!(localId in current)) return current;
+      const next = { ...current };
+      delete next[localId];
+      return next;
+    });
+    if (closeFinder) {
+      setOpenProductFinders((current) => {
+        if (!current.has(localId)) return current;
+        const next = new Set(current);
+        next.delete(localId);
+        return next;
+      });
+    }
+  }
+
+  function suggestionSignature(item: PurchaseForm["items"][number]): string {
+    return JSON.stringify([item.description.trim(), item.category, item.unit]);
+  }
+
+  async function findProduct(item: PurchaseForm["items"][number]) {
+    if (suggestionControllers.current.has(item.localId)) return;
+    const originalText = item.description.trim();
+    if (!originalText || !item.unit) return;
+
+    const signature = suggestionSignature(item);
+    const requestOwner = { userId: session.user.id, householdId };
+    const controller = new AbortController();
+    suggestionControllers.current.set(item.localId, controller);
+    setOpenProductFinders((current) => new Set(current).add(item.localId));
+    setProductSuggestions((current) => ({
+      ...current,
+      [item.localId]: { status: "loading", signature },
+    }));
+
+    const body: ProductSuggestionInput = {
+      original_text: originalText,
+      category: item.category,
+      quantity_unit: item.unit,
+    };
+    const isCurrentRequest = () => {
+      const liveItem = currentForm.current.items.find(({ localId }) => localId === item.localId);
+      return (
+        !controller.signal.aborted &&
+        currentOwner.current.userId === requestOwner.userId &&
+        currentOwner.current.householdId === requestOwner.householdId &&
+        liveItem !== undefined &&
+        suggestionSignature(liveItem) === signature
+      );
+    };
+
+    try {
+      const result = await apiRequest<ProductSuggestion>(
+        `/households/${encodeURIComponent(householdId)}/product-suggestions`,
+        session.access_token,
+        { method: "POST", body, signal: controller.signal },
+      );
+      if (!isCurrentRequest()) return;
+      setProductSuggestions((current) => ({
+        ...current,
+        [item.localId]: { status: "result", signature, result },
+      }));
+    } catch (requestError) {
+      if (!isCurrentRequest()) return;
+      const message = requestError instanceof ApiError && requestError.status === 422
+        ? "Please remove personal details and check the item wording, category, and unit."
+        : requestError instanceof ApiError && (requestError.status === 401 || requestError.status === 403)
+          ? getErrorText(requestError)
+          : "Suggestions unavailable. You can continue without a product link.";
+      setProductSuggestions((current) => ({
+        ...current,
+        [item.localId]: { status: "error", signature, message },
+      }));
+    } finally {
+      if (suggestionControllers.current.get(item.localId) === controller) {
+        suggestionControllers.current.delete(item.localId);
+      }
+    }
+  }
+
+  function useProduct(itemIndex: number, localId: string, productId: string) {
+    updateItem(itemIndex, { productId });
+    clearProductSuggestion(localId, true);
+  }
+
+  function toggleProductFinder(localId: string) {
+    setOpenProductFinders((current) => {
+      const next = new Set(current);
+      if (next.has(localId)) next.delete(localId);
+      else next.add(localId);
+      return next;
+    });
   }
 
   function updateAdjustment(index: number, patch: Partial<PurchaseForm["adjustments"][number]>) {
@@ -204,6 +483,7 @@ export function PurchaseEditor({
                     className="text-link"
                     type="button"
                     onClick={() => update("items", [...form.items, {
+                      localId: newPurchaseItemId(),
                       productId: null,
                       description: "",
                       quantity: "",
@@ -220,6 +500,13 @@ export function PurchaseEditor({
                 )}
               </div>
               {form.items.map((item, index) => {
+                const suggestionState = productSuggestions[item.localId];
+                const activeSuggestionState = suggestionState?.signature === suggestionSignature(item)
+                  ? suggestionState
+                  : undefined;
+                const isFindingOpen = openProductFinders.has(item.localId);
+                const isFinding = activeSuggestionState?.status === "loading";
+                const canFindProduct = Boolean(item.description.trim() && item.unit);
                 const descriptionId = `${idPrefix}-item-description-${index}`;
                 const quantityId = `${idPrefix}-item-quantity-${index}`;
                 const unitId = `${idPrefix}-item-unit-${index}`;
@@ -231,7 +518,7 @@ export function PurchaseEditor({
                 const unitIssue = issueFor(errors, unitId);
                 const priceIssue = issueFor(errors, priceId);
                 return (
-                  <fieldset className="review-item" key={`${idPrefix}-item-${index}`}>
+                  <fieldset className="review-item" key={item.localId}>
                     <legend>Item {index + 1}</legend>
                     <div className="review-item-fields">
                       <div className="review-field item-description-field">
@@ -325,11 +612,77 @@ export function PurchaseEditor({
                         )}
                       </div>
                     </div>
+                    <div className="review-product-suggestion">
+                      {item.productId && !isFindingOpen ? (
+                        <div className="review-product-linked">
+                          <span role="status">Product linked</span>
+                          {!disabled && (
+                            <>
+                              <button type="button" className="review-product-link-action" onClick={() => toggleProductFinder(item.localId)}>
+                                Change
+                              </button>
+                              <button
+                                type="button"
+                                className="review-product-link-action"
+                                onClick={() => {
+                                  updateItem(index, { productId: null });
+                                  clearProductSuggestion(item.localId, true);
+                                }}
+                              >
+                                Remove
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className="button button-outline review-find-product"
+                          onClick={() => void findProduct(item)}
+                          disabled={disabled || isFinding || !canFindProduct}
+                          aria-describedby={`${idPrefix}-product-help-${item.localId}`}
+                          aria-live="polite"
+                        >
+                          {isFinding
+                            ? "Finding products…"
+                            : activeSuggestionState?.status === "error"
+                              ? "Retry"
+                              : "Find product"}
+                        </button>
+                      )}
+                      {(!item.productId || isFindingOpen) && (
+                        <>
+                          <p className="review-product-help" id={`${idPrefix}-product-help-${item.localId}`}>
+                            Item wording is sent to embedding and model providers to suggest products.
+                          </p>
+                          {!canFindProduct && <p className="review-product-help">Enter item wording and choose a unit to search.</p>}
+                          {activeSuggestionState?.status === "error" && (
+                            <div className="review-product-message" role="alert">
+                              <p>{activeSuggestionState.message}</p>
+                            </div>
+                          )}
+                          {activeSuggestionState?.status === "result" && (
+                            <ProductSuggestionResults
+                              itemId={item.localId}
+                              result={activeSuggestionState.result}
+                              onUseProduct={(productId) => useProduct(index, item.localId, productId)}
+                              onKeepUnmatched={() => {
+                                updateItem(index, { productId: null });
+                                clearProductSuggestion(item.localId, true);
+                              }}
+                            />
+                          )}
+                        </>
+                      )}
+                    </div>
                     {!disabled && form.items.length > 1 && (
                       <button
                         className="remove-item"
                         type="button"
-                        onClick={() => update("items", form.items.filter((_, itemIndex) => itemIndex !== index))}
+                        onClick={() => {
+                          clearProductSuggestion(item.localId, true);
+                          update("items", form.items.filter((_, itemIndex) => itemIndex !== index));
+                        }}
                       >
                         Remove item {index + 1}
                       </button>

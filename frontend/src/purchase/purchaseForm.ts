@@ -9,6 +9,7 @@ type Unit = ItemInput["quantity_unit"];
 type Adjustment = components["schemas"]["AdjustmentInput"];
 
 export type PurchaseItemForm = {
+  localId: string;
   productId: string | null;
   description: string;
   quantity: string;
@@ -18,6 +19,13 @@ export type PurchaseItemForm = {
   category: Category;
   receiptAmountCents: number | null;
 };
+
+let nextLocalItemId = 0;
+
+export function newPurchaseItemId(): string {
+  nextLocalItemId += 1;
+  return `purchase-item-${nextLocalItemId}`;
+}
 
 export type PurchaseAdjustmentForm = {
   kind: Adjustment["kind"];
@@ -134,6 +142,7 @@ export function formFromExtraction(extraction: Extraction): PurchaseForm {
         : String(candidateItem.quantity);
       const unit = candidateItem?.quantity_unit ?? item.quantity_unit ?? "";
       return {
+        localId: newPurchaseItemId(),
         productId: null,
         description: candidateItem?.original_text ?? item.original_text,
         quantity: packageCountCorrection(item.original_text, quantity, unit || null),
@@ -159,6 +168,7 @@ export function formFromDraft(content: DraftContent, receiptAmounts: (number | n
     purchasedOn: content.purchased_on,
     reportedTotal: centsInput(content.reported_total_cents),
     items: content.items.map((item, index) => ({
+      localId: newPurchaseItemId(),
       productId: item.product_id ?? null,
       description: item.original_text,
       quantity: item.quantity.replace(".", ","),
@@ -234,7 +244,7 @@ export function validatePurchaseForm(form: PurchaseForm, idPrefix: string): Purc
     if (unitPriceCents === null) addIssue(priceId, `${itemName}: enter ${pricePrompt(item.unit)}.`);
 
     return {
-      ...(item.productId ? { product_id: item.productId } : {}),
+      product_id: item.productId,
       original_text: item.description.trim(),
       quantity: quantity ?? "",
       quantity_unit: item.unit,
@@ -284,7 +294,7 @@ export function validatePurchaseForm(form: PurchaseForm, idPrefix: string): Purc
       purchased_on: form.purchasedOn,
       currency: "EUR",
       items: items.map((item) => ({
-        ...(item.product_id ? { product_id: item.product_id } : {}),
+        product_id: item.product_id,
         original_text: item.original_text,
         quantity: item.quantity,
         quantity_unit: item.quantity_unit as NonNullable<Unit>,

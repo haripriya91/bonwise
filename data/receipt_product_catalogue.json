@@ -1,0 +1,682 @@
+[
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-organic-bananas",
+    "name_de": "Banane Fair Bio",
+    "name_en": "Organic fair-trade bananas",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "base_unit": "kg",
+    "pack_base_quantity": null,
+    "variant": "Organic fair-trade bananas",
+    "variant_code": "banana",
+    "organic": true,
+    "aliases": [
+      "Banane Fair Bio"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-red-sweet-apples",
+    "name_de": "Apfel rot süß",
+    "name_en": "Red sweet apples",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "base_unit": "kg",
+    "pack_base_quantity": null,
+    "variant": "Red sweet apples",
+    "variant_code": "red_sweet_apple",
+    "organic": null,
+    "aliases": [
+      "Apfel rot süß"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-gold-kiwi-three",
+    "name_de": "Kiwi Gold 3er",
+    "name_en": "Gold kiwifruit three-pack",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "base_unit": "each",
+    "pack_base_quantity": "3",
+    "variant": "Gold kiwifruit three-pack",
+    "variant_code": "gold_kiwi",
+    "organic": null,
+    "aliases": [
+      "Kiwi Gold 3er"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-blackberries",
+    "name_de": "Brombeeren",
+    "name_en": "Blackberries",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Blackberries",
+    "variant_code": "blackberry",
+    "organic": null,
+    "aliases": [
+      "Brombeeren"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-raspberries",
+    "name_de": "Himbeeren",
+    "name_en": "Raspberries",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Raspberries",
+    "variant_code": "raspberry",
+    "organic": null,
+    "aliases": [
+      "Himbeeren"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-poultry-mini-wieners",
+    "name_de": "Bio Geflüg. Mini Wien",
+    "name_en": "Organic poultry mini Wiener sausages",
+    "brand": null,
+    "category": "groceries",
+    "family": "meat_poultry",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Organic poultry mini Wiener sausages",
+    "variant_code": "poultry_wiener",
+    "organic": true,
+    "aliases": [
+      "Bio Geflüg.Mini Wien"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-berliner-pastry",
+    "name_de": "Berliner",
+    "name_en": "Berliner pastry",
+    "brand": null,
+    "category": "groceries",
+    "family": "bakery_pastry",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Berliner pastry",
+    "variant_code": "berliner",
+    "organic": null,
+    "aliases": [
+      "Berliner Mehrfr"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-sweet-pastry-box",
+    "name_de": "Süße Stückchenbox",
+    "name_en": "Sweet pastry selection box",
+    "brand": null,
+    "category": "groceries",
+    "family": "bakery_pastry",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Sweet pastry selection box",
+    "variant_code": "pastry_selection",
+    "organic": null,
+    "aliases": [
+      "Süße Stückchenbox"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-avocados-two",
+    "name_de": "Avocado 2er",
+    "name_en": "Avocados two-pack",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "base_unit": "each",
+    "pack_base_quantity": "2",
+    "variant": "Avocados two-pack",
+    "variant_code": "avocado",
+    "organic": null,
+    "aliases": [
+      "Avocado 2er"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-heinz-mayonnaise",
+    "name_de": "Heinz Mayonnaise",
+    "name_en": "Heinz mayonnaise",
+    "brand": "Heinz",
+    "category": "groceries",
+    "family": "pantry_mayonnaise",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Heinz mayonnaise",
+    "variant_code": "mayonnaise",
+    "organic": null,
+    "aliases": [
+      "Heinz Mayonnaise"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-nougat-croissant",
+    "name_de": "Nu. Noug. Crois",
+    "name_en": "Nut nougat croissant",
+    "brand": null,
+    "category": "groceries",
+    "family": "bakery_pastry",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Nut nougat croissant",
+    "variant_code": "nougat_croissant",
+    "organic": null,
+    "aliases": [
+      "Nu. Noug. Crois"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-sweatpants",
+    "name_de": "Sweathose",
+    "name_en": "Sweatpants",
+    "brand": null,
+    "category": "clothing",
+    "family": "clothing_trousers",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Sweatpants",
+    "variant_code": "sweatpants",
+    "organic": null,
+    "aliases": [
+      "Sweathose"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-pomegranate",
+    "name_de": "Granatapfel Stück",
+    "name_en": "Pomegranate",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "base_unit": "each",
+    "pack_base_quantity": "1",
+    "variant": "Pomegranate",
+    "variant_code": "pomegranate",
+    "organic": null,
+    "aliases": [
+      "Granatapfel Stück"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-organic-mini-carrots-200g",
+    "name_de": "Bio-Mini Möh. 200g",
+    "name_en": "Organic mini carrots 200 grams",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetables",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.2",
+    "variant": "Organic mini carrots 200 grams",
+    "variant_code": "mini_carrot",
+    "organic": true,
+    "aliases": [
+      "Bio-Mini Möh. 200g"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-aubergine",
+    "name_de": "Auberginen Stk",
+    "name_en": "Aubergine",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetables",
+    "base_unit": "each",
+    "pack_base_quantity": "1",
+    "variant": "Aubergine",
+    "variant_code": "aubergine",
+    "organic": null,
+    "aliases": [
+      "Auberginen Stk"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-vine-tomatoes-650g",
+    "name_de": "Rispentomaten 650g",
+    "name_en": "Vine tomatoes 650 grams",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetables",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.65",
+    "variant": "Vine tomatoes 650 grams",
+    "variant_code": "vine_tomato",
+    "organic": null,
+    "aliases": [
+      "Rispentomaten 650g"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-hand-mixer-chopper",
+    "name_de": "Handmixer & Zerkleinerer",
+    "name_en": "Hand mixer and chopper",
+    "brand": null,
+    "category": "household",
+    "family": "household_appliance",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Hand mixer and chopper",
+    "variant_code": "hand_mixer_chopper",
+    "organic": null,
+    "aliases": [
+      "Handmixer & Zerkl"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-barn-eggs-ten",
+    "name_de": "Frühstückseier Bodenhaltung 10er",
+    "name_en": "Barn eggs ten-pack",
+    "brand": null,
+    "category": "groceries",
+    "family": "eggs",
+    "base_unit": "each",
+    "pack_base_quantity": "10",
+    "variant": "Barn eggs ten-pack",
+    "variant_code": "barn_eggs",
+    "organic": null,
+    "aliases": [
+      "Frühstückseier Bodenhaltung 10er"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-sun-crest-medjool-907g",
+    "name_de": "Sun Crest Medjool Datteln 907g",
+    "name_en": "Sun Crest Medjool dates 907 grams",
+    "brand": "Sun Crest",
+    "category": "groceries",
+    "family": "produce_dried_fruit",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.907",
+    "variant": "Sun Crest Medjool dates 907 grams",
+    "variant_code": "medjool_date",
+    "organic": null,
+    "aliases": [
+      "Sun Crest Medjool Datteln 907g"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-organic-potatoes",
+    "name_de": "Bio Speisekartoffeln",
+    "name_en": "Organic potatoes",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetables",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Organic potatoes",
+    "variant_code": "potato",
+    "organic": true,
+    "aliases": [
+      "Bio Speisekartoffeln"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-organic-onions",
+    "name_de": "Bioland Zwiebeln",
+    "name_en": "Organic onions",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetables",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Organic onions",
+    "variant_code": "onion",
+    "organic": true,
+    "aliases": [
+      "Bioland Zwiebeln"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-chicken-legs",
+    "name_de": "Hähnchenkeule",
+    "name_en": "Chicken legs",
+    "brand": null,
+    "category": "groceries",
+    "family": "meat_poultry",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Chicken legs",
+    "variant_code": "chicken_leg",
+    "organic": null,
+    "aliases": [
+      "Hähnchenkeule"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-lamb-mini-steaks",
+    "name_de": "Lamm Mini-Steaks",
+    "name_en": "Lamb mini steaks",
+    "brand": null,
+    "category": "groceries",
+    "family": "meat_lamb",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Lamb mini steaks",
+    "variant_code": "lamb_steak",
+    "organic": null,
+    "aliases": [
+      "Lamm Mini-Steaks"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-white-tiger-prawns",
+    "name_de": "White Tiger Garnelen",
+    "name_en": "White tiger prawns",
+    "brand": null,
+    "category": "groceries",
+    "family": "seafood_prawns",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "White tiger prawns",
+    "variant_code": "white_tiger_prawn",
+    "organic": null,
+    "aliases": [
+      "White Tiger Garnelen"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-socks-seven",
+    "name_de": "Socken 7er",
+    "name_en": "Socks seven-pack",
+    "brand": null,
+    "category": "clothing",
+    "family": "clothing_socks",
+    "base_unit": "each",
+    "pack_base_quantity": "7",
+    "variant": "Socks seven-pack",
+    "variant_code": "socks",
+    "organic": null,
+    "aliases": [
+      "Socken 7er"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-spinach-burek",
+    "name_de": "Burek mit Spinat",
+    "name_en": "Spinach burek",
+    "brand": null,
+    "category": "groceries",
+    "family": "bakery_savoury",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Spinach burek",
+    "variant_code": "spinach_burek",
+    "organic": null,
+    "aliases": [
+      "Burek mit Spinat"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-cheese-burek",
+    "name_de": "Burek Käse",
+    "name_en": "Cheese burek",
+    "brand": null,
+    "category": "groceries",
+    "family": "bakery_savoury",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Cheese burek",
+    "variant_code": "cheese_burek",
+    "organic": null,
+    "aliases": [
+      "Burek Käse"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-schnitzel-unspecified",
+    "name_de": "SW-SCHNITZEL",
+    "name_en": "Schnitzel (receipt abbreviation)",
+    "brand": null,
+    "category": "groceries",
+    "family": "meat_schnitzel",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Schnitzel (receipt abbreviation)",
+    "variant_code": "schnitzel",
+    "organic": null,
+    "aliases": [
+      "SW-SCHNITZEL"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-kasseler-neck",
+    "name_de": "KASSELER NACKEN",
+    "name_en": "Kasseler cured pork neck",
+    "brand": null,
+    "category": "groceries",
+    "family": "meat_pork",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Kasseler cured pork neck",
+    "variant_code": "kasseler_neck",
+    "organic": null,
+    "aliases": [
+      "KASSELER NACKEN"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-meat-salad",
+    "name_de": "FLEISCHSALAT",
+    "name_en": "Meat salad",
+    "brand": null,
+    "category": "groceries",
+    "family": "prepared_salad",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Meat salad",
+    "variant_code": "meat_salad",
+    "organic": null,
+    "aliases": [
+      "FLEISCHSALAT"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-oranges-loose",
+    "name_de": "ORANGE",
+    "name_en": "Oranges",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "base_unit": "kg",
+    "pack_base_quantity": null,
+    "variant": "Oranges",
+    "variant_code": "orange",
+    "organic": null,
+    "aliases": [
+      "ORANGE"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-clementines",
+    "name_de": "CLEMENTINE",
+    "name_en": "Clementines",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Clementines",
+    "variant_code": "clementine",
+    "organic": null,
+    "aliases": [
+      "CLEMENTINE"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-red-peppers",
+    "name_de": "PAPRIKA ROT",
+    "name_en": "Red peppers",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetables",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Red peppers",
+    "variant_code": "red_pepper",
+    "organic": null,
+    "aliases": [
+      "PAPRIKA ROT"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-brown-rock-sugar",
+    "name_de": "CANDIS BRAUN",
+    "name_en": "Brown rock sugar",
+    "brand": null,
+    "category": "groceries",
+    "family": "pantry_sugar",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Brown rock sugar",
+    "variant_code": "brown_rock_sugar",
+    "organic": null,
+    "aliases": [
+      "CANDIS BRAUN"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-paper-bag",
+    "name_de": "PAPIERTASCHE",
+    "name_en": "Paper shopping bag",
+    "brand": null,
+    "category": "household",
+    "family": "household_bag",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Paper shopping bag",
+    "variant_code": "paper_bag",
+    "organic": null,
+    "aliases": [
+      "PAPIERTASCHE"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-date-cherry-tomatoes",
+    "name_de": "Dattelcherrytomaten",
+    "name_en": "Date cherry tomatoes",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetables",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Date cherry tomatoes",
+    "variant_code": "date_cherry_tomato",
+    "organic": null,
+    "aliases": [
+      "Dattelcherrytomaten"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-green-pitted-olives",
+    "name_de": "Grüne Oliven o. Kern",
+    "name_en": "Pitted green olives",
+    "brand": null,
+    "category": "groceries",
+    "family": "pantry_olives",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Pitted green olives",
+    "variant_code": "green_pitted_olive",
+    "organic": null,
+    "aliases": [
+      "Grüne Oliven o. Kern"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-fine-peas",
+    "name_de": "Erbsen extra fein",
+    "name_en": "Extra-fine peas",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_peas",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Extra-fine peas",
+    "variant_code": "fine_peas",
+    "organic": null,
+    "aliases": [
+      "Erbsen extra fein"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-sweetcorn",
+    "name_de": "Gemüsemais",
+    "name_en": "Sweetcorn",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_sweetcorn",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Sweetcorn",
+    "variant_code": "sweetcorn",
+    "organic": null,
+    "aliases": [
+      "Gemüsemais"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "receipt-milk-bread-rolls",
+    "name_de": "Milchbrötchen",
+    "name_en": "Milk bread rolls",
+    "brand": null,
+    "category": "groceries",
+    "family": "bakery_bread",
+    "base_unit": null,
+    "pack_base_quantity": null,
+    "variant": "Milk bread rolls",
+    "variant_code": "milk_bread_roll",
+    "organic": null,
+    "aliases": [
+      "Milchbrötchen"
+    ]
+  }
+]

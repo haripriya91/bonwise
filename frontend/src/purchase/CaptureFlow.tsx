@@ -627,6 +627,8 @@ export function CaptureFlow({
               <PurchaseEditor
                 form={form}
                 onChange={setForm}
+                session={session}
+                householdId={householdId}
                 source={source}
                 idPrefix="capture"
                 errors={result.errors}

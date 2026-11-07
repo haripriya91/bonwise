@@ -1753,6 +1753,126 @@ h2 {
   gap: 10px;
 }
 
+.review-product-suggestion {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-line);
+}
+
+.review-product-help,
+.review-product-message {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.review-find-product,
+.review-keep-unmatched,
+.review-use-product {
+  min-height: 44px;
+}
+
+.review-product-linked {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.review-product-link-action,
+.review-product-options-toggle {
+  min-height: 44px;
+  padding: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--color-accent);
+  font: 600 14px/1.3 var(--font-body);
+  cursor: pointer;
+}
+
+.review-product-link-action:hover,
+.review-product-options-toggle:hover {
+  text-decoration: underline;
+}
+
+.review-product-results {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--color-lavender);
+}
+
+.review-product-candidate-list {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review-product-candidate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  min-width: 0;
+}
+
+.review-product-candidate-facts {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+  min-width: 0;
+  color: var(--color-ink);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.review-product-candidate-facts > strong {
+  overflow-wrap: anywhere;
+}
+
+.review-product-candidate-facts > small {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.review-product-badge {
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.review-product-badge.needs-review {
+  color: var(--color-warn-ink);
+}
+
+.review-product-checks {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.review-product-other-options {
+  padding-top: 8px;
+  border-top: 1px solid var(--color-line);
+}
+
 .item-description-field {
   grid-column: 1 / -1;
 }

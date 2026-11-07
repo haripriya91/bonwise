@@ -343,8 +343,11 @@ export function DraftReview({
       {form && (
         <form className="review-form" onSubmit={(event) => { event.preventDefault(); void reviewChanges(); }}>
           <PurchaseEditor
+            key={`${session.user.id}:${householdId}`}
             form={form}
             onChange={updateForm}
+            session={session}
+            householdId={householdId}
             source={source}
             idPrefix="review"
             errors={result.errors}

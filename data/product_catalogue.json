@@ -1,0 +1,110 @@
+[
+  {
+    "code": "milk-whole-1l",
+    "name_de": "Vollmilch 3,5% 1L",
+    "name_en": "Whole milk 3.5% 1 litre",
+    "category": "groceries",
+    "base_unit": "l",
+    "pack_base_quantity": "1",
+    "variant": "ordinary dairy whole milk; not lactose-free"
+  },
+  {
+    "code": "milk-semi-1l",
+    "name_de": "Fettarme Milch 1,5% 1L",
+    "name_en": "Semi-skimmed milk 1.5% 1 litre",
+    "category": "groceries",
+    "base_unit": "l",
+    "pack_base_quantity": "1",
+    "variant": "ordinary dairy semi-skimmed milk; not lactose-free"
+  },
+  {
+    "code": "milk-lactose-free-1l",
+    "name_de": "Laktosefreie Vollmilch 3,5% 1L",
+    "name_en": "Lactose-free whole milk 3.5% 1 litre",
+    "category": "groceries",
+    "base_unit": "l",
+    "pack_base_quantity": "1",
+    "variant": "lactose-free dairy whole milk"
+  },
+  {
+    "code": "oat-unsweetened-1l",
+    "name_de": "Haferdrink ungesüßt 1L",
+    "name_en": "Unsweetened oat drink 1 litre",
+    "category": "groceries",
+    "base_unit": "l",
+    "pack_base_quantity": "1",
+    "variant": "plant-based oat drink, unsweetened"
+  },
+  {
+    "code": "yoghurt-plain-500g",
+    "name_de": "Naturjoghurt 500G",
+    "name_en": "Plain yoghurt 500 grams",
+    "category": "groceries",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.5",
+    "variant": "plain dairy yoghurt"
+  },
+  {
+    "code": "rice-basmati-1kg",
+    "name_de": "Basmatireis 1KG",
+    "name_en": "Basmati rice 1 kilogram",
+    "category": "groceries",
+    "base_unit": "kg",
+    "pack_base_quantity": "1",
+    "variant": "basmati rice"
+  },
+  {
+    "code": "gouda-400g",
+    "name_de": "Gouda 400G",
+    "name_en": "Gouda cheese 400 grams",
+    "category": "groceries",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.4",
+    "variant": "gouda cheese"
+  },
+  {
+    "code": "bread-wholegrain-500g",
+    "name_de": "Vollkornbrot 500G",
+    "name_en": "Wholegrain bread 500 grams",
+    "category": "groceries",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.5",
+    "variant": "wholegrain bread"
+  },
+  {
+    "code": "eggs-six",
+    "name_de": "Eier 6 Stück",
+    "name_en": "Eggs six pack",
+    "category": "groceries",
+    "base_unit": "each",
+    "pack_base_quantity": "6",
+    "variant": "six eggs per purchased pack"
+  },
+  {
+    "code": "laundry-liquid-1500ml",
+    "name_de": "Flüssigwaschmittel 1,5L",
+    "name_en": "Liquid laundry detergent 1.5 litres",
+    "category": "household",
+    "base_unit": "l",
+    "pack_base_quantity": "1.5",
+    "variant": "liquid laundry detergent"
+  },
+  {
+    "code": "dishwashing-liquid-500ml",
+    "name_de": "Spülmittel 500ML",
+    "name_en": "Dishwashing liquid 500 millilitres",
+    "category": "household",
+    "base_unit": "l",
+    "pack_base_quantity": "0.5",
+    "variant": "hand dishwashing liquid"
+  },
+  {
+    "code": "toothpaste-75ml",
+    "name_de": "Zahnpasta 75ML",
+    "name_en": "Toothpaste 75 millilitres",
+    "category": "personal_care",
+    "base_unit": "l",
+    "pack_base_quantity": "0.075",
+    "variant": "toothpaste"
+  }
+]

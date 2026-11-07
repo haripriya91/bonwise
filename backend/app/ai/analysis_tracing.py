@@ -11,6 +11,13 @@ from langsmith import Client
 from app.core.config import get_settings
 
 NAMES = {
+    "load_product_catalogue": "tool",
+    "check_catalogue_index": "tool",
+    "embed_catalogue_text": "embedding",
+    "upsert_catalogue_vectors": "tool",
+    "retrieve_product_candidates": "retriever",
+    "interpret_product_wording": "llm",
+    "check_product_candidates": "tool",
     "authorize_household": "tool",
     "check_question_privacy": "tool",
     "analysis_question_routing": "llm",
@@ -19,7 +26,8 @@ NAMES = {
     "calculate_answer": "tool",
     "prepare_response": "chain",
 }
-OUTCOMES = {"answered", "no_data", "unsupported", "clarification_required"}
+OUTCOMES = {"answered", "no_data", "unsupported", "clarification_required",
+            "suggested", "review_required", "no_match"}
 OPERATIONS = {"summary", "highest_category", "items", "merchants", "records",
               "quantity", "compare", "clarify", "unsupported"}
 
@@ -48,7 +56,10 @@ def trace_client():
 
 
 class AnalysisTrace:
-    def __init__(self, prompt_version, model):
+    def __init__(self, prompt_version, model, *, root_name="ask_bonwise"):
+        if root_name not in {"ask_bonwise", "catalogue_index", "catalogue_retrieval", "product_suggestions"}:
+            raise ValueError("Unsupported trace root.")
+        self.root_name = root_name
         self.id = uuid4()
         self.start = datetime.now(timezone.utc)
         self.clock = perf_counter()
@@ -66,7 +77,7 @@ class AnalysisTrace:
         kind = NAMES[name]  # Caller supplies a fixed label, never model text.
         run_id, start, clock = uuid4(), datetime.now(timezone.utc), perf_counter()
         metadata = {"prompt_version": self.prompt_version}
-        if kind == "llm":
+        if kind in {"llm", "embedding"}:
             metadata.update(ls_provider="openai", ls_model_name=self.model)
         row = dict(id=run_id, name=name, run_type=kind, inputs={}, outputs={},
                    start_time=start, trace_id=self.id, parent_run_id=self.id,
@@ -104,7 +115,7 @@ class AnalysisTrace:
             metadata["outcome"] = self.outcome
         if self.operation in OPERATIONS:
             metadata["operation"] = self.operation
-        root = dict(id=self.id, name="ask_bonwise", run_type="chain",
+        root = dict(id=self.id, name=self.root_name, run_type="chain",
                     inputs={}, outputs={}, start_time=self.start,
                     end_time=datetime.now(timezone.utc), trace_id=self.id,
                     dotted_order=self.order, extra={"metadata": metadata})

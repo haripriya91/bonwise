@@ -175,6 +175,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{household_id}/product-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Suggestions */
+        post: operations["suggestions_households__household_id__product_suggestions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{household_id}/extraction/privacy-preview": {
         parameters: {
             query?: never;
@@ -302,6 +319,9 @@ export interface components {
             /** Calculation Note */
             calculation_note?: string | null;
             conversation_context?: components["schemas"]["ConversationContext"] | null;
+            analysis_period?: components["schemas"]["ContextPeriod"] | null;
+            /** Quantity Totals */
+            quantity_totals?: components["schemas"]["QuantityTotal"][];
         };
         /** AnalysisPlan */
         AnalysisPlan: {
@@ -309,7 +329,7 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "clarify" | "unsupported";
+            operation: "summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "quantity" | "clarify" | "unsupported";
             /**
              * Language
              * @enum {string}
@@ -325,6 +345,8 @@ export interface components {
             product_query: string | null;
             /** Merchant Query */
             merchant_query: string | null;
+            /** Quantity Unit */
+            quantity_unit?: ("pack" | "each" | "kg" | "l") | null;
             /**
              * Metric
              * @enum {string}
@@ -342,7 +364,7 @@ export interface components {
              */
             clarification_reason: "ranking" | "period" | "scope" | "none";
             /** Clarification Target */
-            clarification_target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare") | null;
+            clarification_target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "quantity") | null;
         };
         /** ConfirmDraft */
         ConfirmDraft: {
@@ -473,6 +495,10 @@ export interface components {
             item_description?: string | null;
             /** Item Id */
             item_id?: string | null;
+            /** Quantity */
+            quantity?: string | null;
+            /** Quantity Unit */
+            quantity_unit?: ("pack" | "each" | "kg" | "l") | null;
         };
         /** ExtractedItem */
         ExtractedItem: {
@@ -682,7 +708,7 @@ export interface components {
         /** PendingAnalysisContext */
         PendingAnalysisContext: {
             /** Target */
-            target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare") | null;
+            target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "quantity") | null;
             /**
              * Reason
              * @enum {string}
@@ -694,6 +720,8 @@ export interface components {
             product_query?: string | null;
             /** Merchant Query */
             merchant_query?: string | null;
+            /** Quantity Unit */
+            quantity_unit?: ("pack" | "each" | "kg" | "l") | null;
             /** Start Date */
             start_date?: string | null;
             /** End Date */
@@ -726,6 +754,71 @@ export interface components {
              * @constant
              */
             requires_review: true;
+        };
+        /** ProductCandidateOut */
+        ProductCandidateOut: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Name */
+            name: string;
+            /** Name De */
+            name_de: string | null;
+            /** Brand */
+            brand: string | null;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other";
+            /** Pack Base Quantity */
+            pack_base_quantity: string | null;
+            /** Base Unit */
+            base_unit: ("kg" | "l" | "each" | "wash" | "roll") | null;
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "synthetic" | "receipt_review";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "supported" | "check_details";
+            /** Checks */
+            checks: string[];
+        };
+        /** ProductSuggestionInput */
+        ProductSuggestionInput: {
+            /** Original Text */
+            original_text: string;
+            /**
+             * Category
+             * @enum {string}
+             */
+            category: "groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other";
+            /**
+             * Quantity Unit
+             * @default pack
+             * @enum {string}
+             */
+            quantity_unit: "pack" | "each" | "kg" | "l";
+        };
+        /** ProductSuggestionOut */
+        ProductSuggestionOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "suggested" | "review_required" | "no_match";
+            /** Message */
+            message: string;
+            /** Suggested Product Id */
+            suggested_product_id?: string | null;
+            /** Candidates */
+            candidates?: components["schemas"]["ProductCandidateOut"][];
         };
         /** PurchaseContent */
         "PurchaseContent-Input": {
@@ -817,6 +910,16 @@ export interface components {
             offset: number;
             /** Purchases */
             purchases: components["schemas"]["PurchaseOut"][];
+        };
+        /** QuantityTotal */
+        QuantityTotal: {
+            /** Quantity */
+            quantity: string;
+            /**
+             * Quantity Unit
+             * @enum {string}
+             */
+            quantity_unit: "pack" | "each" | "kg" | "l";
         };
         /** SpendingCategoryTotal */
         SpendingCategoryTotal: {
@@ -1275,6 +1378,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnalysisOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    suggestions_households__household_id__product_suggestions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductSuggestionInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductSuggestionOut"];
                 };
             };
             /** @description Validation Error */
