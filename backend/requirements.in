@@ -11,3 +11,4 @@ openai
 langsmith
 PyJWT[crypto]
 Pillow
+langgraph==1.2.20

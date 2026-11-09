@@ -38,6 +38,9 @@ export function DraftReview({
   onReenterSource: () => void;
   onViewPurchase: (purchaseId: string) => void;
 }) {
+  const reviewRoot = useRef<HTMLElement | null>(null);
+  const serverError = useRef<HTMLParagraphElement | null>(null);
+  const [validationAttempt, setValidationAttempt] = useState(0);
   const queryClient = useQueryClient();
   const [form, setForm] = useState<PurchaseForm | null>(null);
   const [baseline, setBaseline] = useState<PurchaseForm | null>(null);
@@ -107,6 +110,24 @@ export function DraftReview({
     && hasReviewed && !requiresReview && !conflict && !readOnly
     && !hasServerWarnings && !hasReportedMismatch && busy === null,
   );
+
+  useEffect(() => {
+    if (!reviewAttempted || !result.errors.length) return;
+    const frame = requestAnimationFrame(() => {
+      const field = document.getElementById(result.errors[0].id);
+      field?.scrollIntoView({behavior: "smooth", block: "center"});
+      field?.focus({preventScroll: true});
+    });
+    return () => cancelAnimationFrame(frame);
+    // Only a submission moves focus; typing must never steal it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validationAttempt]);
+
+  useEffect(()=>{
+    if(!error || busy)return;
+    serverError.current?.scrollIntoView({behavior:"smooth",block:"center"});
+    serverError.current?.focus({preventScroll:true});
+  },[error,busy,Boolean(form)]);
 
   function updateForm(next: PurchaseForm) {
     setForm(next);
@@ -231,6 +252,7 @@ export function DraftReview({
   }
 
   async function reviewChanges() {
+    setValidationAttempt(value => value+1);
     if (!data || !form || !result.content || readOnly || conflict || busy !== null) {
       setReviewAttempted(true);
       return;
@@ -352,7 +374,7 @@ export function DraftReview({
 
   if (draftQuery.error && !data) {
     return (
-      <section className="page-section draft-review" aria-labelledby="draft-title">
+      <section ref={reviewRoot} className="page-section draft-review" aria-labelledby="draft-title">
         <button className="text-link back-link" onClick={onBackToPurchases}>Back to purchases</button>
         <h1 id="draft-title">Review purchase</h1>
         <div className="error-block" role="alert">
@@ -367,7 +389,7 @@ export function DraftReview({
 
   if (!data || data.id !== draftId || data.household_id !== householdId) {
     return (
-      <section className="page-section draft-review" aria-labelledby="draft-title">
+      <section ref={reviewRoot} className="page-section draft-review" aria-labelledby="draft-title">
         <button className="text-link back-link" onClick={onBackToPurchases}>Back to purchases</button>
         <h1 id="draft-title">Review purchase</h1>
         <p className="error-message" role="alert">This draft is unavailable or does not belong to the selected household.</p>
@@ -382,7 +404,7 @@ export function DraftReview({
       : "Pending · not recorded as a purchase";
 
   return (
-    <section className="page-section draft-review" aria-labelledby="draft-title">
+    <section ref={reviewRoot} className="page-section draft-review" aria-labelledby="draft-title">
       <button className="text-link back-link" onClick={onBackToPurchases}>Back to purchases</button>
       <div className="review-title-row">
         <div>
@@ -408,16 +430,6 @@ export function DraftReview({
         </div>
       )}
 
-      {error && !conflict && (
-        <div className="error-block" role="alert">
-          <p>{error}</p>
-          {busy === null && confirmUncertain && !readOnly && !confirmedPurchase && (
-            <button className="button button-outline" onClick={() => void confirmPurchase(true)}>
-              Retry confirmation
-            </button>
-          )}
-        </div>
-      )}
 
       {requiresReview && !conflict && (
         <p className="review-required-note" role="status">
@@ -456,6 +468,7 @@ export function DraftReview({
           <button className="text-link" onClick={onReenterSource}>Return Home to review the source again</button>
         </div>
       )}
+
 
       {form && (
         <form className="review-form" onSubmit={(event) => { event.preventDefault(); void reviewChanges(); }}>
@@ -517,6 +530,9 @@ export function DraftReview({
                 Edit the purchase details to resolve the server checks. Then choose Review changes before confirming.
               </p>
             )}
+            {error && <p ref={serverError} className="field-error review-inline-error" role="alert" tabIndex={-1}>{error}</p>}
+            {error && busy===null && confirmUncertain && !readOnly && !confirmedPurchase && <button type="button" className="button button-outline" onClick={()=>void confirmPurchase(true)}>Retry confirmation</button>}
+            {error && conflict && <button type="button" className="button button-outline" disabled={busy!==null} onClick={()=>void reloadAfterConflict()}>Reload latest draft</button>}
             {!readOnly && !confirmedPurchase && (
               <div className="review-actions">
                 {(!hasReviewed || dirty || requiresReview) && (

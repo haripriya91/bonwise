@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import "./PrivacyNotes.css";
 
-export const PRIVACY_NOTES_VERSION = "2026-11-08-demo-v1";
+export const PRIVACY_NOTES_VERSION = "2026-11-09-planner-v2";
 
 export const PRIVACY_SECTIONS = [
   {
@@ -19,6 +19,10 @@ export const PRIVACY_SECTIONS = [
   {
     title: "Storage and service providers",
     text: "Supabase supports accounts and application storage. Drafts, purchase records and receipt files may be stored during the workflow; confirmation records spending. Logging out does not delete saved records. OpenAI handles model and speech processing. Pinecone holds the public product catalogue; product search wording is also processed to create a search embedding. LangSmith supports diagnostics. Provider retention and deletion behavior require separate verification; an application setting alone is not a promise of zero provider retention.",
+  },
+  {
+    title: "Shopping suggestions and saved plans",
+    text: "Opening Shopping plan may send selected product descriptions and purchase-frequency/date summaries from your household to OpenAI to prepare suggestions. It does not send receipt images or commitment titles for this step. Text-edit requests are sent when you choose Preview changes. Raw edit text is not stored in the plan; a proposed change is held for up to 20 minutes for acceptance. Saved lists, evidence references and minimized workflow checkpoints remain in the private database across sessions. Approval reserves funds; checking an item Done does not record spending. Cancelling releases the open reservation but does not delete plan history. Checkpoint cleanup is an operator task; provider and backup retention require separate verification.",
   },
   {
     title: "No location selection for offers",

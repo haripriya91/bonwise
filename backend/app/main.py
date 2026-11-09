@@ -16,6 +16,7 @@ from app.api.product_matching import router as product_matching_router
 from app.api.purchase_details import router as purchase_details_router
 
 from app.api.commerce import router as commerce_router
+from app.api.planner import router as planner_router
 from app.core.privacy_headers import install_privacy_headers
 
 from app.core.config import get_settings
@@ -47,6 +48,7 @@ app.include_router(analysis_router)
 app.include_router(product_matching_router)
 app.include_router(purchase_details_router)
 app.include_router(commerce_router)
+app.include_router(planner_router)
  
 app.add_exception_handler(
     RequestValidationError,

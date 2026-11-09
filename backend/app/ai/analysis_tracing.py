@@ -26,9 +26,15 @@ NAMES = {
     "load_comparison_purchases": "tool",
     "calculate_answer": "tool",
     "prepare_response": "chain",
+    "planner_load_context": "tool",
+    "planner_propose_list": "llm",
+    "planner_repair_proposal": "llm",
+    "planner_validate_list": "tool",
+    "planner_recheck_and_reserve": "tool",
+    "planner_interpret_changes": "llm",
 }
 OUTCOMES = {"answered", "no_data", "unsupported", "clarification_required",
-            "suggested", "review_required", "no_match"}
+            "suggested", "review_required", "no_match", "awaiting_review", "approved"}
 OPERATIONS = {"summary", "highest_category", "items", "merchants", "records",
               "quantity", "compare", "clarify", "unsupported"}
 
@@ -58,7 +64,7 @@ def trace_client():
 
 class AnalysisTrace:
     def __init__(self, prompt_version, model, *, root_name="ask_bonwise"):
-        if root_name not in {"ask_bonwise", "catalogue_index", "catalogue_retrieval", "product_suggestions"}:
+        if root_name not in {"ask_bonwise", "catalogue_index", "catalogue_retrieval", "product_suggestions", "weekly_planner", "planner_text_changes", "planner_evaluation"}:
             raise ValueError("Unsupported trace root.")
         self.root_name = root_name
         self.id = uuid4()

@@ -52,3 +52,4 @@ uvicorn==0.54.0
 websockets==17.4
 xxhash==4.0.2
 zstandard==0.25.0
+langgraph==1.2.20
