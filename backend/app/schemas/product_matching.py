@@ -9,6 +9,7 @@ from app.schemas.purchase import Category
 class ProductSuggestionInput(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     original_text: str = Field(min_length=1, max_length=300)
+    merchant: str | None = Field(default=None, min_length=1, max_length=200)
     category: Category
     quantity_unit: Literal["pack", "each", "kg", "l"] = "pack"
 
@@ -29,5 +30,6 @@ class ProductCandidateOut(BaseModel):
 class ProductSuggestionOut(BaseModel):
     status: Literal["suggested", "review_required", "no_match"]
     message: str
+    memory_status: Literal["reused", "conflict", "not_found", "not_checked"] = "not_found"
     suggested_product_id: UUID | None = None
     candidates: list[ProductCandidateOut] = Field(default_factory=list)

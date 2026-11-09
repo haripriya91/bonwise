@@ -1,0 +1,14 @@
+.privacy-link { background: transparent; border: 0; color: var(--purple, #543663); text-decoration: underline; cursor: pointer; min-height: 44px; padding: 8px; font: inherit; }
+.privacy-link:focus-visible, .privacy-notes button:focus-visible { outline: 3px solid #9180bf; outline-offset: 3px; }
+.privacy-notes { width: min(720px, calc(100vw - 32px)); max-height: 85dvh; padding: 0; border: 1px solid var(--line, #e6e3df); border-radius: 12px; color: var(--ink, #302535); background: var(--paper, #f8f7f3); font: inherit; }
+.privacy-notes::backdrop { background: rgb(30 24 35 / 45%); }
+.privacy-notes__header { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; background: var(--paper, #f8f7f3); border-bottom: 1px solid var(--line, #e6e3df); padding: 18px 24px; }
+.privacy-notes__header button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line, #e6e3df); border-radius: 6px; background: white; color: inherit; cursor: pointer; font: inherit; }
+.privacy-notes__header h2 { margin: 4px 0 0; font-size: 24px; }
+.privacy-notes__eyebrow { margin: 0; font-size: 12px; color: var(--muted, #817b82); }
+.privacy-notes__body { padding: 8px 24px 24px; }
+.privacy-notes section { margin-top: 20px; }
+.privacy-notes h3 { margin: 0 0 6px; font-size: 16px; }
+.privacy-notes p { line-height: 1.6; }
+.privacy-notes__version { margin-top: 24px; color: var(--muted, #817b82); font-size: 12px; }
+@media (max-width: 600px) { .privacy-notes__header { padding: 16px; } .privacy-notes__body { padding: 4px 16px 20px; } }

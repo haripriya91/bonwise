@@ -16,6 +16,7 @@ from app.core.config import get_settings
 from app.core.privacy import redact_text
 from app.schemas.product_matching import ProductCandidateOut, ProductSuggestionOut
 from app.services.purchases import require_member
+from app.services.product_memory import previous_choice
 
 PROMPT_VERSION = "product-facts-v1"
 
@@ -220,10 +221,27 @@ def suggest_products(db, household_id, user_id, body, *, background_tasks=None):
                 clean, findings = redact_text(body.original_text)
                 if findings or not clean or "[REMOVED]" in clean:
                     raise HTTPException(422, "Remove personal details from the item description and retry.")
-            candidates = retrieve_candidates(clean, top_k=10, trace=trace)["candidates"]
-            facts = interpret(clean, candidates, trace)
-            with trace.span("check_product_candidates"):
-                result = check_candidates(clean, body.category, facts, candidates, body.quantity_unit)
+                if body.merchant:
+                    store_clean, store_findings = redact_text(body.merchant)
+                    if store_findings or "[REMOVED]" in store_clean:
+                        raise HTTPException(422, "Remove personal details from merchant wording and retry.")
+            with trace.span("lookup_product_memory"):
+                memory_status, previous = previous_choice(
+                    db, household_id, clean, body.category, body.quantity_unit, body.merchant)
+            if previous is not None:
+                result = ProductSuggestionOut(
+                    status="review_required", memory_status="reused",
+                    message="Previously chosen for this wording in your household. Check it before using.",
+                    candidates=[ProductCandidateOut(**previous)],
+                )
+            else:
+                candidates = retrieve_candidates(clean, top_k=10, trace=trace)["candidates"]
+                facts = interpret(clean, candidates, trace)
+                with trace.span("check_product_candidates"):
+                    result = check_candidates(clean, body.category, facts, candidates, body.quantity_unit)
+                result.memory_status = memory_status
+                if memory_status == "conflict":
+                    result.message = "Previous choices differ for this wording. " + result.message
         trace.outcome = result.status
         trace.finish()
     except Exception as exc:

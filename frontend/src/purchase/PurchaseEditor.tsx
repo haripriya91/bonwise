@@ -172,9 +172,15 @@ function ProductSuggestionResults({
     ? candidates.find(({ product_id }) => product_id === result.suggested_product_id) ?? candidates[0]
     : candidates[0];
   const otherCandidates = candidates.filter((candidate) => candidate !== primaryCandidate);
+  const memoryLabel = result.memory_status === "reused"
+    ? "Previously chosen in your household"
+    : result.memory_status === "conflict"
+      ? "Previous choices differ — please review"
+      : null;
 
   return (
     <div className="review-product-results" aria-live="polite">
+      {memoryLabel && <p className="review-product-memory-label">{memoryLabel}</p>}
       {result.status === "no_match" ? (
         <>
           <p className="review-product-message">{result.message}</p>
@@ -232,6 +238,7 @@ export function PurchaseEditor({
   session,
   householdId,
   source,
+  savedReceiptPanel,
   idPrefix,
   errors,
   showErrors,
@@ -249,6 +256,7 @@ export function PurchaseEditor({
   session: Session;
   householdId: string;
   source: SourceContext | undefined;
+  savedReceiptPanel?: ReactNode;
   idPrefix: string;
   errors: FieldIssue[];
   showErrors: boolean;
@@ -325,6 +333,13 @@ export function PurchaseEditor({
     onChange({ ...form, [key]: value });
   }
 
+  function clearAllProductSuggestions() {
+    suggestionControllers.current.forEach((controller) => controller.abort());
+    suggestionControllers.current.clear();
+    setProductSuggestions({});
+    setOpenProductFinders(new Set());
+  }
+
   function updateItem(index: number, patch: Partial<PurchaseForm["items"][number]>) {
     const item = form.items[index];
     if (!item) return;
@@ -358,7 +373,12 @@ export function PurchaseEditor({
   }
 
   function suggestionSignature(item: PurchaseForm["items"][number]): string {
-    return JSON.stringify([item.description.trim(), item.category, item.unit]);
+    return JSON.stringify([
+      item.description.trim(),
+      item.category,
+      item.unit,
+      form.merchant.trim(),
+    ]);
   }
 
   async function findProduct(item: PurchaseForm["items"][number]) {
@@ -376,8 +396,10 @@ export function PurchaseEditor({
       [item.localId]: { status: "loading", signature },
     }));
 
+    const merchant = form.merchant.trim();
     const body: ProductSuggestionInput = {
       original_text: originalText,
+      merchant: merchant || null,
       category: item.category,
       quantity_unit: item.unit,
     };
@@ -458,7 +480,13 @@ export function PurchaseEditor({
           {imageSource ? "View receipt" : voiceSource ? "View voice transcript" : "View source text"}
         </button>
       )}
-      <div className={`purchase-editor-layout${source ? "" : " source-missing"}`}>
+      <div className={`purchase-editor-layout${source || savedReceiptPanel ? "" : " source-missing"}`}>
+        {!source && savedReceiptPanel && (
+          <aside className="review-source-pane saved-receipt-source" aria-labelledby={`${idPrefix}-saved-receipt-title`}>
+            <h2 id={`${idPrefix}-saved-receipt-title`}>Saved reviewed receipt</h2>
+            <div className="review-image-wrap">{savedReceiptPanel}</div>
+          </aside>
+        )}
         {source && (
           <aside className="review-source-pane" aria-labelledby={`${idPrefix}-source-title`}>
             <h2 id={`${idPrefix}-source-title`}>{sourceTitle}</h2>
@@ -513,7 +541,11 @@ export function PurchaseEditor({
                   maxLength={200}
                   aria-invalid={showErrors && Boolean(issueFor(errors, `${idPrefix}-merchant`))}
                   aria-describedby={showErrors ? `${idPrefix}-merchant-error` : undefined}
-                  onChange={(event) => update("merchant", event.target.value)}
+                  onChange={(event) => {
+                    const nextMerchant = event.target.value;
+                    if (nextMerchant !== form.merchant) clearAllProductSuggestions();
+                    update("merchant", nextMerchant);
+                  }}
                 />
                 <FieldError id={`${idPrefix}-merchant`} errors={showErrors ? errors : []} prefix={`${idPrefix}-merchant`} />
               </div>

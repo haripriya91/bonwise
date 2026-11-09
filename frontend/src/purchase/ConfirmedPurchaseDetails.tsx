@@ -23,6 +23,12 @@ const currency = new Intl.NumberFormat("de-DE", {
   currency: "EUR",
 });
 const dateFormat = new Intl.DateTimeFormat("de-DE", { dateStyle: "medium" });
+const sourceLabels: Record<NonNullable<PurchaseDetailsOut["source_type"]>, string> = {
+  image: "Receipt",
+  voice: "Voice entry",
+  text: "Text entry",
+  seed: "Imported/demo entry",
+};
 
 function formatAmount(cents: number): string {
   return currency.format(cents / 100);
@@ -77,33 +83,38 @@ export function ConfirmedPurchaseDetails({
               <h1 id="purchase-details-title">Purchase details</h1>
               <span className="confirmed-status">Confirmed</span>
             </div>
-            <p className="confirmed-details-merchant">{data.merchant?.trim() || "Purchase"}</p>
-            <p className="confirmed-details-date">{dateFormat.format(new Date(`${data.purchased_on}T12:00:00`))}</p>
+            <div className="confirmed-details-meta-row">
+              <p className="confirmed-details-merchant">{data.merchant?.trim() || "Purchase"}</p>
+              <span className="confirmed-source-label">{sourceLabels[data.source_type ?? "text"] ?? "Text entry"}</span>
+              <p className="confirmed-details-date">{dateFormat.format(new Date(`${data.purchased_on}T12:00:00`))}</p>
+            </div>
           </header>
 
-          <div className="confirmed-details-grid">
-            <aside className="confirmed-receipt-panel">
-              <details
-                className="confirmed-receipt-details"
-                open={receiptOpen}
-                onToggle={(event) => setReceiptOpen(event.currentTarget.open)}
-              >
-                <summary>Saved reviewed receipt</summary>
-                {receiptOpen && (
-                  <div className="confirmed-receipt-content">
-                    {data.receipt_available ? (
-                      <AuthenticatedReceiptImage
-                        session={session}
-                        path={`/households/${encodeURIComponent(householdId)}/purchases/${encodeURIComponent(purchaseId)}/receipt`}
-                        alt="Saved reviewed receipt"
-                      />
-                    ) : (
-                      <p className="empty-state">No receipt saved for this purchase.</p>
-                    )}
-                  </div>
-                )}
-              </details>
-            </aside>
+          <div className={`confirmed-details-grid ${data.source_type === "image" ? "has-receipt" : "receipt-hidden"}`}>
+            {data.source_type === "image" && (
+              <aside className="confirmed-receipt-panel">
+                <details
+                  className="confirmed-receipt-details"
+                  open={receiptOpen}
+                  onToggle={(event) => setReceiptOpen(event.currentTarget.open)}
+                >
+                  <summary>Saved reviewed receipt</summary>
+                  {receiptOpen && (
+                    <div className="confirmed-receipt-content">
+                      {data.receipt_available ? (
+                        <AuthenticatedReceiptImage
+                          session={session}
+                          path={`/households/${encodeURIComponent(householdId)}/purchases/${encodeURIComponent(purchaseId)}/receipt`}
+                          alt="Saved reviewed receipt"
+                        />
+                      ) : (
+                        <p className="empty-state">Receipt image was not saved with this purchase.</p>
+                      )}
+                    </div>
+                  )}
+                </details>
+              </aside>
+            )}
 
             <section className="confirmed-items-panel" aria-labelledby="purchased-items-title">
               <h2 id="purchased-items-title">Purchased items</h2>

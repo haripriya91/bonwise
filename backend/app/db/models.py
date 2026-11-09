@@ -240,3 +240,5 @@ class PurchaseItem(Record, Base):
             name="valid_category",
         ),
     )
+
+from app.db import commerce as _commerce  # noqa: F401

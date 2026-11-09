@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.core.privacy import has_detectable_pii
 
 from app.db.models import (
+    Household,
     HouseholdMember,
     Product,
     Purchase,
@@ -312,6 +313,11 @@ def update_draft(db, household_id, user_id, draft_id, body):
 def confirm_draft(db, household_id, user_id, draft_id, body):
     with db.begin():
         require_member(db, household_id, user_id, lock=True)
+        db.scalar(
+            select(Household)
+            .where(Household.id == household_id)
+            .with_for_update()
+        )
         draft = load_draft(db, household_id, draft_id, lock=True)
 
         if body.revision != draft_revision(draft):
