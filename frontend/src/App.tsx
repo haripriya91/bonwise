@@ -12,6 +12,8 @@ import { ConfirmedPurchaseDetails } from "./purchase/ConfirmedPurchaseDetails";
 import { DraftReview } from "./purchase/DraftReview";
 import { clearPendingDraftSubmission, getDraftScopeKey, getSourceSnapshotKey } from "./purchase/workflow";
 import type { SourceContext } from "./purchase/workflow";
+import { ShoppingPlanner } from "./planner/ShoppingPlanner";
+import { PrivacyNotes } from "./components/PrivacyNotes";
 
 type HouseholdOption = {
   id: string;
@@ -19,7 +21,7 @@ type HouseholdOption = {
   role: string;
 };
 
-type Page = "home" | "purchases" | "analysis" | "offers" | "household";
+type Page = "home" | "purchases" | "analysis" | "offers" | "household" | "planner";
 type AppRoute =
   | { kind: "main" }
   | {
@@ -178,6 +180,7 @@ function SignIn({
           </button>
         </form>
       </section>
+      <PrivacyNotes />
     </main>
   );
 }
@@ -898,6 +901,7 @@ function Home({
   onDraftCreated,
   onGoToBudget,
   onGoToOffers,
+  onGoToPlan,
 }: {
   session: Session;
   household: HouseholdOption;
@@ -905,6 +909,7 @@ function Home({
   onDraftCreated: (draft: DraftOut, source: SourceContext) => void;
   onGoToBudget: () => void;
   onGoToOffers: () => void;
+  onGoToPlan: () => void;
 }) {
   const { data, error, isPending, isFetching, refetch } = usePurchasePage(session, household);
   const overviewQuery = useShoppingOverview(session, household);
@@ -1023,6 +1028,12 @@ function Home({
           </button>
         </section>
       )}
+
+      <section className="planner-home-card" aria-labelledby="home-plan-title">
+        <div><p className="planner-eyebrow">WHEN YOU ARE READY TO SHOP</p><h2 id="home-plan-title">Start with a suggested weekly list.</h2>
+          <p>Check what you need, change the list and review estimated costs before reserving funds.</p></div>
+        <button className="button button-outline" onClick={onGoToPlan}>Open shopping plan</button>
+      </section>
 
       <section className="recent-section" aria-labelledby="recent-title">
         <div className="recent-heading">
@@ -1547,10 +1558,12 @@ function App({ queryClient }: { queryClient: QueryClient }) {
         <nav className="side-navigation" aria-label="Main navigation">
           <button className={page === "home" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("home")}>Home</button>
           <button className={page === "purchases" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("purchases")}>Purchases</button>
+          <button className={page === "planner" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("planner")}>Shopping plan</button>
           <button className={page === "offers" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("offers")}>Compare offers</button>
           <button className={page === "analysis" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("analysis")}>Analysis</button>
           <button className={page === "household" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("household")}>My household</button>
         </nav>
+        <div className="sidebar-privacy"><PrivacyNotes /></div>
         <div className="sidebar-account">
           {meQuery.isPending && <span className="household-loading">Loading household…</span>}
           {selectedHousehold && households.length > 1 && (
@@ -1574,8 +1587,9 @@ function App({ queryClient }: { queryClient: QueryClient }) {
       <div className="workspace">
         <header className="app-header">
           <span className="topbar-household">{selectedHousehold?.name ?? "Your household"}</span>
-          <span className="topbar-page">{page === "home" ? "Home" : page === "purchases" ? "Purchases" : page === "offers" ? "Compare offers" : page === "analysis" ? "Analysis" : "My household"}</span>
+          <span className="topbar-page">{page === "home" ? "Home" : page === "purchases" ? "Purchases" : page === "offers" ? "Compare offers" : page === "analysis" ? "Analysis" : page === "planner" ? "Shopping plan" : "My household"}</span>
           <div className="mobile-account-controls">
+            <PrivacyNotes />
             {selectedHousehold && households.length > 1 && (
               <label className="household-select-label">
                 <span className="visually-hidden">Active household</span>
@@ -1634,6 +1648,16 @@ function App({ queryClient }: { queryClient: QueryClient }) {
               onDraftCreated={navigateToDraft}
               onGoToBudget={() => navigateToPage("household")}
               onGoToOffers={() => navigateToPage("offers")}
+              onGoToPlan={() => navigateToPage("planner")}
+            />
+          )}
+          {selectedHousehold && route.kind === "main" && page === "planner" && (
+            <ShoppingPlanner
+              key={`${session.user.id}:${selectedHousehold.id}`}
+              session={session}
+              householdId={selectedHousehold.id}
+              onManageBudget={() => navigateToPage("household")}
+              onViewPurchase={openPurchaseDetails}
             />
           )}
           {selectedHousehold && route.kind === "main" && page === "offers" && (
@@ -1672,6 +1696,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
         <nav className="mobile-navigation" aria-label="Main navigation">
           <button className={page === "home" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("home")}>Home</button>
           <button className={page === "purchases" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("purchases")}>Purchases</button>
+          <button className={page === "planner" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("planner")}>Plan</button>
           <button className={page === "offers" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("offers")}>Offers</button>
           <button className={page === "analysis" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("analysis")}>Analysis</button>
           <button className={page === "household" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("household")}>Household</button>
