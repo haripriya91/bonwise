@@ -15,6 +15,9 @@ from app.api.analysis import router as analysis_router
 from app.api.product_matching import router as product_matching_router
 from app.api.purchase_details import router as purchase_details_router
 
+from app.api.commerce import router as commerce_router
+from app.core.privacy_headers import install_privacy_headers
+
 from app.core.config import get_settings
 
 
@@ -24,17 +27,12 @@ app = FastAPI(
     title="Bonwise API",
     version="0.1.0",
 )
+install_privacy_headers(app)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_origin],
-    allow_methods=[
-        "GET",
-        "POST",
-        "PATCH",
-        "DELETE",
-        "OPTIONS",
-    ],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=[
         "Authorization",
         "Content-Type",
@@ -48,7 +46,8 @@ app.include_router(voice_capture_router)
 app.include_router(analysis_router)
 app.include_router(product_matching_router)
 app.include_router(purchase_details_router)
-
+app.include_router(commerce_router)
+ 
 app.add_exception_handler(
     RequestValidationError,
     safe_validation_error,

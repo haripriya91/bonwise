@@ -172,9 +172,15 @@ function ProductSuggestionResults({
     ? candidates.find(({ product_id }) => product_id === result.suggested_product_id) ?? candidates[0]
     : candidates[0];
   const otherCandidates = candidates.filter((candidate) => candidate !== primaryCandidate);
+  const memoryLabel = result.memory_status === "reused"
+    ? "Previously chosen in your household"
+    : result.memory_status === "conflict"
+      ? "Previous choices differ — please review"
+      : null;
 
   return (
     <div className="review-product-results" aria-live="polite">
+      {memoryLabel && <p className="review-product-memory-label">{memoryLabel}</p>}
       {result.status === "no_match" ? (
         <>
           <p className="review-product-message">{result.message}</p>
@@ -325,6 +331,13 @@ export function PurchaseEditor({
     onChange({ ...form, [key]: value });
   }
 
+  function clearAllProductSuggestions() {
+    suggestionControllers.current.forEach((controller) => controller.abort());
+    suggestionControllers.current.clear();
+    setProductSuggestions({});
+    setOpenProductFinders(new Set());
+  }
+
   function updateItem(index: number, patch: Partial<PurchaseForm["items"][number]>) {
     const item = form.items[index];
     if (!item) return;
@@ -358,7 +371,12 @@ export function PurchaseEditor({
   }
 
   function suggestionSignature(item: PurchaseForm["items"][number]): string {
-    return JSON.stringify([item.description.trim(), item.category, item.unit]);
+    return JSON.stringify([
+      item.description.trim(),
+      item.category,
+      item.unit,
+      form.merchant.trim(),
+    ]);
   }
 
   async function findProduct(item: PurchaseForm["items"][number]) {
@@ -376,8 +394,10 @@ export function PurchaseEditor({
       [item.localId]: { status: "loading", signature },
     }));
 
+    const merchant = form.merchant.trim();
     const body: ProductSuggestionInput = {
       original_text: originalText,
+      merchant: merchant || null,
       category: item.category,
       quantity_unit: item.unit,
     };
@@ -513,7 +533,11 @@ export function PurchaseEditor({
                   maxLength={200}
                   aria-invalid={showErrors && Boolean(issueFor(errors, `${idPrefix}-merchant`))}
                   aria-describedby={showErrors ? `${idPrefix}-merchant-error` : undefined}
-                  onChange={(event) => update("merchant", event.target.value)}
+                  onChange={(event) => {
+                    const nextMerchant = event.target.value;
+                    if (nextMerchant !== form.merchant) clearAllProductSuggestions();
+                    update("merchant", nextMerchant);
+                  }}
                 />
                 <FieldError id={`${idPrefix}-merchant`} errors={showErrors ? errors : []} prefix={`${idPrefix}-merchant`} />
               </div>

@@ -16,6 +16,7 @@ NAMES = {
     "embed_catalogue_text": "embedding",
     "upsert_catalogue_vectors": "tool",
     "retrieve_product_candidates": "retriever",
+    "lookup_product_memory": "tool",
     "interpret_product_wording": "llm",
     "check_product_candidates": "tool",
     "authorize_household": "tool",

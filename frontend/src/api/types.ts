@@ -245,6 +245,161 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{household_id}/offer-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Offer Options */
+        get: operations["offer_options_households__household_id__offer_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/offers/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recommended Offers */
+        get: operations["recommended_offers_households__household_id__offers_recommendations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/shopping-overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Home Overview */
+        get: operations["home_overview_households__household_id__shopping_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/offers/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Compare Offers */
+        post: operations["compare_offers_households__household_id__offers_compare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/budgets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Budgets */
+        get: operations["list_budgets_households__household_id__budgets_get"];
+        put?: never;
+        /** Create Budget */
+        post: operations["create_budget_households__household_id__budgets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/budgets/{budget_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Budget */
+        get: operations["get_budget_households__household_id__budgets__budget_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Budget */
+        patch: operations["update_budget_households__household_id__budgets__budget_id__patch"];
+        trace?: never;
+    };
+    "/households/{household_id}/budgets/{budget_id}/commitments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reserve */
+        post: operations["reserve_households__household_id__budgets__budget_id__commitments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/budgets/{budget_id}/commitments/{commitment_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel */
+        post: operations["cancel_households__household_id__budgets__budget_id__commitments__commitment_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/budgets/{budget_id}/commitments/{commitment_id}/settle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Settle */
+        post: operations["settle_households__household_id__budgets__budget_id__commitments__commitment_id__settle_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{household_id}/extraction/privacy-preview": {
         parameters: {
             query?: never;
@@ -418,6 +573,182 @@ export interface components {
             clarification_reason: "ranking" | "period" | "scope" | "none";
             /** Clarification Target */
             clarification_target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "quantity") | null;
+        };
+        /** BudgetCreate */
+        BudgetCreate: {
+            /**
+             * Client Request Id
+             * Format: uuid
+             */
+            client_request_id: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Amount Cents */
+            amount_cents: number;
+        };
+        /** BudgetOut */
+        BudgetOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /**
+             * Currency
+             * @default EUR
+             * @constant
+             */
+            currency: "EUR";
+            /** Amount Cents */
+            amount_cents: number;
+            /** Spent Cents */
+            spent_cents: number;
+            /** Reserved Cents */
+            reserved_cents: number;
+            /** Available Cents */
+            available_cents: number;
+            /** Purchase Count */
+            purchase_count: number;
+            /** Version */
+            version: number;
+            /** Commitments */
+            commitments: components["schemas"]["CommitmentOut"][];
+        };
+        /** BudgetPage */
+        BudgetPage: {
+            /** Budgets */
+            budgets: components["schemas"]["BudgetOut"][];
+        };
+        /** BudgetUpdate */
+        BudgetUpdate: {
+            /** Expected Version */
+            expected_version: number;
+            /** Amount Cents */
+            amount_cents: number;
+        };
+        /** CommitmentCreate */
+        CommitmentCreate: {
+            /**
+             * Client Request Id
+             * Format: uuid
+             */
+            client_request_id: string;
+            /** Expected Version */
+            expected_version: number;
+            /** Title */
+            title: string;
+            /**
+             * Planned On
+             * Format: date
+             */
+            planned_on: string;
+            /** Amount Cents */
+            amount_cents: number;
+        };
+        /** CommitmentOut */
+        CommitmentOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Title */
+            title: string;
+            /**
+             * Planned On
+             * Format: date
+             */
+            planned_on: string;
+            /** Amount Cents */
+            amount_cents: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "settled" | "cancelled";
+            /** Purchase Id */
+            purchase_id: string | null;
+        };
+        /** CommitmentSettle */
+        CommitmentSettle: {
+            /** Expected Version */
+            expected_version: number;
+            /**
+             * Purchase Id
+             * Format: uuid
+             */
+            purchase_id: string;
+        };
+        /** CompareInput */
+        CompareInput: {
+            /** Product Ids */
+            product_ids: string[];
+            /**
+             * Include Alternatives
+             * @default false
+             */
+            include_alternatives: boolean;
+        };
+        /** CompareOut */
+        CompareOut: {
+            /**
+             * Country Code
+             * @default DE
+             * @constant
+             */
+            country_code: "DE";
+            /**
+             * Coverage Note
+             * @default National offer listings; retailer conditions and stock limitations still apply. No user location is collected for this feature.
+             */
+            coverage_note: string;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /**
+             * Week Start
+             * Format: date
+             */
+            week_start: string;
+            /**
+             * Week End
+             * Format: date
+             */
+            week_end: string;
+            /**
+             * Source
+             * @default demo
+             * @constant
+             */
+            source: "demo";
+            /**
+             * Currency
+             * @default EUR
+             * @constant
+             */
+            currency: "EUR";
+            /** Results */
+            results: components["schemas"]["ProductOffers"][];
         };
         /** ConfirmDraft */
         ConfirmDraft: {
@@ -779,6 +1110,144 @@ export interface components {
             /** Base Unit */
             base_unit: string | null;
         };
+        /** OfferCard */
+        OfferCard: {
+            /** Offer Id */
+            offer_id: string;
+            /** Batch Id */
+            batch_id: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Product Name */
+            product_name: string;
+            /** Brand */
+            brand: string | null;
+            /** Chain */
+            chain: string;
+            /**
+             * Store Scope
+             * @default national
+             * @constant
+             */
+            store_scope: "national";
+            /**
+             * Country Code
+             * @default DE
+             * @constant
+             */
+            country_code: "DE";
+            /**
+             * Relation
+             * @enum {string}
+             */
+            relation: "same_product" | "compatible_alternative";
+            /**
+             * Valid From
+             * Format: date
+             */
+            valid_from: string;
+            /**
+             * Valid Until
+             * Format: date
+             */
+            valid_until: string;
+            /**
+             * Availability
+             * @enum {string}
+             */
+            availability: "active" | "upcoming_this_week";
+            /** Pack Base Quantity */
+            pack_base_quantity: string;
+            /**
+             * Comparison Unit
+             * @enum {string}
+             */
+            comparison_unit: "kg" | "l" | "each" | "wash" | "roll";
+            /** Unit Price Eur */
+            unit_price_eur: string;
+            /** Advertised Price Cents */
+            advertised_price_cents: number;
+            /** Required Packs */
+            required_packs: number;
+            /** Deposit Total Cents */
+            deposit_total_cents: number | null;
+            /** Minimum Checkout Cents */
+            minimum_checkout_cents: number | null;
+            /** Membership Required */
+            membership_required: boolean;
+            /**
+             * Price Access
+             * @enum {string}
+             */
+            price_access: "standard" | "membership";
+            /**
+             * Is Best Unit Price
+             * @default false
+             */
+            is_best_unit_price: boolean;
+            /**
+             * Source
+             * @default demo
+             * @constant
+             */
+            source: "demo";
+        };
+        /** OfferOptions */
+        OfferOptions: {
+            /**
+             * Country Code
+             * @default DE
+             * @constant
+             */
+            country_code: "DE";
+            /**
+             * Coverage Note
+             * @default National offer listings; retailer conditions and stock limitations still apply. No user location is collected for this feature.
+             */
+            coverage_note: string;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /**
+             * Week Start
+             * Format: date
+             */
+            week_start: string;
+            /**
+             * Week End
+             * Format: date
+             */
+            week_end: string;
+            /**
+             * Source
+             * @default demo
+             * @constant
+             */
+            source: "demo";
+            /** Products */
+            products: components["schemas"]["ProductOption"][];
+            /** Suggested Product Ids */
+            suggested_product_ids: string[];
+            /**
+             * History Start
+             * Format: date
+             */
+            history_start: string;
+            /**
+             * History End
+             * Format: date
+             */
+            history_end: string;
+            /** History Linked Product Count */
+            history_linked_product_count: number;
+            /** Explanation */
+            explanation: string;
+        };
         /** PendingAnalysisContext */
         PendingAnalysisContext: {
             /** Target */
@@ -864,10 +1333,66 @@ export interface components {
             /** Checks */
             checks: string[];
         };
+        /** ProductOffers */
+        ProductOffers: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Product Name */
+            product_name: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "offers_found" | "no_compatible_offer";
+            /** Message */
+            message: string;
+            /** Offers */
+            offers: components["schemas"]["OfferCard"][];
+            /**
+             * Results Truncated
+             * @default false
+             */
+            results_truncated: boolean;
+        };
+        /** ProductOption */
+        ProductOption: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Brand */
+            brand: string | null;
+            /** Pack Base Quantity */
+            pack_base_quantity?: string | null;
+            /** Base Unit */
+            base_unit?: string | null;
+            /**
+             * Purchase Count
+             * @default 0
+             */
+            purchase_count: number;
+            /** Last Purchased On */
+            last_purchased_on?: string | null;
+            /** Suggestion Reason */
+            suggestion_reason?: string | null;
+            /**
+             * Current Offer Count
+             * @default 0
+             */
+            current_offer_count: number;
+        };
         /** ProductSuggestionInput */
         ProductSuggestionInput: {
             /** Original Text */
             original_text: string;
+            /** Merchant */
+            merchant?: string | null;
             /**
              * Category
              * @enum {string}
@@ -889,6 +1414,12 @@ export interface components {
             status: "suggested" | "review_required" | "no_match";
             /** Message */
             message: string;
+            /**
+             * Memory Status
+             * @default not_found
+             * @enum {string}
+             */
+            memory_status: "reused" | "conflict" | "not_found" | "not_checked";
             /** Suggested Product Id */
             suggested_product_id?: string | null;
             /** Candidates */
@@ -1059,6 +1590,91 @@ export interface components {
             /** Revision */
             revision: string;
         };
+        /** Recommendations */
+        Recommendations: {
+            /**
+             * Country Code
+             * @default DE
+             * @constant
+             */
+            country_code: "DE";
+            /**
+             * Coverage Note
+             * @default National offer listings; retailer conditions and stock limitations still apply. No user location is collected for this feature.
+             */
+            coverage_note: string;
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /**
+             * Week Start
+             * Format: date
+             */
+            week_start: string;
+            /**
+             * Week End
+             * Format: date
+             */
+            week_end: string;
+            /**
+             * Source
+             * @default demo
+             * @constant
+             */
+            source: "demo";
+            /**
+             * History Start
+             * Format: date
+             */
+            history_start: string;
+            /**
+             * History End
+             * Format: date
+             */
+            history_end: string;
+            /** History Linked Product Count */
+            history_linked_product_count: number;
+            /** Explanation */
+            explanation: string;
+            /** Recommendations */
+            recommendations: components["schemas"]["RecommendedProduct"][];
+        };
+        /** RecommendedProduct */
+        RecommendedProduct: {
+            product: components["schemas"]["ProductOption"];
+            comparison: components["schemas"]["ProductOffers"];
+        };
+        /** ShoppingOverview */
+        ShoppingOverview: {
+            /**
+             * As Of
+             * Format: date
+             */
+            as_of: string;
+            /**
+             * Spending Start
+             * Format: date
+             */
+            spending_start: string;
+            /**
+             * Spending End
+             * Format: date
+             */
+            spending_end: string;
+            /** Confirmed Spent Cents */
+            confirmed_spent_cents: number;
+            /** Purchase Count */
+            purchase_count: number;
+            budget?: components["schemas"]["BudgetOut"] | null;
+            offers?: components["schemas"]["Recommendations"] | null;
+            /**
+             * Offers Status
+             * @enum {string}
+             */
+            offers_status: "ready" | "unavailable";
+        };
         /** SpendingCategoryTotal */
         SpendingCategoryTotal: {
             /**
@@ -1156,6 +1772,11 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** VersionInput */
+        VersionInput: {
+            /** Expected Version */
+            expected_version: number;
         };
     };
     responses: never;
@@ -1719,6 +2340,378 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    offer_options_households__household_id__offer_options_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OfferOptions"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recommended_offers_households__household_id__offers_recommendations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Recommendations"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    home_overview_households__household_id__shopping_overview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShoppingOverview"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compare_offers_households__household_id__offers_compare_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompareInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompareOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_budgets_households__household_id__budgets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_budget_households__household_id__budgets_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BudgetCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_budget_households__household_id__budgets__budget_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                budget_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_budget_households__household_id__budgets__budget_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                budget_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BudgetUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reserve_households__household_id__budgets__budget_id__commitments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                budget_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommitmentCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_households__household_id__budgets__budget_id__commitments__commitment_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                budget_id: string;
+                commitment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VersionInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    settle_households__household_id__budgets__budget_id__commitments__commitment_id__settle_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                budget_id: string;
+                commitment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommitmentSettle"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetOut"];
                 };
             };
             /** @description Validation Error */
