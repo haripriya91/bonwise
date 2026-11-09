@@ -3630,6 +3630,12 @@ h2 {
     display: none;
   }
 
+  .review-source-pane.saved-receipt-source {
+    display: block;
+    position: static;
+    margin-bottom: 18px;
+  }
+
   .review-form {
     padding: 0;
   }

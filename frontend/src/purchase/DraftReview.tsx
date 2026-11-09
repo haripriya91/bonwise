@@ -450,38 +450,11 @@ export function DraftReview({
         </div>
       )}
 
-      {source === undefined && (
+      {source === undefined && !data.receipt_available && (
         <div className="source-unavailable review-source-unavailable">
           The reviewed source is unavailable in this session. It cannot be retrieved or reconstructed from the draft. Return Home to provide and review the source again.
           <button className="text-link" onClick={onReenterSource}>Return Home to review the source again</button>
         </div>
-      )}
-
-      {data.receipt_available && (
-        <section className="draft-receipt-preview" aria-labelledby="draft-receipt-title">
-          <h2 id="draft-receipt-title">Saved reviewed receipt</h2>
-          <AuthenticatedReceiptImage
-            session={session}
-            path={`/households/${encodeURIComponent(householdId)}/purchase-drafts/${encodeURIComponent(draftId)}/receipt`}
-            alt="Saved reviewed receipt"
-          />
-        </section>
-      )}
-
-      {data.receipt_available && source?.type !== "image" && !readOnly && (
-        <label className="receipt-keep-option receipt-existing-toggle">
-          <input
-            type="checkbox"
-            checked={keepReceipt}
-            onChange={(event) => {
-              setKeepReceipt(event.target.checked);
-              setHasReviewed(false);
-              setError(null);
-            }}
-            disabled={busy !== null || conflict}
-          />
-          <span>Keep this reviewed receipt with this purchase</span>
-        </label>
       )}
 
       {form && (
@@ -493,6 +466,30 @@ export function DraftReview({
             session={session}
             householdId={householdId}
             source={source}
+            savedReceiptPanel={data.receipt_available && !source ? (
+              <>
+                <AuthenticatedReceiptImage
+                  session={session}
+                  path={`/households/${encodeURIComponent(householdId)}/purchase-drafts/${encodeURIComponent(draftId)}/receipt`}
+                  alt="Saved reviewed receipt"
+                />
+                {!readOnly && (
+                  <label className="receipt-keep-option receipt-existing-toggle">
+                    <input
+                      type="checkbox"
+                      checked={keepReceipt}
+                      onChange={(event) => {
+                        setKeepReceipt(event.target.checked);
+                        setHasReviewed(false);
+                        setError(null);
+                      }}
+                      disabled={busy !== null || conflict || confirmedPurchase !== null}
+                    />
+                    <span>Keep this reviewed receipt with this purchase</span>
+                  </label>
+                )}
+              </>
+            ) : undefined}
             idPrefix="review"
             errors={result.errors}
             showErrors={reviewAttempted}

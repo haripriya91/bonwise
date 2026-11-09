@@ -238,6 +238,7 @@ export function PurchaseEditor({
   session,
   householdId,
   source,
+  savedReceiptPanel,
   idPrefix,
   errors,
   showErrors,
@@ -255,6 +256,7 @@ export function PurchaseEditor({
   session: Session;
   householdId: string;
   source: SourceContext | undefined;
+  savedReceiptPanel?: ReactNode;
   idPrefix: string;
   errors: FieldIssue[];
   showErrors: boolean;
@@ -478,7 +480,13 @@ export function PurchaseEditor({
           {imageSource ? "View receipt" : voiceSource ? "View voice transcript" : "View source text"}
         </button>
       )}
-      <div className={`purchase-editor-layout${source ? "" : " source-missing"}`}>
+      <div className={`purchase-editor-layout${source || savedReceiptPanel ? "" : " source-missing"}`}>
+        {!source && savedReceiptPanel && (
+          <aside className="review-source-pane saved-receipt-source" aria-labelledby={`${idPrefix}-saved-receipt-title`}>
+            <h2 id={`${idPrefix}-saved-receipt-title`}>Saved reviewed receipt</h2>
+            <div className="review-image-wrap">{savedReceiptPanel}</div>
+          </aside>
+        )}
         {source && (
           <aside className="review-source-pane" aria-labelledby={`${idPrefix}-source-title`}>
             <h2 id={`${idPrefix}-source-title`}>{sourceTitle}</h2>
