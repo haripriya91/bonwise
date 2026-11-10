@@ -25,11 +25,12 @@ class ProductCandidateOut(BaseModel):
     source: Literal["synthetic", "receipt_review"]
     status: Literal["supported", "check_details"]
     checks: list[str]
+    match_origin: Literal["catalogue", "exact_memory", "correction_rag"] = "catalogue"
 
 
 class ProductSuggestionOut(BaseModel):
     status: Literal["suggested", "review_required", "no_match"]
     message: str
-    memory_status: Literal["reused", "conflict", "not_found", "not_checked"] = "not_found"
+    memory_status: Literal["reused", "conflict", "not_found", "not_checked", "retrieved", "unavailable", "disabled"] = "not_found"
     suggested_product_id: UUID | None = None
     candidates: list[ProductCandidateOut] = Field(default_factory=list)

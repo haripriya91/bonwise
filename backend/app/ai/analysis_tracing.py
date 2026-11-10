@@ -17,6 +17,10 @@ NAMES = {
     "upsert_catalogue_vectors": "tool",
     "retrieve_product_candidates": "retriever",
     "lookup_product_memory": "tool",
+    "embed_correction_text": "embedding",
+    "upsert_correction_vectors": "tool",
+    "retrieve_correction_examples": "retriever",
+    "verify_correction_examples": "tool",
     "interpret_product_wording": "llm",
     "check_product_candidates": "tool",
     "authorize_household": "tool",
@@ -64,7 +68,7 @@ def trace_client():
 
 class AnalysisTrace:
     def __init__(self, prompt_version, model, *, root_name="ask_bonwise"):
-        if root_name not in {"ask_bonwise", "catalogue_index", "catalogue_retrieval", "product_suggestions", "weekly_planner", "planner_text_changes", "planner_evaluation"}:
+        if root_name not in {"ask_bonwise", "catalogue_index", "catalogue_retrieval", "product_suggestions", "weekly_planner", "planner_text_changes", "planner_evaluation", "correction_index", "correction_evaluation"}:
             raise ValueError("Unsupported trace root.")
         self.root_name = root_name
         self.id = uuid4()
@@ -85,7 +89,7 @@ class AnalysisTrace:
         run_id, start, clock = uuid4(), datetime.now(timezone.utc), perf_counter()
         metadata = {"prompt_version": self.prompt_version}
         if kind in {"llm", "embedding"}:
-            metadata.update(ls_provider="openai", ls_model_name=self.model)
+            metadata.update(ls_provider="openai", ls_model_name=getattr(get_settings(), "embedding_model", self.model) if kind == "embedding" else self.model)
         row = dict(id=run_id, name=name, run_type=kind, inputs={}, outputs={},
                    start_time=start, trace_id=self.id, parent_run_id=self.id,
                    dotted_order=self.order + "." + stamp(start, run_id),

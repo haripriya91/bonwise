@@ -1,0 +1,8 @@
+.information-tip { display:inline-flex; flex:0 0 auto; }
+.information-tip__trigger { display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; border:0; border-radius:50%; color:var(--color-muted); background:transparent; cursor:pointer; }
+.information-tip__trigger > span { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border:1.5px solid currentColor; border-radius:50%; font:600 12px/1 serif; }
+.information-tip__trigger:hover, .information-tip__trigger:focus-visible { color:var(--color-accent); background:var(--color-lavender); }
+.information-tip__panel { position:fixed; z-index:100; box-sizing:border-box; width:320px; max-width:calc(100vw - 32px); max-height:min(45dvh,300px); overflow:auto; padding:16px 42px 16px 16px; border:1px solid #ded8e0; border-radius:12px; background:var(--color-surface,#fff); color:var(--color-ink,#302535); box-shadow:0 8px 30px #28162f25; font-size:13px; line-height:1.65; overflow-wrap:anywhere; }
+.information-tip__panel p { margin:0; }
+.information-tip__close { position:absolute; top:5px; right:5px; width:32px; height:32px; padding:0; border:0; border-radius:6px; background:transparent; color:inherit; font-size:24px; cursor:pointer; }
+.information-tip__close:hover { background:var(--color-lavender); }

@@ -242,3 +242,4 @@ class PurchaseItem(Record, Base):
     )
 
 from app.db import commerce as _commerce  # noqa: F401
+from app.db import corrections as _corrections  # noqa: F401

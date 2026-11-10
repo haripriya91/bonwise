@@ -53,3 +53,4 @@ websockets==17.4
 xxhash==4.0.2
 zstandard==0.25.0
 langgraph==1.2.20
+langchain-openai==1.7.4

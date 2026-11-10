@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { InformationTip } from "../components/InformationTip";
 import { ApiError, apiRequest, getErrorText } from "../api/client";
 import type { components } from "../api/types";
 import type { SourceContext } from "./workflow";
@@ -138,7 +139,13 @@ function ProductCandidateRow({
         <span className={`review-product-badge${needsReview ? " needs-review" : ""}`}>
           {isSuggested ? "Suggested product" : needsReview ? "Check details" : "Product option"}
         </span>
-        <strong>{candidate.name_de || candidate.name}</strong>
+        <div className="review-product-name-row"><strong>{candidate.name_de || candidate.name}</strong>
+          {candidate.match_origin && candidate.match_origin!=="catalogue" && <InformationTip
+            label="Why this product was suggested"
+            text={candidate.match_origin==="exact_memory"
+              ? "You previously accepted this product for the same receipt wording in this household. Check that it still fits."
+              : "A similar receipt item was previously linked to this product in this household. That example was available to the AI when checking this suggestion. Review the current product details before using it."} />}
+        </div>
         {candidate.brand && <span>{candidate.brand}</span>}
         <span>{formatPackageContents(candidate)}</span>
         {candidate.source === "synthetic" && <small>Demo catalogue</small>}
@@ -172,11 +179,9 @@ function ProductSuggestionResults({
     ? candidates.find(({ product_id }) => product_id === result.suggested_product_id) ?? candidates[0]
     : candidates[0];
   const otherCandidates = candidates.filter((candidate) => candidate !== primaryCandidate);
-  const memoryLabel = result.memory_status === "reused"
-    ? "Previously chosen in your household"
-    : result.memory_status === "conflict"
-      ? "Previous choices differ — please review"
-      : null;
+  const memoryLabel = result.memory_status === "conflict"
+    ? "Previous choices differ — please review"
+    : null;
 
   return (
     <div className="review-product-results" aria-live="polite">

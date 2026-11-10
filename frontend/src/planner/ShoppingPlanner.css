@@ -101,14 +101,6 @@
 }
 
 /* Compact, anchored information popovers never change the list layout. */
-.planner-info { display:inline-flex; flex:0 0 auto; }
-.planner-info-button { display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; padding:0; border:0; border-radius:50%; color:var(--color-muted); background:transparent; cursor:pointer; }
-.planner-info-button > span { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border:1.5px solid currentColor; border-radius:50%; font:600 12px/1 serif; }
-.planner-info-button:hover, .planner-info-button:focus-visible { color:var(--color-accent); background:var(--color-lavender); }
-.planner-info-popover { position:fixed; z-index:100; box-sizing:border-box; width:320px; max-width:calc(100vw - 32px); max-height:min(45dvh,300px); overflow:auto; padding:16px 42px 16px 16px; border:1px solid #ded8e0; border-radius:12px; background:var(--color-surface,#fff); color:var(--color-ink,#302535); box-shadow:0 8px 30px #28162f25; font-size:13px; line-height:1.65; overflow-wrap:anywhere; }
-.planner-info-popover p { margin:0; }
-.planner-info-close { position:absolute; top:5px; right:5px; width:32px; height:32px; padding:0; border:0; border-radius:6px; background:transparent; color:inherit; font-size:24px; cursor:pointer; }
-.planner-info-close:hover { background:var(--color-lavender); }
 .planner-item-name { display:flex; gap:8px; align-items:center; }
 .planner-item-name h3 { min-width:0; }
 .planner-name-field > label { display:block; }

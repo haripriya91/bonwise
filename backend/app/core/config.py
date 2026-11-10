@@ -44,6 +44,9 @@ class Settings(BaseSettings):
     pinecone_index_name: str = "bonwise-dev"
     pinecone_index_host: str = ""
 
+    # Confirmed product-example retrieval (can be disabled without changing exact memory).
+    correction_rag_enabled: bool = True
+
     # LangSmith
     langsmith_api_key: SecretStr = Field(min_length=1)
     langsmith_project: str = "bonwise-dev"
