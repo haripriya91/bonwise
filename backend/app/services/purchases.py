@@ -398,6 +398,8 @@ def confirm_draft(db, household_id, user_id, draft_id, body):
         draft.status = "confirmed"
         db.flush()
 
+        from app.services.correction_memory import enqueue_purchase
+        enqueue_purchase(db, household_id, purchase.id)
         return purchase_view(db, purchase)
 
 

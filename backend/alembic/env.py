@@ -11,7 +11,7 @@ sys.path.insert(0, str(BACKEND))
 from app.core.config import get_settings
 from app.db.base import Base
 from app.db import models  # Registers model metadata.
-from app.db import commerce, planner  # Register budget/planner metadata.
+from app.db import commerce, planner, corrections  # Register budget/planner metadata.
 from app.db.session import make_db_engine
 
 
@@ -31,6 +31,7 @@ OWNED_TABLES = {
     "purchase_items",
     "household_budgets",
     "budget_commitments",
+    "product_corrections",
     "weekly_plans",
     "planner_checkpoints",
     "planner_checkpoint_writes",

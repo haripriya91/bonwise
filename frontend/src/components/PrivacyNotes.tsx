@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import "./PrivacyNotes.css";
 
-export const PRIVACY_NOTES_VERSION = "2026-11-09-planner-v2";
+export const PRIVACY_NOTES_VERSION = "2026-11-09-correction-rag-v3";
 
 export const PRIVACY_SECTIONS = [
   {
@@ -27,6 +27,10 @@ export const PRIVACY_SECTIONS = [
   {
     title: "No location selection for offers",
     text: "The offers feature does not ask for GPS, a home address or a postcode, and does not infer an area from your purchases or IP address to choose offers. It lists offers with an explicit national scope. Receipts can still contain merchant/location details, and hosting services may process connection information. Demo offers are fictional; nationwide offer scope does not guarantee stock or eligibility at every branch.",
+  },
+  {
+    title: "Learning from accepted product links",
+    text: "Confirming a purchase with a product you selected saves an accepted matching example for your household. Minimal product wording is sent to OpenAI for an embedding and stored as a vector in a separate household scope in Pinecone. Full receipts, separate price fields and merchant names are not embedded for this purpose. Later matching can use similar accepted examples alongside the public product catalogue. This is retrieval, not model training. Examples remain suggestions and cannot confirm a purchase. Old vector records are ignored if their SQL source changes or is deleted; removing those vectors from the provider must also be part of the operator’s deletion process. The release retention and cross-provider deletion review remains pending.",
   },
   {
     title: "Review, access and deletion",

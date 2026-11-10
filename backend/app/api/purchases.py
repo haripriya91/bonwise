@@ -1,7 +1,7 @@
 from datetime import date
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.auth import CurrentUser, get_current_user
@@ -79,12 +79,16 @@ def confirm(
     household_id: UUID,
     draft_id: UUID,
     body: ConfirmDraft,
+    background_tasks: BackgroundTasks,
     user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return service.confirm_draft(
+    result = service.confirm_draft(
         db, household_id, user.id, draft_id, body
     )
+    from app.services.correction_memory import process_pending
+    background_tasks.add_task(process_pending, db.get_bind(), household_id, user.id, limit=2)
+    return result
 
 
 @router.get(

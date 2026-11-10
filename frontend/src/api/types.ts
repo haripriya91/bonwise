@@ -400,6 +400,195 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{household_id}/weekly-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists */
+        get: operations["lists_households__household_id__weekly_plans_get"];
+        put?: never;
+        /** Prepare */
+        post: operations["prepare_households__household_id__weekly_plans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/weekly-plans/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Products */
+        get: operations["products_households__household_id__weekly_plans_products_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/weekly-plans/{plan_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get */
+        get: operations["get_households__household_id__weekly_plans__plan_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit */
+        patch: operations["edit_households__household_id__weekly_plans__plan_id__patch"];
+        trace?: never;
+    };
+    "/households/{household_id}/weekly-plans/{plan_id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry */
+        post: operations["retry_households__household_id__weekly_plans__plan_id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/weekly-plans/{plan_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve */
+        post: operations["approve_households__household_id__weekly_plans__plan_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/weekly-plans/{plan_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel */
+        post: operations["cancel_households__household_id__weekly_plans__plan_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/weekly-plans/{plan_id}/checklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Checklist */
+        post: operations["checklist_households__household_id__weekly_plans__plan_id__checklist_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/weekly-plans/{plan_id}/settle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Settle */
+        post: operations["settle_households__household_id__weekly_plans__plan_id__settle_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/weekly-plans/{plan_id}/offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Offers */
+        get: operations["offers_households__household_id__weekly_plans__plan_id__offers_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/weekly-plans/{plan_id}/text-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Text Preview */
+        post: operations["text_preview_households__household_id__weekly_plans__plan_id__text_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/weekly-plans/{plan_id}/accept-text": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Accept Text */
+        post: operations["accept_text_households__household_id__weekly_plans__plan_id__accept_text_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{household_id}/extraction/privacy-preview": {
         parameters: {
             query?: never;
@@ -455,6 +644,16 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AcceptText */
+        AcceptText: {
+            /** Expected Version */
+            expected_version: number;
+            /**
+             * Token
+             * Format: uuid
+             */
+            token: string;
+        };
         /** AdjustmentInput */
         AdjustmentInput: {
             /**
@@ -574,6 +773,30 @@ export interface components {
             /** Clarification Target */
             clarification_target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "quantity") | null;
         };
+        /** ApprovePlan */
+        ApprovePlan: {
+            /** Expected Version */
+            expected_version: number;
+            /**
+             * Client Request Id
+             * Format: uuid
+             */
+            client_request_id: string;
+            /** Expected Budget Version */
+            expected_budget_version: number;
+            /** Reservation Cents */
+            reservation_cents: number;
+            /**
+             * Quantities Reviewed
+             * @constant
+             */
+            quantities_reviewed: true;
+            /**
+             * Acknowledge Unknown Prices
+             * @default false
+             */
+            acknowledge_unknown_prices: boolean;
+        };
         /** BudgetCreate */
         BudgetCreate: {
             /**
@@ -643,6 +866,18 @@ export interface components {
             expected_version: number;
             /** Amount Cents */
             amount_cents: number;
+        };
+        /** ChecklistEdit */
+        ChecklistEdit: {
+            /** Expected Version */
+            expected_version: number;
+            /**
+             * Item Id
+             * Format: uuid
+             */
+            item_id: string;
+            /** Done */
+            done: boolean;
         };
         /** CommitmentCreate */
         CommitmentCreate: {
@@ -849,6 +1084,25 @@ export interface components {
             revision: string;
             content: components["schemas"]["PurchaseContent-Input"];
         };
+        /** EditPlan */
+        EditPlan: {
+            /** Expected Version */
+            expected_version: number;
+            /**
+             * Planned On
+             * Format: date
+             */
+            planned_on: string;
+            /** Items */
+            items: components["schemas"]["ItemEdit"][];
+            /** Target Cents */
+            target_cents?: number | null;
+            /**
+             * Buffer Cents
+             * @default 0
+             */
+            buffer_cents: number;
+        };
         /** EvidenceReference */
         EvidenceReference: {
             /** Evidence Id */
@@ -1011,6 +1265,38 @@ export interface components {
              * @constant
              */
             privacy_reviewed: true;
+        };
+        /** ItemEdit */
+        ItemEdit: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id?: string;
+            /** Product Id */
+            product_id?: string | null;
+            /** Name */
+            name: string;
+            /** Quantity */
+            quantity?: string | null;
+            /** Unit */
+            unit?: ("pack" | "each" | "kg" | "l") | null;
+            /**
+             * Excluded
+             * @default false
+             */
+            excluded: boolean;
+            /**
+             * Done
+             * @default false
+             */
+            done: boolean;
+            /** Manual Unit Price Cents */
+            manual_unit_price_cents?: number | null;
+            /** Offer Id */
+            offer_id?: string | null;
+            /** Offer Batch Id */
+            offer_batch_id?: string | null;
         };
         /** ItemInput */
         "ItemInput-Input": {
@@ -1279,6 +1565,75 @@ export interface components {
              */
             top_n: number;
         };
+        /** PlanOut */
+        PlanOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Household Id
+             * Format: uuid
+             */
+            household_id: string;
+            /**
+             * Week Start
+             * Format: date
+             */
+            week_start: string;
+            /**
+             * Planned On
+             * Format: date
+             */
+            planned_on: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "draft" | "approved" | "cancelled" | "settled";
+            /** Phase */
+            phase: string;
+            /** Version */
+            version: number;
+            /** Content */
+            content: {
+                [key: string]: unknown;
+            };
+            /** Budget */
+            budget: {
+                [key: string]: unknown;
+            } | null;
+            /** Reservation Cents */
+            reservation_cents: number;
+            /** Commitment Id */
+            commitment_id: string | null;
+            /** Is Revision */
+            is_revision: boolean;
+        };
+        /** PlanPage */
+        PlanPage: {
+            /** Plans */
+            plans: components["schemas"]["PlanOut"][];
+        };
+        /** PreparePlan */
+        PreparePlan: {
+            /**
+             * Client Request Id
+             * Format: uuid
+             */
+            client_request_id: string;
+            /**
+             * Planned On
+             * Format: date
+             */
+            planned_on: string;
+            /**
+             * Force New
+             * @default false
+             */
+            force_new: boolean;
+        };
         /** PrivacyInput */
         PrivacyInput: {
             /** Text */
@@ -1332,6 +1687,12 @@ export interface components {
             status: "supported" | "check_details";
             /** Checks */
             checks: string[];
+            /**
+             * Match Origin
+             * @default catalogue
+             * @enum {string}
+             */
+            match_origin: "catalogue" | "exact_memory" | "correction_rag";
         };
         /** ProductOffers */
         ProductOffers: {
@@ -1419,7 +1780,7 @@ export interface components {
              * @default not_found
              * @enum {string}
              */
-            memory_status: "reused" | "conflict" | "not_found" | "not_checked";
+            memory_status: "reused" | "conflict" | "not_found" | "not_checked" | "retrieved" | "unavailable" | "disabled";
             /** Suggested Product Id */
             suggested_product_id?: string | null;
             /** Candidates */
@@ -1646,6 +2007,16 @@ export interface components {
             product: components["schemas"]["ProductOption"];
             comparison: components["schemas"]["ProductOffers"];
         };
+        /** SettlePlan */
+        SettlePlan: {
+            /** Expected Version */
+            expected_version: number;
+            /**
+             * Purchase Id
+             * Format: uuid
+             */
+            purchase_id: string;
+        };
         /** ShoppingOverview */
         ShoppingOverview: {
             /**
@@ -1708,6 +2079,34 @@ export interface components {
             total_cents: number;
             /** Categories */
             categories: components["schemas"]["SpendingCategoryTotal"][];
+        };
+        /** TextEdit */
+        TextEdit: {
+            /** Expected Version */
+            expected_version: number;
+            /** Text */
+            text: string;
+            /**
+             * Privacy Reviewed
+             * @constant
+             */
+            privacy_reviewed: true;
+        };
+        /** TextPreviewOut */
+        TextPreviewOut: {
+            /**
+             * Token
+             * Format: uuid
+             */
+            token: string;
+            /** Base Version */
+            base_version: number;
+            /** Changes */
+            changes: string[];
+            /** Clarification */
+            clarification: string | null;
+            /** Proposed Items */
+            proposed_items: components["schemas"]["ItemEdit"][];
         };
         /** ToolActivity */
         ToolActivity: {
@@ -1772,6 +2171,11 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** Version */
+        Version: {
+            /** Expected Version */
+            expected_version: number;
         };
         /** VersionInput */
         VersionInput: {
@@ -2712,6 +3116,457 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BudgetOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lists_households__household_id__weekly_plans_get: {
+        parameters: {
+            query: {
+                week_start: string;
+            };
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    prepare_households__household_id__weekly_plans_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreparePlan"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    products_households__household_id__weekly_plans_products_get: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_households__household_id__weekly_plans__plan_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_households__household_id__weekly_plans__plan_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EditPlan"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_households__household_id__weekly_plans__plan_id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_households__household_id__weekly_plans__plan_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApprovePlan"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_households__household_id__weekly_plans__plan_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Version"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    checklist_households__household_id__weekly_plans__plan_id__checklist_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChecklistEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    settle_households__household_id__weekly_plans__plan_id__settle_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettlePlan"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    offers_households__household_id__weekly_plans__plan_id__offers_get: {
+        parameters: {
+            query: {
+                item_id: string;
+            };
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    text_preview_households__household_id__weekly_plans__plan_id__text_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TextEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TextPreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    accept_text_households__household_id__weekly_plans__plan_id__accept_text_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptText"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
                 };
             };
             /** @description Validation Error */
