@@ -678,5 +678,704 @@
     "aliases": [
       "Milchbrötchen"
     ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-milka-chocolate-90g",
+    "name_de": "Milka Schokolade 90 g",
+    "name_en": "Milka chocolate 90 g",
+    "brand": "Milka",
+    "category": "groceries",
+    "family": "snacks_chocolate",
+    "organic": null,
+    "variant_code": "chocolate",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.09",
+    "variant": "Milka Schokolade 90 g",
+    "aliases": [
+      "MILKA SCHOKO 90G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-red-apples-2kg",
+    "name_de": "Rote Tafeläpfel 2 kg",
+    "name_en": "Red table apples 2 kg",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "organic": null,
+    "variant_code": "red_apple",
+    "base_unit": "kg",
+    "pack_base_quantity": "2",
+    "variant": "Rote Tafeläpfel 2 kg",
+    "aliases": [
+      "TAFELAEPFEL ROT 2KG",
+      "ROTE AEPFEL 2KG"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-kaki-each",
+    "name_de": "Kaki",
+    "name_en": "Persimmon",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "organic": null,
+    "variant_code": "persimmon",
+    "base_unit": "each",
+    "pack_base_quantity": "1",
+    "variant": "Kaki",
+    "aliases": [
+      "KAKI ST"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-xenia-pears",
+    "name_de": "Grüne Tafelbirnen Xenia",
+    "name_en": "Green Xenia pears",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "organic": null,
+    "variant_code": "xenia",
+    "base_unit": "kg",
+    "pack_base_quantity": null,
+    "variant": "Grüne Tafelbirnen Xenia",
+    "aliases": [
+      "BIRNEN XENIA"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-avocado-each",
+    "name_de": "Avocado",
+    "name_en": "Avocado",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "organic": null,
+    "variant_code": "avocado",
+    "base_unit": "each",
+    "pack_base_quantity": "1",
+    "variant": "Avocado",
+    "aliases": [
+      "AVOCADO ST"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-mini-cucumbers",
+    "name_de": "Mini Gurken",
+    "name_en": "Mini cucumbers",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetable",
+    "organic": null,
+    "variant_code": "mini_cucumber",
+    "base_unit": "kg",
+    "pack_base_quantity": null,
+    "variant": "Mini Gurken",
+    "aliases": [
+      "MINIGURKEN"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-zespri-sungold",
+    "name_de": "Zespri SunGold Kiwi",
+    "name_en": "Zespri SunGold kiwi",
+    "brand": "Zespri",
+    "category": "groceries",
+    "family": "produce_fruit",
+    "organic": null,
+    "variant_code": "sungold",
+    "base_unit": "each",
+    "pack_base_quantity": "1",
+    "variant": "Zespri SunGold Kiwi",
+    "aliases": [
+      "ZESPRI GOLD KIWI"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-farmers-coconut-100g",
+    "name_de": "Farmer's Snack Kokos-Chips 100 g",
+    "name_en": "Farmer's Snack coconut chips 100 g",
+    "brand": "Farmer's Snack",
+    "category": "groceries",
+    "family": "snacks_nuts",
+    "organic": null,
+    "variant_code": "coconut",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.1",
+    "variant": "Farmer's Snack Kokos-Chips 100 g",
+    "aliases": [
+      "FARMERS KOKOS CHIPS 100G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-kluth-cashews-150g",
+    "name_de": "Kluth Cashewkerne 150 g",
+    "name_en": "Kluth cashews 150 g",
+    "brand": "Kluth",
+    "category": "groceries",
+    "family": "snacks_nuts",
+    "organic": null,
+    "variant_code": "cashew",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.15",
+    "variant": "Kluth Cashewkerne 150 g",
+    "aliases": [
+      "KLUTH CASHEW 150G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-kluth-walnuts-150g",
+    "name_de": "Kluth Walnusskerne 150 g",
+    "name_en": "Kluth walnut kernels 150 g",
+    "brand": "Kluth",
+    "category": "groceries",
+    "family": "snacks_nuts",
+    "organic": null,
+    "variant_code": "walnut",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.15",
+    "variant": "Kluth Walnusskerne 150 g",
+    "aliases": [
+      "KLUTH WALNUSS 150G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-kluth-almonds-200g",
+    "name_de": "Kluth Mandeln braun 200 g",
+    "name_en": "Kluth brown almonds 200 g",
+    "brand": "Kluth",
+    "category": "groceries",
+    "family": "snacks_nuts",
+    "organic": null,
+    "variant_code": "almond",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.2",
+    "variant": "Kluth Mandeln braun 200 g",
+    "aliases": [
+      "KLUTH MANDELN 200G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-rewe-bio-coconut-milk-200ml",
+    "name_de": "REWE Bio Kokosmilch 200 ml",
+    "name_en": "REWE Bio coconut milk 200 ml",
+    "brand": "REWE Bio",
+    "category": "groceries",
+    "family": "pantry_coconut_milk",
+    "organic": true,
+    "variant_code": "coconut_milk",
+    "base_unit": "l",
+    "pack_base_quantity": "0.2",
+    "variant": "REWE Bio Kokosmilch 200 ml",
+    "aliases": [
+      "REWE BIO KOKOSM 200ML"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-rewe-bio-sunflower-oil-500ml",
+    "name_de": "REWE Bio Sonnenblumenöl nativ 500 ml",
+    "name_en": "REWE Bio virgin sunflower oil 500 ml",
+    "brand": "REWE Bio",
+    "category": "groceries",
+    "family": "pantry_oil",
+    "organic": true,
+    "variant_code": "sunflower_virgin",
+    "base_unit": "l",
+    "pack_base_quantity": "0.5",
+    "variant": "REWE Bio Sonnenblumenöl nativ 500 ml",
+    "aliases": [
+      "REWE BIO SONNENBL OEL 500ML"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-ja-greek-yoghurt-2-1kg",
+    "name_de": "ja! Joghurt griechischer Art 2% 1 kg",
+    "name_en": "ja! Greek-style yoghurt 2% 1 kg",
+    "brand": "ja!",
+    "category": "groceries",
+    "family": "dairy_yoghurt",
+    "organic": null,
+    "variant_code": "greek_2_percent",
+    "base_unit": "kg",
+    "pack_base_quantity": "1",
+    "variant": "ja! Joghurt griechischer Art 2% 1 kg",
+    "aliases": [
+      "JA GRIECH JOGH 2% 1KG"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-arla-bio-milk-15-1l",
+    "name_de": "Arla Bio Frische Weidemilch 1,5% 1 l",
+    "name_en": "Arla organic fresh pasture milk 1.5% 1 litre",
+    "brand": "Arla",
+    "category": "groceries",
+    "family": "dairy_milk",
+    "organic": true,
+    "variant_code": "semi_skimmed_1_5",
+    "base_unit": "l",
+    "pack_base_quantity": "1",
+    "variant": "Arla Bio Frische Weidemilch 1,5% 1 l",
+    "aliases": [
+      "ARLA BIO WEIDEM 1.5% 1L",
+      "ARLA BIO MILCH 1,5 1L"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-santa-maria-tortillas-320g",
+    "name_de": "Santa Maria Tortilla Original 20 cm 320 g",
+    "name_en": "Santa Maria original tortillas 320 g",
+    "brand": "Santa Maria",
+    "category": "groceries",
+    "family": "bakery_wraps",
+    "organic": null,
+    "variant_code": "original",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.32",
+    "variant": "Santa Maria Tortilla Original 20 cm 320 g",
+    "aliases": [
+      "SANTA MARIA TORT ORIGINAL 320G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-don-enrico-chips-chili-175g",
+    "name_de": "Don Enrico Tortilla Chips Chili 175 g",
+    "name_en": "Don Enrico chilli tortilla chips 175 g",
+    "brand": "Don Enrico",
+    "category": "groceries",
+    "family": "snacks_chips",
+    "organic": null,
+    "variant_code": "chili",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.175",
+    "variant": "Don Enrico Tortilla Chips Chili 175 g",
+    "aliases": [
+      "DON ENRICO TORT CHILI 175G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-oryza-basmati-1kg",
+    "name_de": "Oryza Himalaya Basmati 1 kg",
+    "name_en": "Oryza Himalaya basmati rice 1 kg",
+    "brand": "Oryza",
+    "category": "groceries",
+    "family": "pantry_rice",
+    "organic": null,
+    "variant_code": "basmati",
+    "base_unit": "kg",
+    "pack_base_quantity": "1",
+    "variant": "Oryza Himalaya Basmati 1 kg",
+    "aliases": [
+      "ORYZA HIMAL BASMATI 1KG"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-biogourmet-parboiled-500g",
+    "name_de": "BioGourmet Bio Parboiled Reis 500 g",
+    "name_en": "BioGourmet organic parboiled rice 500 g",
+    "brand": "BioGourmet",
+    "category": "groceries",
+    "family": "pantry_rice",
+    "organic": true,
+    "variant_code": "parboiled",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.5",
+    "variant": "BioGourmet Bio Parboiled Reis 500 g",
+    "aliases": [
+      "BIOGOURMET PARBOILED 500G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-rewe-bio-peas-500g",
+    "name_de": "REWE Bio Grüne Erbsen 500 g",
+    "name_en": "REWE Bio green peas 500 g",
+    "brand": "REWE Bio",
+    "category": "groceries",
+    "family": "produce_vegetable",
+    "organic": true,
+    "variant_code": "green_peas",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.5",
+    "variant": "REWE Bio Grüne Erbsen 500 g",
+    "aliases": [
+      "REWE BIO ERBSEN 500G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-suntat-chickpeas-500g",
+    "name_de": "Suntat Kichererbsen 500 g",
+    "name_en": "Suntat chickpeas 500 g",
+    "brand": "Suntat",
+    "category": "groceries",
+    "family": "pantry_pulses",
+    "organic": null,
+    "variant_code": "chickpea",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.5",
+    "variant": "Suntat Kichererbsen 500 g",
+    "aliases": [
+      "SUNTAT KICHERERBSEN 500G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-gaggli-spaghetti-250g",
+    "name_de": "Gaggli Spaghetti 250 g",
+    "name_en": "Gaggli spaghetti 250 g",
+    "brand": "Gaggli",
+    "category": "groceries",
+    "family": "pantry_pasta",
+    "organic": null,
+    "variant_code": "spaghetti",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.25",
+    "variant": "Gaggli Spaghetti 250 g",
+    "aliases": [
+      "GAGGLI SPAGHETTI 250G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-cherry-tomatoes-400g",
+    "name_de": "Cherrytomaten 400 g",
+    "name_en": "Cherry tomatoes 400 g",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetable",
+    "organic": null,
+    "variant_code": "cherry_tomato",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.4",
+    "variant": "Cherrytomaten 400 g",
+    "aliases": [
+      "CHERRYTOMATEN 400G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-rewe-bio-poultry-wieners-200g",
+    "name_de": "REWE Bio Geflügel Wiener 200 g",
+    "name_en": "REWE Bio poultry wieners 200 g",
+    "brand": "REWE Bio",
+    "category": "groceries",
+    "family": "meat_sausage",
+    "organic": true,
+    "variant_code": "poultry_wiener",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.2",
+    "variant": "REWE Bio Geflügel Wiener 200 g",
+    "aliases": [
+      "REWE BIO GEFL WIENER 200G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-finish-caps-18",
+    "name_de": "Finish Ultimate Plus All in 1 18 Caps",
+    "name_en": "Finish Ultimate Plus All in 1 18 caps",
+    "brand": "Finish",
+    "category": "household",
+    "family": "household_cleaning",
+    "organic": null,
+    "variant_code": "ultimate_plus_18_caps",
+    "base_unit": "each",
+    "pack_base_quantity": "18",
+    "variant": "Finish Ultimate Plus All in 1 18 Caps",
+    "aliases": [
+      "FINISH ULTIMATE PLUS 18 CAPS"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-finish-salt-12kg",
+    "name_de": "Finish Spezial Spülmaschinensalz 1,2 kg",
+    "name_en": "Finish dishwasher salt 1.2 kg",
+    "brand": "Finish",
+    "category": "household",
+    "family": "household_cleaning",
+    "organic": null,
+    "variant_code": "dishwasher_salt",
+    "base_unit": "kg",
+    "pack_base_quantity": "1.2",
+    "variant": "Finish Spezial Spülmaschinensalz 1,2 kg",
+    "aliases": [
+      "FINISH SPEZIAL SALZ 1.2KG"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-tempo-tissues-12x9",
+    "name_de": "Tempo Natural & Soft Taschentücher 12 x 9",
+    "name_en": "Tempo Natural & Soft tissues 12 x 9",
+    "brand": "Tempo",
+    "category": "household",
+    "family": "household_paper",
+    "organic": null,
+    "variant_code": "natural_soft_4_ply",
+    "base_unit": "each",
+    "pack_base_quantity": "108",
+    "variant": "Tempo Natural & Soft Taschentücher 12 x 9",
+    "aliases": [
+      "TEMPO NAT SOFT 12X9"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-hakle-toilet-rolls-8",
+    "name_de": "Hakle Sanft & Sicher Toilettenpapier 4-lagig 8 Rollen",
+    "name_en": "Hakle Sanft & Sicher 4-ply toilet paper 8 rolls",
+    "brand": "Hakle",
+    "category": "household",
+    "family": "household_paper",
+    "organic": null,
+    "variant_code": "4ply",
+    "base_unit": "roll",
+    "pack_base_quantity": "8",
+    "variant": "Hakle Sanft & Sicher Toilettenpapier 4-lagig 8 Rollen",
+    "aliases": [
+      "HAKLE SANFT SICHER 8 ROLLEN"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-zewa-kitchen-rolls-8",
+    "name_de": "Zewa Wisch & Weg Original Küchentücher 8 Rollen",
+    "name_en": "Zewa Wisch & Weg Original kitchen paper 8 rolls",
+    "brand": "Zewa",
+    "category": "household",
+    "family": "household_paper",
+    "organic": null,
+    "variant_code": "original",
+    "base_unit": "roll",
+    "pack_base_quantity": "8",
+    "variant": "Zewa Wisch & Weg Original Küchentücher 8 Rollen",
+    "aliases": [
+      "ZEWA WISCH WEG 8 ROLLEN"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-campo-verde-oats-500g",
+    "name_de": "Campo Verde Bio Demeter Haferflocken Zartblatt 500 g",
+    "name_en": "Campo Verde organic Demeter fine oats 500 g",
+    "brand": "Campo Verde",
+    "category": "groceries",
+    "family": "pantry_cereal",
+    "organic": true,
+    "variant_code": "fine_oats",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.5",
+    "variant": "Campo Verde Bio Demeter Haferflocken Zartblatt 500 g",
+    "aliases": [
+      "CAMPO VERDE HAFER ZART 500G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-darbo-strawberry-jam-225g",
+    "name_de": "d'arbo Naturrein Garten Erdbeeren Konfitüre 225 g",
+    "name_en": "d'arbo strawberry jam 225 g",
+    "brand": "d'arbo",
+    "category": "groceries",
+    "family": "pantry_spread",
+    "organic": null,
+    "variant_code": "strawberry",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.225",
+    "variant": "d'arbo Naturrein Garten Erdbeeren Konfitüre 225 g",
+    "aliases": [
+      "DARBO ERDBEER KONF 225G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-strawberries-loose",
+    "name_de": "Erdbeeren lose",
+    "name_en": "Loose strawberries",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "organic": null,
+    "variant_code": "strawberry",
+    "base_unit": "kg",
+    "pack_base_quantity": null,
+    "variant": "Erdbeeren lose",
+    "aliases": [
+      "ERDBEEREN LOSE"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-lemons-net-500g",
+    "name_de": "Zitronen im Netz 500 g",
+    "name_en": "Lemons in a net 500 g",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_fruit",
+    "organic": null,
+    "variant_code": "lemon",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.5",
+    "variant": "Zitronen im Netz 500 g",
+    "aliases": [
+      "ZITRONEN NETZ 500G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-bio-ginger-loose",
+    "name_de": "Bio Ingwer lose",
+    "name_en": "Loose organic ginger",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetable",
+    "organic": true,
+    "variant_code": "ginger",
+    "base_unit": "kg",
+    "pack_base_quantity": null,
+    "variant": "Bio Ingwer lose",
+    "aliases": [
+      "BIO INGWER LOSE"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-garlic-net-200g",
+    "name_de": "Knoblauch im Netz 200 g",
+    "name_en": "Garlic in a net 200 g",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetable",
+    "organic": null,
+    "variant_code": "garlic",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.2",
+    "variant": "Knoblauch im Netz 200 g",
+    "aliases": [
+      "KNOBLAUCH NETZ 200G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-cauliflower-each",
+    "name_de": "Blumenkohl weiß 1 Stück",
+    "name_en": "White cauliflower 1 piece",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetable",
+    "organic": null,
+    "variant_code": "cauliflower",
+    "base_unit": "each",
+    "pack_base_quantity": "1",
+    "variant": "Blumenkohl weiß 1 Stück",
+    "aliases": [
+      "BLUMENKOHL WEISS ST"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-lettuce-hearts-2",
+    "name_de": "Kopfsalat Herzen 2 Stück",
+    "name_en": "Lettuce hearts 2 pieces",
+    "brand": null,
+    "category": "groceries",
+    "family": "produce_vegetable",
+    "organic": null,
+    "variant_code": "lettuce_heart",
+    "base_unit": "each",
+    "pack_base_quantity": "2",
+    "variant": "Kopfsalat Herzen 2 Stück",
+    "aliases": [
+      "KOPFSALAT HERZEN 2ST"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-heinz-ketchup-220ml",
+    "name_de": "Heinz Tomato Ketchup 220 ml",
+    "name_en": "Heinz tomato ketchup 220 ml",
+    "brand": "Heinz",
+    "category": "groceries",
+    "family": "pantry_sauce",
+    "organic": null,
+    "variant_code": "tomato_ketchup",
+    "base_unit": "l",
+    "pack_base_quantity": "0.22",
+    "variant": "Heinz Tomato Ketchup 220 ml",
+    "aliases": [
+      "HEINZ KETCHUP 220ML"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-heinz-mayo-220ml",
+    "name_de": "Heinz Einfach Lecker Mayonnaise 220 ml",
+    "name_en": "Heinz Einfach Lecker mayonnaise 220 ml",
+    "brand": "Heinz",
+    "category": "groceries",
+    "family": "pantry_sauce",
+    "organic": null,
+    "variant_code": "mayonnaise",
+    "base_unit": "l",
+    "pack_base_quantity": "0.22",
+    "variant": "Heinz Einfach Lecker Mayonnaise 220 ml",
+    "aliases": [
+      "HEINZ MAYONNAISE 220ML"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-lindt-lindor-double-chocolate-100g",
+    "name_de": "Lindt Lindor Double Chocolate 100 g",
+    "name_en": "Lindt Lindor double chocolate 100 g",
+    "brand": "Lindt",
+    "category": "groceries",
+    "family": "snacks_chocolate",
+    "organic": null,
+    "variant_code": "double_chocolate",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.1",
+    "variant": "Lindt Lindor Double Chocolate 100 g",
+    "aliases": [
+      "LINDT LINDOR DOUBLE 100G"
+    ]
+  },
+  {
+    "catalogue": "receipt-catalogue-v1",
+    "code": "rewe-guylian-premium-dark-100g",
+    "name_de": "Guylian Belgian Chocolates Premium Dark 100 g",
+    "name_en": "Guylian Belgian premium dark chocolates 100 g",
+    "brand": "Guylian",
+    "category": "groceries",
+    "family": "snacks_chocolate",
+    "organic": null,
+    "variant_code": "premium_dark",
+    "base_unit": "kg",
+    "pack_base_quantity": "0.1",
+    "variant": "Guylian Belgian Chocolates Premium Dark 100 g",
+    "aliases": [
+      "GUYLIAN PREMIUM DARK 100G"
+    ]
   }
 ]
