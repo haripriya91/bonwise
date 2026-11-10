@@ -413,6 +413,7 @@ export function AskBonwise({
         </button>
       </div>
 
+      <details className="analysis-question-help"><summary>What can I ask?</summary><p>Ask about recorded purchases: total or category spending, highest or lowest spending items, frequent purchases, spending by store, quantities of one product, and comparisons between periods. Follow up with “What about last month?” or “Show those purchases”.</p><p>Bonwise uses a pretrained language model to understand your question; code calculates answers from confirmed purchases. It does not forecast prices, check stock, explain why prices changed, or answer unrelated questions.</p></details>
       <div id="ask-bonwise-content" className="analysis-ask-content" hidden={!expanded}>
         <div className="analysis-suggestions" aria-label="Suggested questions">
           {suggestedQuestions.map((suggestion) => (
@@ -437,7 +438,7 @@ export function AskBonwise({
               <li className="analysis-answer-entry" key={`${entry.startDate}-${index}`}>
                 <div className="analysis-asked-question">
                   <strong>{entry.question}</strong>
-                  <span>{responsePeriod(entry.result, entry.startDate, entry.endDate)}</span>
+                  {((entry.result.analysis_period?.start_date ?? entry.startDate) !== startDate || (entry.result.analysis_period?.end_date ?? entry.endDate) !== endDate || entry.result.summaries.length > 1) && entry.result.status !== "unsupported" && <span>{responsePeriod(entry.result, entry.startDate, entry.endDate)}</span>}
                 </div>
                 <div className="analysis-answer">
                   <span className="analysis-answer-status">{statusLabel(entry.result.status)}</span>

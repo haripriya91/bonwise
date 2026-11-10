@@ -365,10 +365,10 @@ export function ImageCapture({
   return (
     <section className="image-capture workflow-surface" aria-labelledby="image-capture-title">
       <h2 id="image-capture-title">Receipt image</h2>
-      <p className="workflow-copy">Choose a JPEG or PNG. Nothing is uploaded until you explicitly extract the purchase.</p>
+      <p className="workflow-copy">Choose a JPEG or PNG. Nothing is uploaded until you choose Get purchase details.</p>
       <div className="image-inputs">
-        <label className="image-file-control">
-          <span>Take a receipt photo</span>
+        <label className="image-file-control mobile-camera-control">
+          <span>Take a receipt photo (mobile)</span>
           <input
             type="file"
             accept="image/jpeg,image/png"
@@ -520,7 +520,7 @@ export function ImageCapture({
               onClick={() => finalImage && onExtract(finalImage)}
               disabled={!acknowledged || !finalImage || extracting || preparing}
             >
-              {extracting ? "Extracting…" : "Extract purchase"}
+              {extracting ? "Preparing details…" : "Get purchase details"}
             </button>
           </div>
           {extracting && <p className="long-running-note" role="status">Still working… Extraction can take a little while. Please keep this page open.</p>}

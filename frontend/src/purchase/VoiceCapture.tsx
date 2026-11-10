@@ -397,7 +397,7 @@ export function VoiceCapture(props: VoiceCaptureProps) {
         )}
         {finalizing && (
           <>
-            <span role="status">{busy === "transcription" ? "Transcribing…" : "Finishing recording…"}</span>
+            <span role="status">{busy === "transcription" ? "Converting recording…" : "Finishing recording…"}</span>
             <button className="button button-outline" type="button" onClick={props.onCancel}>Cancel</button>
           </>
         )}
@@ -451,7 +451,7 @@ export function VoiceCapture(props: VoiceCaptureProps) {
           <div className="voice-audio-actions">
             <button className="button button-outline" type="button" onClick={recordAgain} disabled={busy !== null}>Record again</button>
             <button className="button button-primary" type="button" onClick={() => void transcribe()} disabled={busy !== null || !audio}>
-              {busy === "transcription" ? "Transcribing…" : "Transcribe recording"}
+              {busy === "transcription" ? "Converting recording…" : "Convert recording to text"}
             </button>
           </div>
           <p className="voice-privacy-note">Your recording is sent to the transcription service. Avoid names, contact details and payment information.</p>
@@ -478,7 +478,7 @@ export function VoiceCapture(props: VoiceCaptureProps) {
               )}
             </div>
           )}
-          <label htmlFor="voice-transcript-editor">{preview ? "Reviewed transcript to send for extraction" : "Transcript"}</label>
+          <label htmlFor="voice-transcript-editor">{preview ? "Check the words from your recording" : "Your recording as text"}</label>
           <textarea
             id="voice-transcript-editor"
             rows={6}
@@ -495,7 +495,7 @@ export function VoiceCapture(props: VoiceCaptureProps) {
                 onChange={(event) => onAcknowledgedChange(event.target.checked)}
                 disabled={busy !== null}
               />
-              <span>I have checked this text and want to send it for extraction.</span>
+              <span>I checked this text and want to prepare the purchase details.</span>
             </label>
           ) : null}
           <div className="capture-dialog-actions">
@@ -505,7 +505,7 @@ export function VoiceCapture(props: VoiceCaptureProps) {
               </button>
             ) : (
               <button className="button button-primary" type="button" onClick={onExtract} disabled={!acknowledged || !reviewedText.trim() || busy !== null}>
-                {busy === "extraction" ? "Extracting…" : "Extract purchase"}
+                {busy === "extraction" ? "Preparing details…" : "Get purchase details"}
               </button>
             )}
           </div>

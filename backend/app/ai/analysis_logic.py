@@ -290,9 +290,10 @@ def execute(plan, records, baseline=None):
             "I could not find any matching saved items or stores.") + qualifier}
     frequency = plan.metric == "purchase_frequency"
     score = (lambda g: len(g["purchases"])) if frequency else (lambda g: g["total"])
-    ranked = sorted(groups.values(), key=lambda g: (-score(g), normal(g["label"])))
+    lowest = plan.sort_direction == "lowest"
+    ranked = sorted(groups.values(), key=lambda g: (score(g) if lowest else -score(g), normal(g["label"])))
     cutoff = score(ranked[min(plan.top_n, len(ranked)) - 1])
-    winners = [g for g in ranked if score(g) >= cutoff]  # Preserve ties.
+    winners = [g for g in ranked if (score(g) <= cutoff if lowest else score(g) >= cutoff)]  # Preserve ties.
     displayed = winners[:10]
     names = join_names([g["label"] for g in displayed], de)
     single_rank = plan.top_n == 1 and len(winners) <= 3
@@ -344,6 +345,15 @@ def execute(plan, records, baseline=None):
                    "Ihre Ausgaben nach Händler:" if de else "Your spending by store:")
         answer = heading + "\n" + "\n".join(
             f"• {g['label']} — {money(g['total'])}" for g in displayed)
+
+    if lowest:
+        # Only wording changes here: order, cutoffs, figures and evidence were computed above.
+        for high, low in [("most often", "least often"), ("most frequently", "least frequently"),
+                          ("highest spending", "lowest spending"), ("spent the most", "spent the least"),
+                          ("am häufigsten", "am seltensten"), ("Am häufigsten", "Am seltensten"),
+                          ("höchsten Ausgaben", "niedrigsten Ausgaben"),
+                          ("Am meisten", "Am wenigsten"), ("am meisten", "am wenigsten")]:
+            answer = answer.replace(high, low)
 
     if plan.category and plan.operation in {"items", "merchants"}:
         answer += (f" Kategorie: {label[plan.category]}." if de else

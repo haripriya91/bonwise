@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import "./PrivacyNotes.css";
 
-export const PRIVACY_NOTES_VERSION = "2026-11-09-correction-rag-v3";
+export const PRIVACY_NOTES_VERSION = "2026-11-10-plain-language-v4";
 
 export const PRIVACY_SECTIONS = [
   {
@@ -18,7 +18,7 @@ export const PRIVACY_SECTIONS = [
   },
   {
     title: "Storage and service providers",
-    text: "Supabase supports accounts and application storage. Drafts, purchase records and receipt files may be stored during the workflow; confirmation records spending. Logging out does not delete saved records. OpenAI handles model and speech processing. Pinecone holds the public product catalogue; product search wording is also processed to create a search embedding. LangSmith supports diagnostics. Provider retention and deletion behavior require separate verification; an application setting alone is not a promise of zero provider retention.",
+    text: "Supabase supports accounts and application storage. Drafts, purchase records and receipt files may be stored during the workflow; confirmation records spending. Logging out does not delete saved records. OpenAI handles model and speech processing. Pinecone helps look up known products and similar item descriptions. Product matching uses search information derived from the wording you submit. LangSmith supports diagnostics. Provider retention and deletion behavior require separate verification; an application setting alone is not a promise of zero provider retention.",
   },
   {
     title: "Shopping suggestions and saved plans",
@@ -29,8 +29,8 @@ export const PRIVACY_SECTIONS = [
     text: "The offers feature does not ask for GPS, a home address or a postcode, and does not infer an area from your purchases or IP address to choose offers. It lists offers with an explicit national scope. Receipts can still contain merchant/location details, and hosting services may process connection information. Demo offers are fictional; nationwide offer scope does not guarantee stock or eligibility at every branch.",
   },
   {
-    title: "Learning from accepted product links",
-    text: "Confirming a purchase with a product you selected saves an accepted matching example for your household. Minimal product wording is sent to OpenAI for an embedding and stored as a vector in a separate household scope in Pinecone. Full receipts, separate price fields and merchant names are not embedded for this purpose. Later matching can use similar accepted examples alongside the public product catalogue. This is retrieval, not model training. Examples remain suggestions and cannot confirm a purchase. Old vector records are ignored if their SQL source changes or is deleted; removing those vectors from the provider must also be part of the operator’s deletion process. The release retention and cross-provider deletion review remains pending.",
+    title: "Remembering the products you choose",
+    text: "When you choose a matching product and confirm the purchase, Bonwise can remember that choice for your household. OpenAI and Pinecone help find similar item descriptions next time. The search information is kept separate for each household. This uses short product descriptions, without sending full receipts, separate price fields or merchant names for this matching memory. Your choices are used as examples, not to train a model. You still check each suggestion before accepting it. If the original saved example changes or is deleted, it is no longer used for matching. Removing related information from service providers must also be part of the operator’s deletion process. Retention and deletion across services still need a release review.",
   },
   {
     title: "Review, access and deletion",

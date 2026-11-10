@@ -659,16 +659,16 @@ export function CaptureFlow({
                   onChange={(event) => setAcknowledged(event.target.checked)}
                   disabled={busy !== null}
                 />
-                <span>I have checked this text and want to send it for extraction.</span>
+                <span>I checked this text and want to prepare the purchase details.</span>
               </label>
               {error && <p className="workflow-error" role="alert">{error}</p>}
               <div className="capture-dialog-actions">
                 <button className="button button-outline" type="button" onClick={() => { setSourceText(reviewedText); setStep("text"); }} disabled={busy !== null}>Back to Text</button>
                 <button className="button button-primary" type="button" onClick={() => void requestTextExtraction()} disabled={!acknowledged || !reviewedText.trim() || busy !== null}>
-                  {busy === "extraction" ? "Extracting…" : "Extract purchase"}
+                  {busy === "extraction" ? "Preparing details…" : "Get purchase details"}
                 </button>
               </div>
-              {busy === "extraction" && <p className="long-running-note" role="status">Extraction can take a little while. Please keep this dialog open.</p>}
+              {busy === "extraction" && <p className="long-running-note" role="status">Preparing your purchase details can take a little while. Please keep this window open.</p>}
             </section>
           )}
             </div>
@@ -677,16 +677,16 @@ export function CaptureFlow({
           {step === "details" && extraction && form && result && source && (
             <form className="capture-correction-form" onSubmit={(event) => void createDraft(event)}>
               <p className="workflow-copy">
-                Correct the details before creating a pending draft. It will not be recorded as a purchase yet.
+                Check and edit the details, then continue to confirmation. Spending is recorded only when you confirm the purchase.
               </p>
               {extraction.missing_fields.length > 0 && (
                 <p className="extraction-missing-summary" role="status">
-                  The extraction left some required fields blank. Fill in the highlighted details to continue.
+                  We could not read every detail. Fill in the highlighted fields to continue.
                 </p>
               )}
               {extraction.warnings.length > 0 && (
                 <section className="extraction-notes warnings" aria-labelledby="capture-warnings-title">
-                  <h3 id="capture-warnings-title">Extraction notes</h3>
+                  <h3 id="capture-warnings-title">Please check</h3>
                   <ul>{extraction.warnings.map((warning, index) => <li key={`${warning}-${index}`}>{warning}</li>)}</ul>
                 </section>
               )}

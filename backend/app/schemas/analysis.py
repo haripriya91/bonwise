@@ -19,6 +19,7 @@ class AnalysisPlan(BaseModel):
     merchant_query: str | None = Field(max_length=120)
     quantity_unit: Literal["pack", "each", "kg", "l"] | None = None
     metric: Literal["spending", "purchase_frequency"]
+    sort_direction: Literal["highest", "lowest"] = "highest"
     top_n: int = Field(ge=1, le=10)
     comparison_start_date: date | None
     comparison_end_date: date | None

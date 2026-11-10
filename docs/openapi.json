@@ -2485,6 +2485,74 @@
         }
       }
     },
+    "/households/{household_id}/activity-calendar": {
+      "get": {
+        "tags": [
+          "calendar"
+        ],
+        "summary": "Activity",
+        "operationId": "activity_households__household_id__activity_calendar_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "household_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Household Id"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Start Date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "End Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/households/{household_id}/extraction/privacy-preview": {
       "post": {
         "tags": [
@@ -2973,6 +3041,15 @@
             ],
             "title": "Metric"
           },
+          "sort_direction": {
+            "type": "string",
+            "enum": [
+              "highest",
+              "lowest"
+            ],
+            "title": "Sort Direction",
+            "default": "highest"
+          },
           "top_n": {
             "type": "integer",
             "maximum": 10.0,
@@ -3238,6 +3315,78 @@
           "amount_cents"
         ],
         "title": "BudgetUpdate"
+      },
+      "CalendarEvent": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "amount_cents": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount Cents"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "date",
+          "kind",
+          "title"
+        ],
+        "title": "CalendarEvent"
+      },
+      "CalendarOut": {
+        "properties": {
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/CalendarEvent"
+            },
+            "type": "array",
+            "title": "Events"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "events",
+          "truncated"
+        ],
+        "title": "CalendarOut"
       },
       "ChecklistEdit": {
         "properties": {

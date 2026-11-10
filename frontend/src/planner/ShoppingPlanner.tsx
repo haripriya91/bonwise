@@ -69,12 +69,13 @@ function ProductNameInput({ session, householdId, item, disabled, invalid, onCha
   </div>;
 }
 
-export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPurchase }: {
+export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPurchase, initialDate, initialPlanId }: {
+  initialDate?: string; initialPlanId?: string;
   session: Session; householdId: string; onManageBudget: () => void; onViewPurchase: (id: string) => void;
 }) {
   const queryClient = useQueryClient();
   const base = `/households/${encodeURIComponent(householdId)}`;
-  const [browseDate, setBrowseDate] = useState(defaultShoppingDate);
+  const [browseDate, setBrowseDate] = useState(() => initialDate ?? defaultShoppingDate());
   const week = weekStart(browseDate);
   const key = ["user", session.user.id, "household", householdId, "weekly-plans", week];
   const query = useQuery({ queryKey: key,
@@ -171,7 +172,7 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
 
   useEffect(() => {
     if (!query.data || busy) return;
-    const saved = query.data.plans.find(row => row.status === "draft" || row.status === "approved") ?? query.data.plans[0];
+    const saved = query.data.plans.find(row => row.id === initialPlanId) ?? query.data.plans.find(row => row.status === "draft" || row.status === "approved") ?? query.data.plans[0];
     if (saved && (plan === null || weekStart(plan.planned_on) !== week)) receive(saved);
     // Server refreshes do not overwrite unsaved form edits. Explicit Reload does.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -324,7 +325,7 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
           <section className="planner-card" aria-labelledby="planner-list-title">
             <div className="planner-section-heading"><div className="planner-list-title"><h2 id="planner-list-title">{plan.status === "draft" ? "Your suggested list" : "Your to-buy list"}</h2>
               <InformationTip label="How suggestions work" text="Suggested from your confirmed purchases, using frequency and recency. Past purchases do not mean you have run out. You choose what to keep; funds are reserved only after approval." /></div>
-              {editablePlan && <button className="button button-outline" disabled={busy !== null || items.length >= 40} onClick={addItem}>Add item</button>}
+              {editablePlan && <button className="button button-outline" disabled={busy !== null || dirty || items.length >= 40} onClick={addItem}>Add item</button>}
             </div>
             <div className="planner-export" aria-label="Shopping list actions">
               <button type="button" className="button button-outline" disabled={dirty || !items.length} onClick={()=>takeList(true)}>↓ Download list (.txt)</button>
@@ -366,8 +367,9 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
               {offers?.itemId === item.id && <div className="planner-offer-options"><p>{offers.message}</p>{offers.offers.map(offer => <div key={`${offer.batch_id}:${offer.offer_id}`}><strong>{offer.product_name}</strong><p>{offer.chain} · {offer.pack_base_quantity} {offer.comparison_unit} per pack · {money(offer.advertised_price_cents)}{offer.required_packs > 1 ? ` for ${offer.required_packs} packs` : ""}</p><p className="planner-hint">Demonstration data · {offer.valid_from}–{offer.valid_until}. Minimum checkout {money(offer.minimum_checkout_cents)}.</p>
                 <button className="button button-outline" disabled={busy !== null} onClick={() => { updateItem(item.id,{product_id:offer.product_id,name:offer.product_name,offer_id:offer.offer_id,offer_batch_id:offer.batch_id,manual_unit_price_cents:null});setOffers(null);setShowCosts(true); }}>Use this option</button></div>)}<button className="text-link" onClick={() => setOffers(null)}>Close options</button></div>}
             </li>)}</ul>
-            {editablePlan && <button type="button" className="button button-outline planner-add-bottom" disabled={busy!==null || items.length>=40} onClick={addItem}>Add item</button>}
+
             {dirty && <div className="planner-save-bar"><span>{showCosts ? "Save changes to update estimates" : "Unsaved changes"}</span>{error && errorPlace==="save" && <p className="field-error planner-inline-error" role="alert">{error}</p>}<button className="button button-primary" disabled={busy !== null} onClick={() => void perform("Saving list changes",save)}>Save changes</button><button className="text-link" disabled={busy !== null} onClick={() => receive(plan)}>Cancel edits</button></div>}
+            {editablePlan && <button type="button" className="button button-outline planner-add-bottom" disabled={busy!==null || dirty || items.length>=40} onClick={addItem}>Add item</button>}
             <p className="planner-hint">“Already have” excludes an item from this shop. Checking an item Done does not record spending.</p>
           </section>
 

@@ -4780,3 +4780,34 @@ h2 {
 
 .review-product-name-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .review-product-name-row > strong { min-width:0; }
+
+/* Deployment refinement: full-width dashboard sections and consistent controls. */
+.home-section { display: flex; flex-direction: column; gap: 24px; }
+.home-top-row { display: flex; flex-direction: column; gap: 24px; }
+.home-top-row > * { width: 100%; min-width: 0; box-sizing: border-box; }
+.home-section > *, .home-top-row > * { margin-block: 0; }
+.home-top-row .budget-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.button { border-radius: 8px; min-height: 40px; font-weight: 600; }
+.button-outline { background: #F0EAF4; color: var(--color-accent); border-color: #D4C5DD; }
+.button-outline:hover:not(:disabled) { background: #E6DCEE; color: var(--color-accent-hover); }
+.nav-link, .mobile-nav-link { display: flex; align-items: center; gap: 12px; }
+.navigation-icon { width: 20px; height: 20px; flex: 0 0 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.analysis-budget-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 0 0 24px; }
+.analysis-stat { display: flex; flex-direction: column; gap: 10px; padding: 22px; border: 1px solid var(--color-line); border-radius: 12px; background: var(--color-surface); }
+.analysis-stat > span, .analysis-stat > small { color: var(--color-muted); }
+.analysis-stat > strong { font-size: clamp(22px, 2.2vw, 32px); font-variant-numeric: tabular-nums; }
+.analysis-stat.available { background: #F0EAF4; }
+.analysis-overview-panel > .analysis-panel-toggle { border-bottom: 0; padding-bottom: 0; }
+.analysis-question-help { margin: 0; padding: 14px 22px; font-size: 13px; }
+.analysis-question-help summary { cursor: pointer; color: var(--color-accent); font-weight: 600; }
+.analysis-question-help p { line-height: 1.6; }
+.mobile-camera-control { display: none; }
+@media (max-width: 900px) {
+  .analysis-budget-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mobile-nav-link { flex-direction: column; gap: 4px; }
+}
+@media (max-width: 600px) {
+  .home-top-row .budget-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analysis-stat { padding: 14px; }
+}
+@media (hover: none) and (pointer: coarse) { .mobile-camera-control { display: grid; } }

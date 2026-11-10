@@ -13,6 +13,8 @@ import { DraftReview } from "./purchase/DraftReview";
 import { clearPendingDraftSubmission, getDraftScopeKey, getSourceSnapshotKey } from "./purchase/workflow";
 import type { SourceContext } from "./purchase/workflow";
 import { ShoppingPlanner } from "./planner/ShoppingPlanner";
+import { ActivityCalendar } from "./components/ActivityCalendar";
+import { NavigationIcon } from "./components/NavigationIcon";
 import { PrivacyNotes } from "./components/PrivacyNotes";
 
 type HouseholdOption = {
@@ -352,7 +354,9 @@ function Analysis({
   const [startDate, setStartDate] = useState(initialRange.start_date);
   const [endDate, setEndDate] = useState(initialRange.end_date);
   const [appliedRange, setAppliedRange] = useState(initialRange);
-  const [overviewExpanded, setOverviewExpanded] = useState(true);
+  const [overviewExpanded, setOverviewExpanded] = useState(false);
+  const budgetOverview = useShoppingOverview(session, household);
+  const budget = budgetOverview.data?.budget;
   const rangeError = startDate && endDate && endDate < startDate
     ? "To date must be on or after From date."
     : null;
@@ -412,6 +416,13 @@ function Analysis({
           {rangeError && <p className="spending-date-error" id="spending-date-error" role="alert">{rangeError}</p>}
         </div>
       </header>
+      <section className="analysis-budget-summary" aria-label="Spending and budget at a glance">
+        <article className="analysis-stat"><span>Recorded purchases</span><strong>{data ? formatMoney(data.total_cents) : "—"}</strong><small>Confirmed records · selected dates</small></article>
+        <article className="analysis-stat"><span>Total budget</span><strong>{budget ? formatMoney(budget.amount_cents) : "—"}</strong><small>{budget ? formatDateRange(budget.start_date, budget.end_date) : "No current budget"}</small></article>
+        <article className="analysis-stat"><span>Reserved commitments</span><strong>{budget ? formatMoney(budget.reserved_cents) : "—"}</strong><small>Not recorded as spending</small></article>
+        <article className="analysis-stat available"><span>Available to plan</span><strong>{budget ? formatMoney(budget.available_cents) : "—"}</strong><small>Current budget after spending & reservations</small></article>
+      </section>
+      {budgetOverview.error && <p className="field-error" role="alert">Budget figures could not be loaded. <button className="text-link" onClick={() => void budgetOverview.refetch()}>Try again</button></p>}
       <section className="analysis-overview-panel" aria-labelledby="spending-overview-title">
         <button
           className="analysis-panel-toggle"
@@ -909,7 +920,7 @@ function Home({
   onDraftCreated: (draft: DraftOut, source: SourceContext) => void;
   onGoToBudget: () => void;
   onGoToOffers: () => void;
-  onGoToPlan: () => void;
+  onGoToPlan: (date?: string, planId?: string) => void;
 }) {
   const { data, error, isPending, isFetching, refetch } = usePurchasePage(session, household);
   const overviewQuery = useShoppingOverview(session, household);
@@ -1032,8 +1043,10 @@ function Home({
       <section className="planner-home-card" aria-labelledby="home-plan-title">
         <div><p className="planner-eyebrow">WHEN YOU ARE READY TO SHOP</p><h2 id="home-plan-title">Start with a suggested weekly list.</h2>
           <p>Check what you need, change the list and review estimated costs before reserving funds.</p></div>
-        <button className="button button-outline" onClick={onGoToPlan}>Open shopping plan</button>
+        <button className="button button-outline" onClick={() => onGoToPlan()}>Open shopping plan</button>
       </section>
+
+      <ActivityCalendar session={session} householdId={household.id} onAddPurchase={() => document.querySelector<HTMLElement>(".capture-receipt-action")?.click()} onOpenPlan={(date, planId) => onGoToPlan(date, planId)} onManageCommitments={onGoToBudget} />
 
       <section className="recent-section" aria-labelledby="recent-title">
         <div className="recent-heading">
@@ -1401,6 +1414,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [page, setPage] = useState<Page>("home");
+  const [calendarPlan, setCalendarPlan] = useState<{date: string; id: string} | null>(null);
   const [route, setRoute] = useState<AppRoute>(currentRoute);
   const [selectedPurchaseId, setSelectedPurchaseId] = useState<string | null>(null);
   const [selectedHouseholdId, setSelectedHouseholdId] = useState<string | null>(null);
@@ -1556,12 +1570,12 @@ function App({ queryClient }: { queryClient: QueryClient }) {
           bonwise
         </a>
         <nav className="side-navigation" aria-label="Main navigation">
-          <button className={page === "home" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("home")}>Home</button>
-          <button className={page === "purchases" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("purchases")}>Purchases</button>
-          <button className={page === "planner" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("planner")}>Shopping plan</button>
-          <button className={page === "offers" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("offers")}>Compare offers</button>
-          <button className={page === "analysis" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("analysis")}>Analysis</button>
-          <button className={page === "household" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("household")}>My household</button>
+          <button className={page === "home" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("home")}><NavigationIcon name="home" /><span>Home</span></button>
+          <button className={page === "purchases" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("purchases")}><NavigationIcon name="purchases" /><span>Purchases</span></button>
+          <button className={page === "planner" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("planner")}><NavigationIcon name="planner" /><span>Shopping plan</span></button>
+          <button className={page === "offers" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("offers")}><NavigationIcon name="offers" /><span>Compare offers</span></button>
+          <button className={page === "analysis" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("analysis")}><NavigationIcon name="analysis" /><span>Analysis</span></button>
+          <button className={page === "household" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("household")}><NavigationIcon name="household" /><span>My household</span></button>
         </nav>
         <div className="sidebar-privacy"><PrivacyNotes /></div>
         <div className="sidebar-account">
@@ -1648,11 +1662,13 @@ function App({ queryClient }: { queryClient: QueryClient }) {
               onDraftCreated={navigateToDraft}
               onGoToBudget={() => navigateToPage("household")}
               onGoToOffers={() => navigateToPage("offers")}
-              onGoToPlan={() => navigateToPage("planner")}
+              onGoToPlan={(date, id) => { setCalendarPlan(date && id ? {date, id} : null); navigateToPage("planner"); }}
             />
           )}
           {selectedHousehold && route.kind === "main" && page === "planner" && (
             <ShoppingPlanner
+              initialDate={calendarPlan?.date}
+              initialPlanId={calendarPlan?.id}
               key={`${session.user.id}:${selectedHousehold.id}`}
               session={session}
               householdId={selectedHousehold.id}
@@ -1694,11 +1710,11 @@ function App({ queryClient }: { queryClient: QueryClient }) {
           )}
         </main>
         <nav className="mobile-navigation" aria-label="Main navigation">
-          <button className={page === "home" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("home")}>Home</button>
-          <button className={page === "purchases" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("purchases")}>Purchases</button>
+          <button className={page === "home" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("home")}><NavigationIcon name="home" /><span>Home</span></button>
+          <button className={page === "purchases" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("purchases")}><NavigationIcon name="purchases" /><span>Purchases</span></button>
           <button className={page === "planner" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("planner")}>Plan</button>
           <button className={page === "offers" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("offers")}>Offers</button>
-          <button className={page === "analysis" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("analysis")}>Analysis</button>
+          <button className={page === "analysis" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("analysis")}><NavigationIcon name="analysis" /><span>Analysis</span></button>
           <button className={page === "household" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("household")}>Household</button>
         </nav>
       </div>

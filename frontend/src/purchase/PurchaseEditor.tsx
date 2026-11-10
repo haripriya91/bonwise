@@ -90,7 +90,7 @@ function ReadOnlySource({
         <>
           <div className="review-image-viewport" tabIndex={0} role="region" aria-label="Scrollable reviewed receipt image. Use zoom controls and scroll to read.">
             <div className="review-image-stage" style={{ width: `${zoom * 100}%` }}>
-              <img src={source.dataUrl} alt="Read-only prepared receipt image sent for extraction" />
+              <img src={source.dataUrl} alt="Receipt image used to read purchase details" />
             </div>
           </div>
           {keepReceipt !== undefined && onKeepReceiptChange && (
@@ -143,12 +143,12 @@ function ProductCandidateRow({
           {candidate.match_origin && candidate.match_origin!=="catalogue" && <InformationTip
             label="Why this product was suggested"
             text={candidate.match_origin==="exact_memory"
-              ? "You previously accepted this product for the same receipt wording in this household. Check that it still fits."
-              : "A similar receipt item was previously linked to this product in this household. That example was available to the AI when checking this suggestion. Review the current product details before using it."} />}
+              ? "You previously chose this product for the same item description. Check that it still fits."
+              : "You previously chose this product for a similar item. Check that it fits this purchase."} />}
         </div>
         {candidate.brand && <span>{candidate.brand}</span>}
         <span>{formatPackageContents(candidate)}</span>
-        {candidate.source === "synthetic" && <small>Demo catalogue</small>}
+        {candidate.source === "synthetic" && <small>Demo product</small>}
         {candidate.checks.length > 0 && (
           <ul className="review-product-checks" aria-label="Product checks">
             {candidate.checks.map((check, index) => <li key={`${check}-${index}`}>{check}</li>)}
@@ -156,7 +156,7 @@ function ProductCandidateRow({
         )}
       </div>
       <button className="button button-primary review-use-product" type="button" onClick={() => onUseProduct(candidate.product_id)}>
-        Use product
+        Use this match
       </button>
     </li>
   );
@@ -190,7 +190,7 @@ function ProductSuggestionResults({
         <>
           <p className="review-product-message">{result.message}</p>
           <button className="button button-outline review-keep-unmatched" type="button" onClick={onKeepUnmatched}>
-            Keep unmatched
+            Skip product matching
           </button>
         </>
       ) : (
@@ -289,12 +289,12 @@ export function PurchaseEditor({
   currentOwner.current = { userId: session.user.id, householdId };
   const imageSource = source?.type === "image";
   const voiceSource = source?.type === "voice";
-  const sourceTitle = imageSource ? "Reviewed receipt" : voiceSource ? "Reviewed voice transcript" : "Reviewed source text";
+  const sourceTitle = imageSource ? "Reviewed receipt" : voiceSource ? "Your voice entry" : "Your written entry";
   const sourceDescription = imageSource
-    ? "Prepared image sent for extraction. Read-only."
+    ? "This is the receipt you checked. It cannot be edited here."
     : voiceSource
-      ? "Exact reviewed voice transcript sent for extraction. Read-only."
-      : "Exact reviewed text sent for extraction. Read-only.";
+      ? "These are the words from your recording that you checked."
+      : "This is the written entry you checked.";
 
   useEffect(() => {
     if (sourceOpen && sourceDialog.current && !sourceDialog.current.open) sourceDialog.current.showModal();
@@ -526,6 +526,7 @@ export function PurchaseEditor({
         <section className="purchase-editor-fields">
           <fieldset disabled={disabled}>
             <legend>Purchase details</legend>
+            <p className="review-product-help">Check the items, quantities and prices. Product matching is optional and helps compare offers; you can save without it.</p>
             {showErrors && errors.length > 0 && (
               <nav className="validation-errors" aria-label="Fields to correct">
                 <p>Correct these fields to continue:</p>
@@ -705,7 +706,7 @@ export function PurchaseEditor({
                     <div className="review-product-suggestion">
                       {item.productId && !isFindingOpen ? (
                         <div className="review-product-linked">
-                          <span role="status">Product linked</span>
+                          <span role="status">Product matched</span>
                           {!disabled && (
                             <>
                               <button type="button" className="review-product-link-action" onClick={() => toggleProductFinder(item.localId)}>
@@ -734,18 +735,18 @@ export function PurchaseEditor({
                           aria-live="polite"
                         >
                           {isFinding
-                            ? "Finding products…"
+                            ? "Checking matches…"
                             : activeSuggestionState?.status === "error"
                               ? "Retry"
-                              : "Find product"}
+                              : "Match product"}
                         </button>
                       )}
                       {(!item.productId || isFindingOpen) && (
                         <>
                           <p className="review-product-help" id={`${idPrefix}-product-help-${item.localId}`}>
-                            Item wording is sent to embedding and model providers to suggest products.
+                            Optional—helps compare offers. <InformationTip label="How product matching works" text="Your item description has already been recorded. Matching uses AI to check which product it refers to. It does not change your purchase price or quantity. You can skip it. See Privacy notes for information sent to service providers." />
                           </p>
-                          {!canFindProduct && <p className="review-product-help">Enter item wording and choose a unit to search.</p>}
+                          {!canFindProduct && <p className="review-product-help">Enter the item name and choose a unit to check product matches.</p>}
                           {activeSuggestionState?.status === "error" && (
                             <div className="review-product-message" role="alert">
                               <p>{activeSuggestionState.message}</p>

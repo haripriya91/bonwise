@@ -21,7 +21,7 @@ from app.schemas.analysis import AnalysisOut, AnalysisPlan, ContextPeriod, ToolA
 from app.services.analysis import load_snapshot
 from app.services.purchases import require_member
 
-PROMPT_VERSION = "analysis-router-v5-quantity"
+PROMPT_VERSION = "analysis-router-v6-lowest-ranking"
 
 ROUTING_PROMPT = """
 Interpret ONE household purchase/spending question in English or German.
@@ -50,6 +50,14 @@ unsupported: offers, budgets, predictions, editing records, causal price explana
 unit-quantity rankings, multiple independent questions, unrelated subjects.
 
 Items and merchant rankings:
+- sort_direction=highest by default. 'spent least', 'spent less on which item',
+  'lowest spending', 'am wenigsten ausgegeben' use items/spending,
+  sort_direction=lowest and top_n=1. A named retailer ranking uses merchants.
+  Rank TOTAL recorded spending per item/store, never claim cheapest unit price.
+  'least often' uses purchase_frequency and sort_direction=lowest.
+  'spent less than last month' asks for compare, not an item ranking.
+  'cheapest item' without total spending versus unit price context must clarify scope.
+  Negative net totals (returns/refunds) remain recorded totals, not today's prices.
 - 'most money', 'spent most on', 'highest spending item', 'most expensive purchase item'
   use metric=spending, items, top_n=1 unless a count is requested.
   This ranks total recorded item spending, NOT unit prices.
@@ -124,7 +132,9 @@ comparison dates=null, clarification_reason=none. For clarify/unsupported
 start/end dates can be null. Use language=de for German, otherwise en.
 Empty recorded history is not proof that the household bought nothing.
 Examples of intent:
-'Which item did I spend the most on this month?' => items/spending/top_n1.
+'Which item did I spend the most on this month?' => items/spending/sort_direction highest/top_n1.
+'On which item did I spend less this month?' => items/spending/sort_direction lowest/top_n1.
+'Which item did I spend the least on?' => items/spending/sort_direction lowest/top_n1.
 'What did I buy most frequently?' => items/purchase_frequency/top_n1.
 'Highest buying item this month?' => clarify/ranking.
 'Where did I spend most?' => merchants/spending/top_n1.
@@ -147,6 +157,8 @@ def routing_model():
 def valid_plan(p):
     if p.operation in {"clarify", "unsupported"}:
         return True
+    if p.sort_direction == "lowest" and p.operation not in {"items", "merchants"}:
+        return False
     if p.start_date is None or p.end_date is None:
         return False
     if p.end_date < p.start_date or (p.end_date - p.start_date).days > 366:
