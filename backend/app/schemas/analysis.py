@@ -5,12 +5,14 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.schemas.purchase import Category, SpendingSummary
+from app.schemas.commerce import BudgetOut
 
 
 class AnalysisPlan(BaseModel):
     model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
     operation: Literal["summary", "highest_category", "items", "merchants",
-                       "records", "compare", "quantity", "clarify", "unsupported"]
+                       "records", "compare", "quantity", "budget", "clarify", "unsupported"]
+    detail: Literal["merchant", "date"] | None = None
     language: Literal["en", "de"]
     start_date: date | None
     end_date: date | None
@@ -25,7 +27,7 @@ class AnalysisPlan(BaseModel):
     comparison_end_date: date | None
     clarification_reason: Literal["ranking", "period", "scope", "none"]
     clarification_target: Literal["summary", "highest_category", "items", "merchants",
-                                  "records", "compare", "quantity"] | None = None
+                                  "records", "compare", "quantity", "budget"] | None = None
 
 
 class ContextPeriod(BaseModel):
@@ -43,7 +45,7 @@ class ContextPeriod(BaseModel):
 class PendingAnalysisContext(BaseModel):
     model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
     target: Literal["summary", "highest_category", "items", "merchants",
-                    "records", "compare", "quantity"] | None = None
+                    "records", "compare", "quantity", "budget"] | None = None
     reason: Literal["ranking", "period"]
     category: Category | None = None
     product_query: str | None = Field(default=None, max_length=120)
@@ -132,3 +134,7 @@ class AnalysisOut(BaseModel):
     conversation_context: ConversationContext | None = Field(default=None, repr=False)
     analysis_period: ContextPeriod | None = None
     quantity_totals: list[QuantityTotal] = Field(default_factory=list)
+
+class AnalysisBudgetContext(BaseModel):
+    status: Literal["covered", "not_set", "partial"]
+    budget: BudgetOut | None

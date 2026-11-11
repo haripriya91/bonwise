@@ -3,6 +3,7 @@ import type { FormEvent, ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { apiRequest, getErrorText } from "../api/client";
 import type { components } from "../api/types";
+import { AIWorking } from "../components/AIWorking";
 import { VoiceCapture } from "../purchase/VoiceCapture";
 
 type HouseholdOption = { id: string };
@@ -25,6 +26,8 @@ type AnalysisChatState = {
   entries: AnswerEntry[];
   question: string;
   pending: boolean;
+  pendingQuestion: string | null;
+  stopWaiting: () => void;
   error: string | null;
   updateQuestion: (value: string) => void;
   submitQuestion: (value: string, startDate: string, endDate: string) => Promise<void>;
@@ -45,6 +48,7 @@ export function AnalysisChatProvider({
   const [entries, setEntries] = useState<AnswerEntry[]>([]);
   const [question, setQuestion] = useState("");
   const [pending, setPending] = useState(false);
+  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [conversationContext, setConversationContext] = useState<ConversationContext | null | undefined>(undefined);
   const [hasConversationTurn, setHasConversationTurn] = useState(false);
@@ -96,6 +100,8 @@ export function AnalysisChatProvider({
     const controller = new AbortController();
     requestController.current = controller;
     setPending(true);
+    setPendingQuestion(submittedQuestion);
+    setQuestion("");
     setError(null);
     try {
       const result = await apiRequest<AnalysisOut>(
@@ -112,11 +118,11 @@ export function AnalysisChatProvider({
       setHasConversationTurn(true);
       setQuestion((current) => current.trim() === submittedQuestion ? "" : current);
     } catch (requestError) {
-      if (!controller.signal.aborted && isCurrentOwner()) setError(getErrorText(requestError));
+      if (!controller.signal.aborted && isCurrentOwner()) { setError(getErrorText(requestError)); setQuestion(current => current || submittedQuestion); }
     } finally {
       if (requestController.current === controller) {
         requestController.current = null;
-        if (!controller.signal.aborted && isCurrentOwner()) setPending(false);
+        if (!controller.signal.aborted && isCurrentOwner()) { setPending(false); setPendingQuestion(null); }
       }
     }
   }, [conversationContext, hasConversationTurn, householdId, pending, session]);
@@ -126,6 +132,7 @@ export function AnalysisChatProvider({
     requestController.current?.abort();
     requestController.current = null;
     setEntries([]);
+    setPendingQuestion(null);
     setQuestion("");
     setPending(false);
     setError(null);
@@ -133,9 +140,17 @@ export function AnalysisChatProvider({
     setHasConversationTurn(false);
   }, []);
 
+  const stopWaiting = useCallback(() => {
+    generation.current += 1;
+    requestController.current?.abort();
+    requestController.current = null;
+    setQuestion(current => current || pendingQuestion || "");
+    setPendingQuestion(null);setPending(false);setError("Stopped waiting. You can edit your question and retry.");
+  }, [pendingQuestion]);
+
   return (
     <AnalysisChatContext.Provider
-      value={{ entries, question, pending, error, updateQuestion, submitQuestion, newConversation }}
+      value={{ entries, question, pending, pendingQuestion, stopWaiting, error, updateQuestion, submitQuestion, newConversation }}
     >
       {children}
     </AnalysisChatContext.Provider>
@@ -170,6 +185,7 @@ const evidenceCategoryLabels: Record<
 const completedOperationLabels: Record<string, string> = {
   get_spending_summary: "Spending totals",
   get_purchase_evidence: "Confirmed purchases",
+  get_budget_context: "Budget for requested dates",
 };
 
 function formatPeriodDate(value: string): string {
@@ -192,14 +208,14 @@ function statusLabel(status: AnalysisOut["status"]): string {
     case "unsupported":
       return "Not supported yet";
     case "no_data":
-      return "No confirmed purchases found";
+      return "No data for this period";
   }
 }
 
 function responsePeriod(result: AnalysisOut, fallbackStart: string, fallbackEnd: string): string {
   const dateRanges = result.summaries.length > 0
     ? result.summaries
-    : result.evidence;
+    : result.analysis_period ? [result.analysis_period] : result.evidence;
   const uniquePeriods = [...new Set(
     dateRanges.map(({ start_date, end_date }) => `${start_date}/${end_date}`),
   )];
@@ -284,10 +300,11 @@ export function AskBonwise({
   endDate: string;
 }) {
   const [expanded, setExpanded] = useState(true);
+  const pendingAnchor = useRef<HTMLDivElement>(null);
   const {
     entries,
     question,
-    pending,
+    pending, pendingQuestion, stopWaiting,
     error,
     updateQuestion: chatUpdateQuestion,
     submitQuestion,
@@ -380,6 +397,8 @@ export function AskBonwise({
     setExpanded((current) => !current);
   }
 
+  useEffect(() => { if(pending && expanded) pendingAnchor.current?.scrollIntoView({block:"nearest"}); }, [pending, expanded]);
+
   function submitTypedQuestion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     void submitQuestion(question, startDate, endDate);
@@ -413,7 +432,7 @@ export function AskBonwise({
         </button>
       </div>
 
-      <details className="analysis-question-help"><summary>What can I ask?</summary><p>Ask about recorded purchases: total or category spending, highest or lowest spending items, frequent purchases, spending by store, quantities of one product, and comparisons between periods. Follow up with “What about last month?” or “Show those purchases”.</p><p>Bonwise uses a pretrained language model to understand your question; code calculates answers from confirmed purchases. It does not forecast prices, check stock, explain why prices changed, or answer unrelated questions.</p></details>
+      <details className="analysis-question-help"><summary>What can I ask?</summary><p>Ask about recorded purchases: total or category spending, highest or lowest spending items, frequent purchases, spending by store, quantities of one product, and comparisons between periods. Follow up with “What about last month?” or “Show those purchases”.</p><p>Bonwise uses a pretrained language model to understand your question; code calculates answers from confirmed purchases. Budget questions check the requested period. It does not forecast prices, check stock, explain why prices changed, or answer unrelated questions.</p></details>
       <div id="ask-bonwise-content" className="analysis-ask-content" hidden={!expanded}>
         <div className="analysis-suggestions" aria-label="Suggested questions">
           {suggestedQuestions.map((suggestion) => (
@@ -438,7 +457,7 @@ export function AskBonwise({
               <li className="analysis-answer-entry" key={`${entry.startDate}-${index}`}>
                 <div className="analysis-asked-question">
                   <strong>{entry.question}</strong>
-                  {((entry.result.analysis_period?.start_date ?? entry.startDate) !== startDate || (entry.result.analysis_period?.end_date ?? entry.endDate) !== endDate || entry.result.summaries.length > 1) && entry.result.status !== "unsupported" && <span>{responsePeriod(entry.result, entry.startDate, entry.endDate)}</span>}
+                  {(entry.result.analysis_period || entry.result.status === "answered" || entry.result.status === "no_data") && <span>Answer period: {responsePeriod(entry.result, entry.startDate, entry.endDate)}</span>}
                 </div>
                 <div className="analysis-answer">
                   <span className="analysis-answer-status">{statusLabel(entry.result.status)}</span>
@@ -471,7 +490,7 @@ export function AskBonwise({
           </ol>
         )}
 
-        {pending && <p className="status-message" role="status">Checking confirmed purchases…</p>}
+        {pending && <div className="analysis-pending-turn" ref={pendingAnchor}><div className="analysis-asked-question"><strong>{pendingQuestion}</strong></div><AIWorking label="Checking your question against saved records" onCancel={stopWaiting}/></div>}
         {error && <p className="analysis-ask-error" role="alert">{error}</p>}
 
         <form className="analysis-question-form" onSubmit={submitTypedQuestion}>

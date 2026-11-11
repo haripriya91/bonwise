@@ -1,3 +1,4 @@
+import {AIWorking} from "../components/AIWorking";
 import { useEffect, useRef, useState } from "react";
 import type { components } from "../api/types";
 
@@ -397,7 +398,7 @@ export function VoiceCapture(props: VoiceCaptureProps) {
         )}
         {finalizing && (
           <>
-            <span role="status">{busy === "transcription" ? "Converting recording…" : "Finishing recording…"}</span>
+            <AIWorking label={busy === "transcription" ? "Transcribing your recording" : "Finishing your recording"}/>
             <button className="button button-outline" type="button" onClick={props.onCancel}>Cancel</button>
           </>
         )}
@@ -457,7 +458,8 @@ export function VoiceCapture(props: VoiceCaptureProps) {
           <p className="voice-privacy-note">Your recording is sent to the transcription service. Avoid names, contact details and payment information.</p>
         </div>
       )}
-      {busy === "transcription" && <p className="long-running-note" role="status">Still working… Transcription can take a little while. Please keep this dialog open.</p>}
+      {busy === "transcription" && <AIWorking label="Transcribing your recording"/>}
+      {busy === "extraction" && <AIWorking label="Preparing purchase details for review"/>}
 
       {recordError && <p className="workflow-error" role="alert">{recordError}</p>}
       {error && <p className="workflow-error" role="alert">{error}</p>}

@@ -1,3 +1,4 @@
+import { AIWorking } from "../components/AIWorking";
 import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
@@ -746,6 +747,7 @@ export function PurchaseEditor({
                           <p className="review-product-help" id={`${idPrefix}-product-help-${item.localId}`}>
                             Optional—helps compare offers. <InformationTip label="How product matching works" text="Your item description has already been recorded. Matching uses AI to check which product it refers to. It does not change your purchase price or quantity. You can skip it. See Privacy notes for information sent to service providers." />
                           </p>
+                          {isFinding && <AIWorking label="Checking product matches"/>}
                           {!canFindProduct && <p className="review-product-help">Enter the item name and choose a unit to check product matches.</p>}
                           {activeSuggestionState?.status === "error" && (
                             <div className="review-product-message" role="alert">

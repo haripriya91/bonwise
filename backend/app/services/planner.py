@@ -168,7 +168,7 @@ def store_proposal(db, household_id, user_id, plan_id, token, proposal, method):
         plan.content = {**plan.content, "items": items, "generation_method": method,
             "summary": evidence.totals(items, 0, None),
             "notice": "Check the suggested quantities. Previous purchases do not tell us what is at home." if items
-                else "Tell us what you need this week to get started."}
+                else ("There are recorded purchases, but no recurring list was selected. Review purchase history or add items manually." if candidates else "No eligible confirmed purchases were found in the 90-day history window. Add items manually to start.")}
         if method == "review_required":
             plan.content["notice"] = "The suggested estimates exceed available funds. Reduce the list before approval."
         plan.phase = "review"
@@ -422,3 +422,40 @@ def accept_text(db, household_id, user_id, plan_id, body):
         edit_body = EditPlan(expected_version=plan.version, planned_on=plan.planned_on,
             items=pending["proposed_items"], target_cents=plan.content.get("target_cents"), buffer_cents=plan.content.get("buffer_cents", 0))
     return edit(db, household_id, user_id, plan_id, edit_body, from_text=True)
+
+
+def history_options(db, household_id, user_id, plan_id):
+    """Read-only starting points, explicitly chosen by the user; not inferred needs."""
+    with db.begin():
+        plan = load(db, household_id, user_id, plan_id)
+        ensure_idle(plan)
+        ctx = evidence.collect(db, household_id, plan.planned_on)
+        result, seen = [], set()
+        for candidate in ctx['candidates']:
+            identity = candidate['product_id'] or evidence.normal(candidate['name'])
+            if identity in seen or candidate['category'] not in {'groceries','household','personal_care'}:
+                continue
+            raw = ItemEdit(name=candidate['name'], product_id=candidate['product_id'],
+                quantity=candidate['suggested_quantity'], unit=candidate['unit']).model_dump(mode='json')
+            original = {**raw, 'reason':candidate['reason'] + ' Review whether you need it again.',
+                'history_candidate_id':candidate['candidate_id']}
+            result.append(evidence.price_item(db, household_id, plan.planned_on, raw, ctx, original))
+            seen.add(identity)
+            if len(result) == 8:
+                break
+        return dict(base_version=plan.version, items=result,
+            message=f"From the 90-day confirmed-purchase history window ending {ctx['cutoff']:%d %b %Y}. These are not proof of a regular routine or what is at home. Choose what you need; nothing is reserved.")
+
+
+def refresh_empty(db, household_id, user_id, plan_id, body):
+    with db.begin():
+        plan = load(db, household_id, user_id, plan_id, lock=True)
+        ensure_idle(plan)
+        version(plan, body.expected_version)
+        if (actual_status(db, plan) != 'draft' or plan.content.get('items')
+                or commitment(db, plan) is not None):
+            raise HTTPException(409, 'Only an empty draft without a reservation can refresh suggestions.')
+        plan.thread_id = uuid4()
+        plan.phase = 'preparing'
+        plan.content = {**plan.content, 'notice':None}
+        touch(plan)

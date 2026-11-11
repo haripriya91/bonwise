@@ -1,0 +1,1028 @@
+{
+  "scope": "Hosted sampled GET access/cache checks; optional settings-only PATCH probe. Not a full security audit or GDPR assessment.",
+  "counts": {
+    "PASS": 190,
+    "FAIL": 0,
+    "BLOCKED": 0,
+    "SKIP": 2,
+    "NOT_TESTED": 9
+  },
+  "checks": [
+    {
+      "check": "authentication:missing_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "authentication:invalid_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "household:A:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "household:A:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "household:A:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "household:A:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "household:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "household:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "settings:A:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "settings:A:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "settings:A:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "settings:A:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "settings:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "settings:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "saved_needs:A:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "saved_needs:A:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "saved_needs:A:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "saved_needs:A:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "saved_needs:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "saved_needs:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "purchases:A:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "purchases:A:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "purchases:A:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "purchases:A:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "purchases:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "purchases:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "purchase_details:A:owner",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "purchase_details:A:owner:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "purchase_details:A:other_account",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "purchase_details:A:other_account:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "purchase_details:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "purchase_details:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "purchase_details:A:wrong_parent",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "purchase_details:A:wrong_parent:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "receipt:A",
+      "result": "SKIP",
+      "http_status": null,
+      "reason": "The sampled purchase has no attached receipt. Check a known receipt manually or rerun with one among latest purchases."
+    },
+    {
+      "check": "budgets:A:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "budgets:A:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "budgets:A:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "budgets:A:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "budgets:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "budgets:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "budgets_detail:A:owner",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "budgets_detail:A:owner:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "budgets_detail:A:other_account",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "budgets_detail:A:other_account:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "budgets_detail:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "budgets_detail:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "budgets_detail:A:wrong_parent",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "budgets_detail:A:wrong_parent:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "plans:A:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "plans:A:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "plans:A:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "plans:A:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "plans:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "plans:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "plans_detail:A:owner",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "plans_detail:A:owner:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "plans_detail:A:other_account",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "plans_detail:A:other_account:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "plans_detail:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "plans_detail:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "plans_detail:A:wrong_parent",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "plans_detail:A:wrong_parent:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "spending_summary:A:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "spending_summary:A:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "spending_summary:A:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "spending_summary:A:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "spending_summary:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "spending_summary:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "calendar:A:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "calendar:A:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "calendar:A:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "calendar:A:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "calendar:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "calendar:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "home:A:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "home:A:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "home:A:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "home:A:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "home:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "home:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "offer_options:A:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "offer_options:A:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "offer_options:A:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "offer_options:A:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "offer_options:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "offer_options:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "offer_recommendations:A:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "offer_recommendations:A:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "offer_recommendations:A:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "offer_recommendations:A:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "offer_recommendations:A:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "offer_recommendations:A:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "household:B:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "household:B:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "household:B:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "household:B:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "household:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "household:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "settings:B:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "settings:B:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "settings:B:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "settings:B:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "settings:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "settings:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "saved_needs:B:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "saved_needs:B:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "saved_needs:B:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "saved_needs:B:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "saved_needs:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "saved_needs:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "purchases:B:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "purchases:B:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "purchases:B:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "purchases:B:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "purchases:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "purchases:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "purchase_details:B:owner",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "purchase_details:B:owner:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "purchase_details:B:other_account",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "purchase_details:B:other_account:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "purchase_details:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "purchase_details:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "purchase_details:B:wrong_parent",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "purchase_details:B:wrong_parent:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "receipt:B:owner",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "receipt:B:owner:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "receipt:B:other_account",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "receipt:B:other_account:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "receipt:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "receipt:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "receipt:B:wrong_parent",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "receipt:B:wrong_parent:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "budgets:B:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "budgets:B:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "budgets:B:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "budgets:B:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "budgets:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "budgets:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "budgets_detail:B:owner",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "budgets_detail:B:owner:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "budgets_detail:B:other_account",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "budgets_detail:B:other_account:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "budgets_detail:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "budgets_detail:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "budgets_detail:B:wrong_parent",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "budgets_detail:B:wrong_parent:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "plans:B:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "plans:B:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "plans:B:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "plans:B:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "plans:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "plans:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "plans_detail:B:owner",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "plans_detail:B:owner:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "plans_detail:B:other_account",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "plans_detail:B:other_account:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "plans_detail:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "plans_detail:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "plans_detail:B:wrong_parent",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "plans_detail:B:wrong_parent:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "spending_summary:B:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "spending_summary:B:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "spending_summary:B:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "spending_summary:B:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "spending_summary:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "spending_summary:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "calendar:B:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "calendar:B:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "calendar:B:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "calendar:B:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "calendar:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "calendar:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "home:B:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "home:B:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "home:B:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "home:B:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "home:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "home:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "offer_options:B:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "offer_options:B:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "offer_options:B:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "offer_options:B:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "offer_options:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "offer_options:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "offer_recommendations:B:own",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "offer_recommendations:B:own:cache_no_store",
+      "result": "PASS",
+      "http_status": 200
+    },
+    {
+      "check": "offer_recommendations:B:cross",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "offer_recommendations:B:cross:cache_no_store",
+      "result": "PASS",
+      "http_status": 404
+    },
+    {
+      "check": "offer_recommendations:B:no_token",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "offer_recommendations:B:no_token:cache_no_store",
+      "result": "PASS",
+      "http_status": 401
+    },
+    {
+      "check": "hosted_write_isolation",
+      "result": "SKIP",
+      "http_status": null,
+      "reason": "Default mode issues application GET requests only. Optional settings probe covers settings only."
+    },
+    {
+      "check": "manual:database_rls_and_grants",
+      "result": "NOT_TESTED",
+      "http_status": null,
+      "reason": "Follow the runbook; this runner does not verify this area."
+    },
+    {
+      "check": "manual:expired_valid_token",
+      "result": "NOT_TESTED",
+      "http_status": null,
+      "reason": "Follow the runbook; this runner does not verify this area."
+    },
+    {
+      "check": "manual:direct_storage_access_and_url_expiry",
+      "result": "NOT_TESTED",
+      "http_status": null,
+      "reason": "Follow the runbook; this runner does not verify this area."
+    },
+    {
+      "check": "manual:draft_object_access",
+      "result": "NOT_TESTED",
+      "http_status": null,
+      "reason": "Follow the runbook; this runner does not verify this area."
+    },
+    {
+      "check": "manual:private_profile_access",
+      "result": "NOT_TESTED",
+      "http_status": null,
+      "reason": "Follow the runbook; this runner does not verify this area."
+    },
+    {
+      "check": "manual:browser_cache_and_logout",
+      "result": "NOT_TESTED",
+      "http_status": null,
+      "reason": "Follow the runbook; this runner does not verify this area."
+    },
+    {
+      "check": "manual:ai_payload_logs_memory_and_injection",
+      "result": "NOT_TESTED",
+      "http_status": null,
+      "reason": "Follow the runbook; this runner does not verify this area."
+    },
+    {
+      "check": "manual:financial_writes_and_concurrency",
+      "result": "NOT_TESTED",
+      "http_status": null,
+      "reason": "Follow the runbook; this runner does not verify this area."
+    },
+    {
+      "check": "manual:rights_and_retention",
+      "result": "NOT_TESTED",
+      "http_status": null,
+      "reason": "Follow the runbook; this runner does not verify this area."
+    }
+  ]
+}

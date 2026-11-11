@@ -231,6 +231,25 @@ def execute(plan, records, baseline=None):
         return base
 
     lines = filtered_lines(records, plan)
+    if plan.operation == "records" and plan.detail:
+        eligible = {p["id"]: p for p, _ in lines}
+        selected = list(eligible.values())
+        if not selected:
+            return {**base, "status":"no_data", "answer": "No matching purchase is recorded for this period." if not de else "Kein passender Einkauf in diesem Zeitraum gespeichert."}
+        refs = [purchase_ref(p, plan) for p in selected[:10]]
+        if len(selected) == 1:
+            p = selected[0]
+            if plan.detail == "merchant":
+                answer = ((f"Sie haben bei {p['merchant']} eingekauft." if de else f"You shopped at {p['merchant']}.")
+                          if p["merchant"] else ("Der Händler wurde nicht erfasst." if de else "The merchant was not recorded."))
+            else:
+                answer = ("Der Einkauf war am " if de else "That purchase was on ") + f"{p['purchased_on']:%d.%m.%Y}."
+            return {**base, "answer":answer, "evidence":refs}
+        rows = [f"• {p['purchased_on']:%d.%m.%Y} — {p['merchant'] or ('Händler unbekannt' if de else 'Merchant not recorded')}" for p in selected[:10]]
+        return {**base, "status":"clarification_required", "evidence":refs,
+            "evidence_truncated":len(selected)>10,
+            "answer":("Mehrere Einkäufe passen. Welchen meinen Sie?" if de else "Several purchases match. Which one do you mean?") + "\n" + "\n".join(rows)}
+
     if plan.operation == "records":
         if plan.category or plan.product_query:
             refs = [purchase_ref(p, plan, i) for p, i in lines]

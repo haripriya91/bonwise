@@ -1,3 +1,4 @@
+import {AIWorking} from "../components/AIWorking";
 import { useEffect, useRef, useState } from "react";
 import type { PointerEvent } from "react";
 
@@ -523,7 +524,7 @@ export function ImageCapture({
               {extracting ? "Preparing details…" : "Get purchase details"}
             </button>
           </div>
-          {extracting && <p className="long-running-note" role="status">Still working… Extraction can take a little while. Please keep this page open.</p>}
+          {extracting && <AIWorking label="Reading receipt details for review"/>}
         </>
       )}
       {!prepared && (
