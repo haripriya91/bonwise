@@ -75,6 +75,447 @@
         }
       }
     },
+    "/households": {
+      "post": {
+        "tags": [
+          "account",
+          "household setup"
+        ],
+        "summary": "Create Household",
+        "operationId": "create_household_households_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HouseholdCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/profile": {
+      "get": {
+        "tags": [
+          "account",
+          "household setup"
+        ],
+        "summary": "Profile",
+        "operationId": "profile_profile_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "account",
+          "household setup"
+        ],
+        "summary": "Update Profile",
+        "operationId": "update_profile_profile_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileEdit"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/households/{household_id}/settings": {
+      "get": {
+        "tags": [
+          "account",
+          "household setup"
+        ],
+        "summary": "Settings",
+        "operationId": "settings_households__household_id__settings_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "household_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Household Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "account",
+          "household setup"
+        ],
+        "summary": "Update Settings",
+        "operationId": "update_settings_households__household_id__settings_patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "household_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Household Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingsEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/households/{household_id}/upcoming-needs": {
+      "get": {
+        "tags": [
+          "account",
+          "household setup"
+        ],
+        "summary": "Needs",
+        "operationId": "needs_households__household_id__upcoming_needs_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "household_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Household Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "account",
+          "household setup"
+        ],
+        "summary": "Save Needs",
+        "operationId": "save_needs_households__household_id__upcoming_needs_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "household_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Household Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveNeeds"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/households/{household_id}/upcoming-needs/{need_id}": {
+      "delete": {
+        "tags": [
+          "account",
+          "household setup"
+        ],
+        "summary": "Delete Need",
+        "operationId": "delete_need_households__household_id__upcoming_needs__need_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "household_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Household Id"
+            }
+          },
+          {
+            "name": "need_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Need Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/households/{household_id}/weekly-plans/{plan_id}/needs-preview": {
+      "post": {
+        "tags": [
+          "account",
+          "household setup"
+        ],
+        "summary": "Preview",
+        "operationId": "preview_households__household_id__weekly_plans__plan_id__needs_preview_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "household_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Household Id"
+            }
+          },
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NeedsPreview"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/households/{household_id}/purchase-drafts": {
       "post": {
         "tags": [
@@ -3457,6 +3898,14 @@
       },
       "CommitmentOut": {
         "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "commitment",
+              "shopping_plan"
+            ],
+            "title": "Kind"
+          },
           "id": {
             "type": "string",
             "format": "uuid",
@@ -3499,6 +3948,7 @@
         },
         "type": "object",
         "required": [
+          "kind",
           "id",
           "title",
           "planned_on",
@@ -4361,6 +4811,28 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "HouseholdCreate": {
+        "properties": {
+          "client_request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Client Request Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "client_request_id",
+          "name"
+        ],
+        "title": "HouseholdCreate"
+      },
       "ImageExtractionOut": {
         "properties": {
           "extracted": {
@@ -4850,6 +5322,58 @@
           "base_unit"
         ],
         "title": "LinkedProductOut"
+      },
+      "NeedsPreview": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "occasion": {
+            "type": "string",
+            "enum": [
+              "seasonal",
+              "guests",
+              "replacement",
+              "other"
+            ],
+            "title": "Occasion"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 3,
+            "title": "Text"
+          },
+          "privacy_reviewed": {
+            "type": "boolean",
+            "const": true,
+            "title": "Privacy Reviewed"
+          },
+          "extra_budget_cents": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Extra Budget Cents"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "occasion",
+          "text",
+          "privacy_reviewed"
+        ],
+        "title": "NeedsPreview"
       },
       "OfferCard": {
         "properties": {
@@ -5803,6 +6327,27 @@
         ],
         "title": "ProductSuggestionOut"
       },
+      "ProfileEdit": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "display_name": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Display Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "display_name"
+        ],
+        "title": "ProfileEdit"
+      },
       "PurchaseContent-Input": {
         "properties": {
           "merchant": {
@@ -6292,6 +6837,84 @@
           "comparison"
         ],
         "title": "RecommendedProduct"
+      },
+      "SaveNeeds": {
+        "properties": {
+          "needs": {
+            "items": {
+              "$ref": "#/components/schemas/SavedNeed"
+            },
+            "type": "array",
+            "maxItems": 6,
+            "minItems": 1,
+            "title": "Needs"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "needs"
+        ],
+        "title": "SaveNeeds"
+      },
+      "SavedNeed": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "item": {
+            "$ref": "#/components/schemas/ItemEdit"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "id",
+          "item"
+        ],
+        "title": "SavedNeed"
+      },
+      "SettingsEdit": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Expected Version"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "shopping_day": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 6.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shopping Day"
+          },
+          "setup_completed": {
+            "type": "boolean",
+            "title": "Setup Completed",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "name"
+        ],
+        "title": "SettingsEdit"
       },
       "SettlePlan": {
         "properties": {

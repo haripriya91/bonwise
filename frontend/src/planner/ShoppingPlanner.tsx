@@ -7,6 +7,8 @@ import type { components } from "../api/types";
 import { dayInput, defaultShoppingDate, editable, euros, exportList, money, weekStart } from "./types";
 import type { Item, Offer, Plan, ProductOption, TextPreview, Unit } from "./types";
 import "./ShoppingPlanner.css";
+import { UpcomingNeeds } from "./UpcomingNeeds";
+import { useHouseholdSettings } from "../household/HouseholdSettings";
 
 type PurchasePage = components["schemas"]["PurchasePage"];
 const dateLabel = (value: string) => new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long" }).format(new Date(`${value}T12:00:00`));
@@ -74,11 +76,22 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
   session: Session; householdId: string; onManageBudget: () => void; onViewPurchase: (id: string) => void;
 }) {
   const queryClient = useQueryClient();
+  const preferences = useHouseholdSettings(session, householdId);
+  const [preferencesReady, setPreferencesReady] = useState(false);
   const base = `/households/${encodeURIComponent(householdId)}`;
   const [browseDate, setBrowseDate] = useState(() => initialDate ?? defaultShoppingDate());
+  useEffect(() => {
+    if (preferencesReady || preferences.isPending) return;
+    if (!initialDate && preferences.data?.shopping_day != null) {
+      const today = new Date(), weekday = (today.getDay()+6)%7;
+      today.setDate(today.getDate()+(preferences.data.shopping_day-weekday+7)%7);
+      setBrowseDate(dayInput(today));
+    }
+    setPreferencesReady(true);
+  }, [preferences.isPending, preferences.data, preferencesReady, initialDate]);
   const week = weekStart(browseDate);
   const key = ["user", session.user.id, "household", householdId, "weekly-plans", week];
-  const query = useQuery({ queryKey: key,
+  const query = useQuery({ queryKey: key, enabled: preferencesReady,
     queryFn: ({ signal }) => apiRequest<{ plans: Plan[] }>(`${base}/weekly-plans?week_start=${week}`, session.access_token, { signal, cache: "no-store" }),
     refetchOnMount: "always",
   });
@@ -112,6 +125,8 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
   const [purchaseId, setPurchaseId] = useState("");
   const [purchaseOffset, setPurchaseOffset] = useState(0);
   const [copyFallback, setCopyFallback] = useState<string | null>(null);
+  const [needsOpen, setNeedsOpen] = useState(false);
+  useEffect(() => { setNeedsOpen(false); }, [plan?.id, plan?.version]);
   const requests = useRef(new Set<AbortController>());
   const autoStarted = useRef(new Set<string>());
   const createIds = useRef(new Map<string, string>());
@@ -202,12 +217,12 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
   }
 
   useEffect(() => {
-    if (!query.data || query.data.plans.length || busy || autoStarted.current.has(week) || browseDate < dayInput(new Date())) return;
+    if (!preferencesReady || !query.data || query.data.plans.length || busy || autoStarted.current.has(week) || browseDate < dayInput(new Date())) return;
     autoStarted.current.add(week);
     void perform("Preparing your suggested list", signal => prepare(signal));
     // Initial preparation is idempotent on the server and is not repeated on errors.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.data, week, busy]);
+  }, [query.data, week, busy, preferencesReady]);
 
   async function reload(signal: AbortSignal) {
     if (!plan) { await query.refetch(); return; }
@@ -318,12 +333,25 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
 
       {(plan.phase === "preparing" || plan.phase === "retry_required") && <div className="planner-notice"><p>{plan.phase === "preparing" ? "The suggestion may still be preparing. Refresh shortly, or retry after the previous run finishes." : "You can retry the assistant or add items yourself."}</p>
         <button className="button button-outline" disabled={busy !== null} onClick={() => void perform("Preparing suggestions", signal => mutate(signal, "retry", {}))}>Retry suggestion</button></div>}
-      <div className="planner-layout">
+      <div className={`planner-layout${needsOpen ? " planner-layout-needs" : ""}`}>
         <div className="planner-main">
+          {editablePlan && <UpcomingNeeds key={plan.id} session={session} householdId={householdId} plan={plan} disabled={busy!==null || dirty} open={needsOpen} onOpenChange={setNeedsOpen}
+            onAdd={proposed => {
+              const names = new Set(items.map(i=>i.name.trim().toLocaleLowerCase()));
+              const ids = new Set(items.map(i=>i.product_id).filter(Boolean));
+              const fresh = proposed.filter(i=>!names.has(i.name.trim().toLocaleLowerCase()) && (!i.product_id || !ids.has(i.product_id)));
+              if(items.length+fresh.length>40){setError("Keep at most 40 draft items. Remove an item before adding more.");setErrorPlace("page");return false;}
+              setItems(current=>[...current,...fresh.map(i=>({...i,id:crypto.randomUUID(),done:false,excluded:false}))]);
+              setReviewed(false);setPreview(null);setFilter("all");setMessage(fresh.length?"Selected suggestions added to your shopping list. Review quantities, then save changes. No additional funds reserved.":"These items are already on your list.");
+              setFocusTarget("planner-list-title");
+              return true;
+            }} />}
 
 
+
+          <div className="planner-list-view" hidden={needsOpen}>
           <section className="planner-card" aria-labelledby="planner-list-title">
-            <div className="planner-section-heading"><div className="planner-list-title"><h2 id="planner-list-title">{plan.status === "draft" ? "Your suggested list" : "Your to-buy list"}</h2>
+            <div className="planner-section-heading"><div className="planner-list-title"><h2 id="planner-list-title" tabIndex={-1}>Your shopping list</h2>
               <InformationTip label="How suggestions work" text="Suggested from your confirmed purchases, using frequency and recency. Past purchases do not mean you have run out. You choose what to keep; funds are reserved only after approval." /></div>
               {editablePlan && <button className="button button-outline" disabled={busy !== null || dirty || items.length >= 40} onClick={addItem}>Add item</button>}
             </div>
@@ -374,9 +402,10 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
           </section>
 
           {copyFallback && <label className="planner-copy-fallback">Copy your list<textarea readOnly rows={8} value={copyFallback} onFocus={event => event.target.select()} /><button className="text-link" onClick={() => setCopyFallback(null)}>Close</button></label>}
+          </div>
         </div>
 
-        <aside className="planner-sidebar" aria-label="Shopping tools and budget">
+        <aside hidden={needsOpen} className="planner-sidebar" aria-label="Shopping tools and budget">
           {editablePlan && <section className="planner-card planner-text-entry"><h2>List tools</h2><p className="planner-hint">Make changes in your own words.</p>
             <label htmlFor="planner-text">What do you need this week?</label>
             <textarea id="planner-text" value={text} maxLength={1000} rows={2} disabled={busy !== null} placeholder="Add 2 packs of milk, remove rice, and change bread to 1 pack." onChange={event => { setText(event.target.value); setPreview(null); setPrivacyReviewed(false); }} />

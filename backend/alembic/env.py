@@ -11,7 +11,7 @@ sys.path.insert(0, str(BACKEND))
 from app.core.config import get_settings
 from app.db.base import Base
 from app.db import models  # Registers model metadata.
-from app.db import commerce, planner, corrections  # Register budget/planner metadata.
+from app.db import commerce, planner, corrections, household_settings  # Register budget/planner metadata.
 from app.db.session import make_db_engine
 
 
@@ -23,6 +23,9 @@ if config.config_file_name:
 target_metadata = Base.metadata
 
 OWNED_TABLES = {
+    "household_settings",
+    "account_profiles",
+    "household_needs",
     "households",
     "household_members",
     "products",

@@ -16,6 +16,8 @@ import { ShoppingPlanner } from "./planner/ShoppingPlanner";
 import { ActivityCalendar } from "./components/ActivityCalendar";
 import { NavigationIcon } from "./components/NavigationIcon";
 import { PrivacyNotes } from "./components/PrivacyNotes";
+import { ProfilePanel, SetupReminder, CreateHousehold } from "./household/HouseholdSettings";
+import { HouseholdPage } from "./household/HouseholdBudget";
 
 type HouseholdOption = {
   id: string;
@@ -307,18 +309,6 @@ function useShoppingOverview(session: Session, household: HouseholdOption) {
     queryFn: ({ signal }) =>
       apiRequest<components["schemas"]["ShoppingOverview"]>(
         `/households/${encodeURIComponent(household.id)}/shopping-overview`,
-        session.access_token,
-        { signal },
-      ),
-  });
-}
-
-function useBudgets(session: Session, household: HouseholdOption) {
-  return useQuery({
-    queryKey: ["user", session.user.id, "household", household.id, "budgets"],
-    queryFn: ({ signal }) =>
-      apiRequest<components["schemas"]["BudgetPage"]>(
-        `/households/${encodeURIComponent(household.id)}/budgets`,
         session.access_token,
         { signal },
       ),
@@ -1075,338 +1065,6 @@ function Home({
   );
 }
 
-function HouseholdPage({
-  session,
-  household,
-  onManageBudget,
-}: {
-  session: Session;
-  household: HouseholdOption;
-  onManageBudget: () => void;
-}) {
-  const budgetsQuery = useBudgets(session, household);
-  const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
-  const [reserveTitle, setReserveTitle] = useState("Weekly groceries");
-  const [reserveDate, setReserveDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [reserveAmountValue, setReserveAmountValue] = useState("100");
-  const [budgetForm, setBudgetForm] = useState({ amount: "500", startDate: "", endDate: "" });
-  const [budgetError, setBudgetError] = useState<string | null>(null);
-  const [budgetBusy, setBudgetBusy] = useState(false);
-  const [budgetEditOpen, setBudgetEditOpen] = useState(false);
-  const [linkingCommitmentId, setLinkingCommitmentId] = useState<string | null>(null);
-  const [linkedPurchaseId, setLinkedPurchaseId] = useState<string | null>(null);
-  const [purchasesOffset, setPurchasesOffset] = useState(0);
-
-  const purchasePage = usePurchasePage(session, household, purchasesOffset, 100);
-  const selectedBudget = useMemo(() => {
-    const budgets = budgetsQuery.data?.budgets ?? [];
-    if (!budgets.length) return null;
-    if (!selectedBudgetId) {
-      const today = new Date();
-      const current = budgets.find((budget) => {
-        const start = new Date(`${budget.start_date}T12:00:00`);
-        const end = new Date(`${budget.end_date}T12:00:00`);
-        return today >= start && today <= end;
-      }) ?? budgets[0];
-      return current;
-    }
-    return budgets.find((budget) => budget.id === selectedBudgetId) ?? budgets[0];
-  }, [budgetsQuery.data, selectedBudgetId]);
-
-  useEffect(() => {
-    if (selectedBudget && selectedBudget.id !== selectedBudgetId) {
-      setSelectedBudgetId(selectedBudget.id);
-    }
-  }, [selectedBudget, selectedBudgetId]);
-
-  useEffect(() => {
-    if (!selectedBudget) return;
-    const start = selectedBudget.start_date;
-    const end = selectedBudget.end_date;
-    if (!budgetForm.startDate && !budgetForm.endDate) {
-      setBudgetForm({ amount: String(selectedBudget.amount_cents / 100), startDate: start, endDate: end });
-    }
-  }, [selectedBudget, budgetForm.startDate, budgetForm.endDate]);
-
-  const filteredPurchases = (purchasePage.data?.purchases ?? []).filter((purchase) => {
-    if (!selectedBudget) return false;
-    const date = new Date(`${purchase.purchased_on}T12:00:00`);
-    const start = new Date(`${selectedBudget.start_date}T12:00:00`);
-    const end = new Date(`${selectedBudget.end_date}T12:00:00`);
-    return date >= start && date <= end;
-  });
-
-  async function refreshBudgets() {
-    await budgetsQuery.refetch();
-    if (purchasePage.data && purchasePage.data.total > purchasePage.data.purchases.length) {
-      setPurchasesOffset((current) => current + 100);
-    }
-  }
-
-  async function createBudget(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setBudgetBusy(true);
-    setBudgetError(null);
-    try {
-      const requestBody = {
-        client_request_id: crypto.randomUUID(),
-        start_date: budgetForm.startDate || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10),
-        end_date: budgetForm.endDate || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().slice(0, 10),
-        amount_cents: Math.round(Number(budgetForm.amount) * 100),
-      };
-      await apiRequest<components["schemas"]["BudgetOut"]>(
-        `/households/${encodeURIComponent(household.id)}/budgets`,
-        session.access_token,
-        { method: "POST", body: requestBody },
-      );
-      setBudgetForm({ amount: "500", startDate: "", endDate: "" });
-      await refreshBudgets();
-    } catch (requestError) {
-      setBudgetError(getErrorText(requestError));
-    } finally {
-      setBudgetBusy(false);
-    }
-  }
-
-  async function updateCurrentBudget() {
-    if (!selectedBudget) return;
-    setBudgetBusy(true);
-    setBudgetError(null);
-    try {
-      await apiRequest<components["schemas"]["BudgetOut"]>(
-        `/households/${encodeURIComponent(household.id)}/budgets/${selectedBudget.id}`,
-        session.access_token,
-        { method: "PATCH", body: { expected_version: selectedBudget.version, amount_cents: Math.round(Number(budgetForm.amount) * 100) } },
-      );
-      setBudgetEditOpen(false);
-      await refreshBudgets();
-    } catch (requestError) {
-      setBudgetError(getErrorText(requestError));
-    } finally {
-      setBudgetBusy(false);
-    }
-  }
-
-  async function submitReserveAmount(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!selectedBudget) return;
-    setBudgetBusy(true);
-    setBudgetError(null);
-    try {
-      await apiRequest<components["schemas"]["BudgetOut"]>(
-        `/households/${encodeURIComponent(household.id)}/budgets/${selectedBudget.id}/commitments`,
-        session.access_token,
-        { method: "POST", body: { client_request_id: crypto.randomUUID(), expected_version: selectedBudget.version, title: reserveTitle, planned_on: reserveDate, amount_cents: Math.round(Number(reserveAmountValue) * 100) } },
-      );
-      setReserveAmountValue("100");
-      setReserveTitle("Weekly groceries");
-      await refreshBudgets();
-    } catch (requestError) {
-      setBudgetError(getErrorText(requestError));
-    } finally {
-      setBudgetBusy(false);
-    }
-  }
-
-  async function cancelCommitment(commitmentId: string, expectedVersion: number) {
-    if (!selectedBudget) return;
-    setBudgetBusy(true);
-    setBudgetError(null);
-    try {
-      await apiRequest<components["schemas"]["BudgetOut"]>(
-        `/households/${encodeURIComponent(household.id)}/budgets/${selectedBudget.id}/commitments/${commitmentId}/cancel`,
-        session.access_token,
-        { method: "POST", body: { expected_version: expectedVersion } },
-      );
-      await refreshBudgets();
-    } catch (requestError) {
-      setBudgetError(getErrorText(requestError));
-    } finally {
-      setBudgetBusy(false);
-    }
-  }
-
-  async function settleCommitment(commitmentId: string, expectedVersion: number, purchaseId: string) {
-    if (!selectedBudget) return;
-    setBudgetBusy(true);
-    setBudgetError(null);
-    try {
-      await apiRequest<components["schemas"]["BudgetOut"]>(
-        `/households/${encodeURIComponent(household.id)}/budgets/${selectedBudget.id}/commitments/${commitmentId}/settle`,
-        session.access_token,
-        { method: "POST", body: { expected_version: expectedVersion, purchase_id: purchaseId } },
-      );
-      setLinkedPurchaseId(null);
-      setLinkingCommitmentId(null);
-      await refreshBudgets();
-    } catch (requestError) {
-      setBudgetError(getErrorText(requestError));
-    } finally {
-      setBudgetBusy(false);
-    }
-  }
-
-  if (budgetsQuery.isPending) {
-    return <p className="status-message" role="status">Loading budget overview…</p>;
-  }
-
-  if (!selectedBudget) {
-    return (
-      <section className="household-page">
-        <div className="household-empty">
-          <h1>Budget & commitments</h1>
-          <p>No budget exists yet. Create a monthly budget to track spending.</p>
-          <form className="budget-create-form" onSubmit={createBudget}>
-            <div className="budget-form-grid">
-              <label>
-                <span>Start date</span>
-                <input type="date" value={budgetForm.startDate} onChange={(event) => setBudgetForm((current) => ({ ...current, startDate: event.target.value }))} />
-              </label>
-              <label>
-                <span>End date</span>
-                <input type="date" value={budgetForm.endDate} onChange={(event) => setBudgetForm((current) => ({ ...current, endDate: event.target.value }))} />
-              </label>
-              <label>
-                <span>Budget amount (€)</span>
-                <input type="number" min="0" step="0.01" value={budgetForm.amount} onChange={(event) => setBudgetForm((current) => ({ ...current, amount: event.target.value }))} />
-              </label>
-            </div>
-            <div className="budget-create-actions">
-              <button className="button button-primary" type="submit" disabled={budgetBusy}>Create budget</button>
-            </div>
-          </form>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="household-page" aria-labelledby="household-page-title">
-      <header className="compare-header household-header">
-        <h1 id="household-page-title">Budget & commitments</h1>
-        <button type="button" className="button button-outline" onClick={() => {
-          onManageBudget();
-          setBudgetEditOpen((value) => !value);
-        }}>{budgetEditOpen ? "Close" : "Manage budget"}</button>
-      </header>
-
-      {budgetError && <p className="error-message" role="alert">{budgetError}</p>}
-
-      <div className="household-budget-row">
-        <div className="period-inline">Period: {formatDateRange(selectedBudget.start_date, selectedBudget.end_date)}</div>
-        <select value={selectedBudget.id} onChange={(event) => setSelectedBudgetId(event.target.value)}>
-          {(budgetsQuery.data?.budgets ?? []).map((budget) => (
-            <option key={budget.id} value={budget.id}>{formatDateRange(budget.start_date, budget.end_date)}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="budget-summary-grid">
-        <div className="budget-summary-box"><span>Budget</span><strong>{formatMoney(selectedBudget.amount_cents)}</strong></div>
-        <div className="budget-summary-box"><span>Confirmed spending</span><strong>{formatMoney(selectedBudget.spent_cents)}</strong></div>
-        <div className="budget-summary-box"><span>Reserved</span><strong>{formatMoney(selectedBudget.reserved_cents)}</strong></div>
-        <div className="budget-summary-box available"><span>Available</span><strong>{formatMoney(selectedBudget.available_cents)}</strong></div>
-      </div>
-
-      {budgetEditOpen && (
-        <form
-          className="budget-edit-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void updateCurrentBudget();
-          }}
-        >
-          <div className="budget-edit-header">
-            <h2>Manage budget</h2>
-          </div>
-          <div className="budget-form-grid">
-            <label>
-              <span>Budget amount (€)</span>
-              <input type="number" min="0" step="0.01" value={budgetForm.amount} onChange={(event) => setBudgetForm((current) => ({ ...current, amount: event.target.value }))} />
-            </label>
-          </div>
-          <div className="budget-create-actions">
-            <button className="button button-primary" type="submit" disabled={budgetBusy}>Save</button>
-            <button className="button button-outline" type="button" onClick={() => setBudgetEditOpen(false)}>Cancel</button>
-          </div>
-        </form>
-      )}
-
-      <div className="budget-card">
-        <h2>Planned spending</h2>
-        {selectedBudget.commitments.length === 0 ? <p className="empty-state">No planned spending yet.</p> : (
-          <div className="commitment-list">
-            {selectedBudget.commitments.map((commitment) => {
-              const isOpen = commitment.status === "open";
-              return (
-                <div key={commitment.id} className="commitment-row">
-                  <div className="commitment-title-block">
-                    <span className="commitment-title">{commitment.title}</span>
-                    <span className="commitment-date">{new Intl.DateTimeFormat("de-DE", { day: "2-digit", month: "short" }).format(new Date(`${commitment.planned_on}T12:00:00`))}</span>
-                  </div>
-                  <div className="commitment-amount">{formatMoney(commitment.amount_cents)}</div>
-                  <div className="commitment-status">{commitment.status === "open" ? "Open" : commitment.status === "settled" ? "Settled" : "Cancelled"}</div>
-                  {isOpen ? (
-                    <div className="commitment-actions">
-                      <button type="button" className="button button-outline" onClick={() => setLinkingCommitmentId(commitment.id)}>Link purchase</button>
-                      <button type="button" className="button button-outline" onClick={() => void cancelCommitment(commitment.id, selectedBudget.version)}>Cancel</button>
-                    </div>
-                  ) : (
-                    <div className="commitment-actions">
-                      <span className="commitment-state-label">{commitment.status === "settled" ? "Already linked" : "Cancelled"}</span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      <form className="reserve-form" onSubmit={submitReserveAmount}>
-        <h2>Reserve an amount</h2>
-        <div className="reserve-grid">
-          <label>
-            <span>Planned title</span>
-            <input value={reserveTitle} onChange={(event) => setReserveTitle(event.target.value)} />
-          </label>
-          <label>
-            <span>Planned date</span>
-            <input type="date" value={reserveDate} onChange={(event) => setReserveDate(event.target.value)} />
-          </label>
-          <label>
-            <span>Amount</span>
-            <input type="number" min="0" step="0.01" value={reserveAmountValue} onChange={(event) => setReserveAmountValue(event.target.value)} />
-          </label>
-          <button className="button button-primary" type="submit" disabled={budgetBusy}>Reserve</button>
-        </div>
-      </form>
-
-      {linkingCommitmentId && (
-        <div className="link-purchase-panel">
-          <h3>Link purchase</h3>
-          <select value={linkedPurchaseId ?? ""} onChange={(event) => setLinkedPurchaseId(event.target.value)}>
-            <option value="">Choose a confirmed purchase</option>
-            {filteredPurchases.map((purchase) => (
-              <option key={purchase.id} value={purchase.id}>{purchase.merchant || "Purchase"} · {new Intl.DateTimeFormat("de-DE", { day: "2-digit", month: "short" }).format(new Date(`${purchase.purchased_on}T12:00:00`))}</option>
-            ))}
-          </select>
-          <div className="link-actions">
-            <button type="button" className="button button-primary" disabled={!linkedPurchaseId} onClick={() => {
-              const commitment = selectedBudget.commitments.find((entry) => entry.id === linkingCommitmentId);
-              if (!commitment || !linkedPurchaseId) return;
-              void settleCommitment(commitment.id, selectedBudget.version, linkedPurchaseId);
-            }}>
-              Confirm link
-            </button>
-            <button type="button" className="button button-outline" onClick={() => { setLinkingCommitmentId(null); setLinkedPurchaseId(null); }}>Cancel</button>
-          </div>
-        </div>
-      )}
-    </section>
-  );
-}
-
 function App({ queryClient }: { queryClient: QueryClient }) {
   const [session, setSession] = useState<Session | null>(null);
   const sessionUserId = useRef<string | null>(null);
@@ -1602,6 +1260,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
         <header className="app-header">
           <span className="topbar-household">{selectedHousehold?.name ?? "Your household"}</span>
           <span className="topbar-page">{page === "home" ? "Home" : page === "purchases" ? "Purchases" : page === "offers" ? "Compare offers" : page === "analysis" ? "Analysis" : page === "planner" ? "Shopping plan" : "My household"}</span>
+          <ProfilePanel session={session} key={`profile:${session.user.id}`} />
           <div className="mobile-account-controls">
             <PrivacyNotes />
             {selectedHousehold && households.length > 1 && (
@@ -1623,6 +1282,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
           </div>
         </header>
         <main className="main-content">
+          {selectedHousehold && route.kind === "main" && page !== "household" && <SetupReminder key={`setup:${session.user.id}:${selectedHousehold.id}`} session={session} householdId={selectedHousehold.id} onOpen={()=>navigateToPage("household")} />}
           {authError && <p className="error-message" role="alert">{authError}</p>}
           {signOutError && <p className="error-message" role="alert">{signOutError}</p>}
           {meQuery.error && (
@@ -1634,7 +1294,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
             </div>
           )}
           {!meQuery.error && !meQuery.isPending && households.length === 0 && (
-            <p className="empty-state">No household is linked to this account yet.</p>
+            <CreateHousehold session={session} key={`create:${session.user.id}`} onCreated={id=>{setSelectedHouseholdId(id);navigateToPage("household");}} />
           )}
           {selectedHousehold && route.kind === "review" && (
             <DraftReview
@@ -1687,8 +1347,8 @@ function App({ queryClient }: { queryClient: QueryClient }) {
             <HouseholdPage
               key={`${session.user.id}:${selectedHousehold.id}`}
               session={session}
-              household={selectedHousehold}
-              onManageBudget={() => navigateToPage("household")}
+              householdId={selectedHousehold.id}
+              onOpenPlanner={() => navigateToPage("planner")}
             />
           )}
           {selectedHousehold && route.kind === "main" && page === "purchases" && (

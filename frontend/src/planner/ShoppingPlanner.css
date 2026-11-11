@@ -114,3 +114,31 @@
 .planner-text-entry .planner-actions .planner-hint { flex-basis:100%; }
 @media (min-width:1600px) { .planner-layout { grid-template-columns:minmax(0,1fr) 350px; } }
 @media(max-width:1050px) { .planner-layout { grid-template-columns:minmax(0,1fr); } }
+
+.upcoming-needs{margin-bottom:18px}.upcoming-needs select,.upcoming-needs textarea{display:block;width:100%;box-sizing:border-box;font:inherit;background:var(--color-surface, #fff);color:inherit;border:1px solid var(--color-line, #d9cfe0);padding:10px;border-radius:7px;margin:6px 0 12px}.upcoming-needs textarea{min-height:85px;resize:vertical}.upcoming-need-row{padding:14px 0;border-bottom:1px solid var(--color-line, #d9cfe0)}.upcoming-need-row input[type=checkbox]{margin-right:8px}.upcoming-needs .household-settings-actions{justify-content:flex-start;margin-top:14px}
+
+/* Optional ideas are a separate review step, never a second shopping list. */
+.planner-layout.planner-layout-needs { grid-template-columns: minmax(0, 1fr); max-width: 900px; }
+.planner-list-view { display: grid; gap: 20px; min-width: 0; }
+.shopping-planner [hidden] { display: none; }
+.upcoming-needs .needs-eyebrow { margin: 0 0 8px; font-size: 12px; font-weight: 700; color: var(--color-accent); }
+.upcoming-needs .planner-section-heading { align-items: flex-start; }
+.upcoming-needs .planner-section-heading > .button { flex-shrink: 0; }
+.upcoming-needs .needs-check { display: flex; align-items: flex-start; justify-content: flex-start; gap: 12px; margin: 16px 0; line-height: 1.55; font-weight: 400; }
+.upcoming-needs .needs-check input[type=checkbox] { display: block; position: static; width: 20px; height: 20px; min-width: 20px; min-height: 20px; max-width: 20px; flex: 0 0 20px; margin: 2px 0 0; padding: 0; accent-color: var(--color-accent); }
+.upcoming-needs .needs-check > span { min-width: 0; overflow-wrap: anywhere; }
+.upcoming-needs .needs-item-choice { margin: 0 0 8px; cursor: pointer; }
+.needs-quantity { display: block; color: var(--color-muted); font-size: 13px; margin-top: 3px; }
+.needs-idea { padding: 18px; margin: 20px 0 12px; border: 1px solid var(--planner-border); border-radius: 10px; background: var(--color-lavender, #f4f0f7); }
+.needs-basis h4 { margin: 0; font-size: 14px; }
+.needs-idea h3 { margin: 0 0 10px; font-size: 20px; }
+.needs-idea p, .needs-basis p, .needs-item-detail p { line-height: 1.6; }
+.needs-request, .needs-basis, .needs-saved { padding: 14px 0; border-top: 1px solid var(--planner-border); }
+.needs-request > summary, .needs-basis > summary, .needs-saved > summary { cursor: pointer; font-weight: 600; line-height: 1.5; }
+.needs-item-detail { padding-left: 32px; font-size: 14px; }
+.needs-item-detail p { margin: 8px 0; }
+.needs-purpose { display: inline-block; padding: 3px 8px; border-radius: 5px; background: var(--color-lavender, #f4f0f7); font-size: 12px; font-weight: 600; }
+.needs-price { color: var(--color-muted); font-size: 13px; }
+.needs-transfer { padding: 16px; margin-top: 16px; border: 1px solid var(--planner-border); border-radius: 8px; }
+.needs-transfer > p:first-child { margin: 0 0 12px; font-weight: 600; }
+@media (max-width: 600px) { .upcoming-needs .planner-section-heading { flex-direction: column; } .needs-transfer .button { width: 100%; } }

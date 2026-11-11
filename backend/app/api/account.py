@@ -73,3 +73,7 @@ def household(
         "name": result.name,
         "currency": result.currency,
     }
+
+# Keep existing account routes and register authenticated household setup.
+from app.api.household_setup import router as setup_router
+router.include_router(setup_router)
