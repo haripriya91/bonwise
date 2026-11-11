@@ -7,6 +7,7 @@ import type { components } from "../api/types";
 import { dayInput, defaultShoppingDate, editable, euros, exportList, money, weekStart } from "./types";
 import type { Item, Offer, Plan, ProductOption, TextPreview, Unit } from "./types";
 import "./ShoppingPlanner.css";
+import { AIWorking } from "../components/AIWorking";
 import { UpcomingNeeds } from "./UpcomingNeeds";
 import { useHouseholdSettings } from "../household/HouseholdSettings";
 
@@ -124,6 +125,8 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
   const [linkOpen, setLinkOpen] = useState(false);
   const [purchaseId, setPurchaseId] = useState("");
   const [purchaseOffset, setPurchaseOffset] = useState(0);
+  const [historyOptions, setHistoryOptions] = useState<{base_version:number;items:Item[];message:string}|null>(null);
+  const [historySelected, setHistorySelected] = useState<string[]>([]);
   const [copyFallback, setCopyFallback] = useState<string | null>(null);
   const [needsOpen, setNeedsOpen] = useState(false);
   useEffect(() => { setNeedsOpen(false); }, [plan?.id, plan?.version]);
@@ -174,6 +177,7 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
   }
 
   function receive(saved: Plan) {
+    setHistoryOptions(null);setHistorySelected([]);
     if (saved.household_id !== householdId) throw new Error("The shopping list does not belong to this household.");
     setFieldErrors({});
     setPlan(saved); setItems(structuredClone(saved.content.items)); setPlannedOn(saved.planned_on);
@@ -320,7 +324,7 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
     </header>
     {query.isPending && <p role="status">Loading your shopping lists…</p>}
     {query.error && <div className="planner-notice" role="alert"><p>{getErrorText(query.error)}</p><button className="button button-outline" onClick={() => void query.refetch()}>Retry lists</button></div>}
-    {busy && <p className="planner-notice" role="status">{busy}…</p>}
+    {busy && <AIWorking label={busy}/>}
     {error && errorPlace==="page" && <p ref={errorPanel} className="field-error planner-inline-error" role="alert" tabIndex={-1}>{error}</p>}
     {message && <p className="planner-notice" role="status">{message}</p>}
     {!plan && !query.isPending && !busy && <button type="button" className="button button-primary" onClick={() => void perform("Preparing your suggested list", signal => prepare(signal))}>Prepare suggested list</button>}
@@ -398,6 +402,21 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
 
             {dirty && <div className="planner-save-bar"><span>{showCosts ? "Save changes to update estimates" : "Unsaved changes"}</span>{error && errorPlace==="save" && <p className="field-error planner-inline-error" role="alert">{error}</p>}<button className="button button-primary" disabled={busy !== null} onClick={() => void perform("Saving list changes",save)}>Save changes</button><button className="text-link" disabled={busy !== null} onClick={() => receive(plan)}>Cancel edits</button></div>}
             {editablePlan && <button type="button" className="button button-outline planner-add-bottom" disabled={busy!==null || dirty || items.length>=40} onClick={addItem}>Add item</button>}
+            {plan.status === "draft" && !items.length && !dirty && <div className="planner-notice">
+              <h3>Start from your purchase history</h3>
+              <p>An empty draft can have been prepared before you added purchases, or there may be too little repeated history for a usual list. Existing drafts do not change automatically.</p>
+              <div className="planner-actions"><button type="button" className="button button-outline" disabled={busy!==null} onClick={()=>void perform("Loading purchase history",async signal=>{
+                const result=await apiRequest<{base_version:number;items:Item[];message:string}>(`${base}/weekly-plans/${plan.id}/history-options`,session.access_token,{signal,cache:"no-store"});
+                if(!signal.aborted){setHistoryOptions(result);setHistorySelected([]);}
+              })}>Review purchase history</button>
+              <button type="button" className="button button-outline" disabled={busy!==null || plan.reservation_cents>0} onClick={()=>void perform("Refreshing empty draft",signal=>mutate(signal,"refresh-suggestions",{expected_version:plan.version}))}>Refresh suggestions</button></div>
+              {historyOptions&&<div><p>{historyOptions.message}</p>{!historyOptions.items.length&&<p>No eligible items found. Check the household, confirmed status and purchase dates; older than 90 days is outside this window.</p>}
+                {historyOptions.items.map(item=><label className="planner-checkbox" key={item.id}><input type="checkbox" checked={historySelected.includes(item.id)} onChange={e=>setHistorySelected(s=>e.target.checked?[...s,item.id]:s.filter(id=>id!==item.id))}/><span><strong>{item.name}</strong> · {item.quantity} {item.unit}<br/>{item.reason}</span></label>)}
+                <button type="button" className="button button-primary" disabled={busy!==null || !historySelected.length || historyOptions.base_version!==plan.version} onClick={()=>{
+                  setItems(historyOptions.items.filter(i=>historySelected.includes(i.id)).map(i=>({...i,id:crypto.randomUUID(),done:false,excluded:false})));
+                  setHistoryOptions(null);setHistorySelected([]);setReviewed(false);setMessage("Selected history items added to your editable draft. Review quantities and save changes. No funds reserved.");
+                }}>Add selected to draft</button></div>}
+            </div>}
             <p className="planner-hint">“Already have” excludes an item from this shop. Checking an item Done does not record spending.</p>
           </section>
 

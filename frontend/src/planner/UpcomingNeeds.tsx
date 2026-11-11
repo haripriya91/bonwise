@@ -1,3 +1,4 @@
+import {AIWorking} from "../components/AIWorking";
 import {useEffect,useRef,useState} from "react";
 import {useQuery,useQueryClient} from "@tanstack/react-query";
 import type {Session} from "@supabase/supabase-js";
@@ -61,9 +62,10 @@ export function UpcomingNeeds({session,householdId,plan,disabled,open,onOpenChan
         <p className="planner-hint">This is a guide for suggestions within your existing budget. It does not increase your budget or reserve money. Unpriced items still need a price check.</p>
         <label className="needs-check"><input type="checkbox" checked={reviewed} disabled={busy} onChange={e=>setReviewed(e.target.checked)}/><span>I checked this contains shopping needs only, without personal details.</span></label>
         <p className="planner-hint">Sent to OpenAI: your description, selected occasion, optional allowance, catalogue details and saved list names. No receipt images or household identifiers are included.</p>
-        <button type="button" className="button button-primary" disabled={busy||disabled||!reviewed||text.trim().length<3} onClick={()=>void run(suggest)}>{busy?"Preparing ideas…":"Suggest ideas"}</button>
+        <button type="button" className="button button-primary" disabled={busy||disabled||!reviewed||text.trim().length<3} onClick={()=>void run(suggest)}>{busy?"Working…":"Suggest ideas"}</button>
         {disabled&&<p className="planner-hint">Save current list changes before requesting or adding suggestions.</p>}
       </details>
+      {busy&&<AIWorking label="Updating optional ideas"/>}
       {proposal&&<div className="needs-proposal">
         <div className="needs-idea"><p className="needs-eyebrow">Suggested approach</p>
           <h3 ref={resultHeading} tabIndex={-1}>{proposal.title??"Optional ideas for your request"}</h3>

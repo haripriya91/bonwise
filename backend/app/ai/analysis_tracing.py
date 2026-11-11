@@ -11,6 +11,7 @@ from langsmith import Client
 from app.core.config import get_settings
 
 NAMES = {
+    "load_budget_context": "tool",
     "planner_suggest_needs": "llm",
     "load_product_catalogue": "tool",
     "check_catalogue_index": "tool",
@@ -41,7 +42,7 @@ NAMES = {
 OUTCOMES = {"answered", "no_data", "unsupported", "clarification_required",
             "suggested", "review_required", "no_match", "awaiting_review", "approved"}
 OPERATIONS = {"summary", "highest_category", "items", "merchants", "records",
-              "quantity", "compare", "clarify", "unsupported"}
+              "quantity", "budget", "compare", "clarify", "unsupported"}
 
 
 def error_code(exc):

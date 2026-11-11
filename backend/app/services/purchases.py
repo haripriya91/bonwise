@@ -107,7 +107,11 @@ def require_member(db, household_id, user_id, lock=False):
 
 def check_products(db, content):
 
-    if has_detectable_pii(content.model_dump(mode="json")):
+    # Scan user-entered text, not typed internal IDs. A numeric UUID segment
+    # can otherwise be mistaken for a phone/card/long identifier.
+    text_fields = [content.merchant or "", *[item.original_text for item in content.items],
+                   *[adjustment.label for adjustment in content.adjustments]]
+    if has_detectable_pii(text_fields):
         raise HTTPException(
             422,
             "Remove personal information from purchase fields "

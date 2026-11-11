@@ -104,3 +104,18 @@ def accept_text(household_id: UUID, plan_id: UUID, body: AcceptText, response: R
                 user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
     response.headers["Cache-Control"] = "no-store"
     return service.accept_text(db, household_id, user.id, plan_id, body)
+
+
+@router.get('/weekly-plans/{plan_id}/history-options')
+def history_options(household_id: UUID, plan_id: UUID, response: Response,
+                    user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    response.headers['Cache-Control'] = 'no-store'
+    return service.history_options(db, household_id, user.id, plan_id)
+
+
+@router.post('/weekly-plans/{plan_id}/refresh-suggestions', response_model=PlanOut)
+def refresh_suggestions(household_id: UUID, plan_id: UUID, body: Version, response: Response,
+                        user: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    response.headers['Cache-Control'] = 'no-store'
+    service.refresh_empty(db, household_id, user.id, plan_id, body)
+    return workflow.run(db, household_id, user.id, plan_id)

@@ -21,7 +21,7 @@ from app.schemas.analysis import AnalysisOut, AnalysisPlan, ContextPeriod, ToolA
 from app.services.analysis import load_snapshot
 from app.services.purchases import require_member
 
-PROMPT_VERSION = "analysis-router-v6-lowest-ranking"
+PROMPT_VERSION = "analysis-router-v7-context-periods"
 
 ROUTING_PROMPT = """
 Interpret ONE household purchase/spending question in English or German.
@@ -46,7 +46,10 @@ records: supporting purchases or item lines, optionally category/product/store f
 quantity: total recorded purchased quantity for ONE named product, optionally at a store.
 compare: total or category spending between two periods, optionally at one merchant.
 clarify: ambiguous ranking/period/scope that the supplied context cannot resolve.
-unsupported: offers, budgets, predictions, editing records, causal price explanations,
+budget: recorded household budget for the requested dates; no spending/category/product filters.
+For records, detail=merchant answers where a purchase happened; detail=date answers when.
+Use detail=null otherwise. Never invent a particular receipt if multiple purchases match.
+unsupported: offers, predictions, editing records, causal price explanations,
 unit-quantity rankings, multiple independent questions, unrelated subjects.
 
 Items and merchant rankings:
@@ -127,6 +130,19 @@ and dates unless the new message changes them. There is no assumed pending metri
 For non-clarification plans, clarification_target is null.
 Without context, do not invent the subject of an incomplete follow-up.
 
+Follow-up examples:
+'Which shop was that?' after a summary => records/detail merchant, SAME resolved period.
+'What date was that purchase?' => records/detail date, same subject and resolved period.
+'Which purchases contributed to that spending?' => records, same subject and period.
+'How many packs of it?' => quantity using the unique focus_product; otherwise clarify.
+'What budget was set for that same period?' => budget, same resolved period, clear product/category filters.
+'Now show 2026 November spendings' => summary, 2026-11-01 through 2026-11-30;
+clear unrelated old product/category/store filters. Year can precede or follow month.
+Explicit dates override the page period. A follow-up without new dates retains last_plan dates,
+unless the user changed the page period. last_plan is a filter, never prior financial evidence.
+If the question asks which shop/date after multiple purchases, request records for that scope;
+code will list possibilities rather than assuming a unique purchase.
+
 Defaults: metric=spending, top_n=1, category/product_query/merchant_query=null,
 comparison dates=null, clarification_reason=none. For clarify/unsupported
 start/end dates can be null. Use language=de for German, otherwise en.
@@ -157,6 +173,10 @@ def routing_model():
 def valid_plan(p):
     if p.operation in {"clarify", "unsupported"}:
         return True
+    if p.detail is not None and p.operation != "records":
+        return False
+    if p.operation == "budget" and (p.category or p.product_query or p.merchant_query or p.quantity_unit):
+        return False
     if p.sort_direction == "lowest" and p.operation not in {"items", "merchants"}:
         return False
     if p.start_date is None or p.end_date is None:
@@ -179,6 +199,10 @@ def valid_plan(p):
 
 def clarification(plan):
     german = plan.language == "de"
+
+    if plan.detail in {"merchant", "date"}:
+        return ("Welchen Einkauf meinen Sie? Nennen Sie bitte einen Zeitraum oder Artikel."
+                if german else "Which purchase do you mean? Specify a period or item so I can check its store or date.")
 
     if (plan.operation == "quantity" or plan.clarification_target == "quantity") and not plan.product_query:
         return ("Welchen Artikel möchten Sie zählen?" if german else
@@ -269,6 +293,8 @@ def _ask_bonwise(db, household_id, user_id, body, trace):
             status = "invalid_output"
             raise HTTPException(502, "Could not interpret the question. Please rephrase.") from None
 
+    from app.ai.analysis_followups import resolve
+    plan = resolve(clean, plan, memory, body)
     trace.operation = plan.operation
     activity = []
     payload = dict(status="answered", evidence=[], summaries=[], evidence_truncated=False)
@@ -286,6 +312,22 @@ def _ask_bonwise(db, household_id, user_id, body, trace):
                 "“Which item do I buy most often?”"
             ),
         )
+    elif plan.operation == "budget":
+        from app.services.analysis_budget import for_period
+        from app.ai.analysis_logic import money, period
+        before = perf_counter()
+        with trace.span("load_budget_context"):
+            context = for_period(db, household_id, user_id, plan.start_date, plan.end_date)
+        activity.append(ToolActivity(name="get_budget_context", latency_ms=round((perf_counter() - before) * 1000)))
+        budget = context["budget"]
+        if budget:
+            dates = period(budget["start_date"], budget["end_date"])
+            payload["answer"] = ((f"Budget für {dates}: {money(budget['amount_cents'])}. Verfügbar im gesamten Budgetzeitraum: {money(budget['available_cents'])}."
+                if plan.language == "de" else f"Budget for {dates}: {money(budget['amount_cents'])}. Available across that full budget period: {money(budget['available_cents'])}."))
+        else:
+            payload.update(status="no_data", answer=(
+                "Kein einzelnes Budget deckt den gesamten angefragten Zeitraum ab." if plan.language == "de" else "No single budget covers the entire requested period.") if context["status"]=="partial" else (
+                "Für diesen Zeitraum ist kein Budget hinterlegt." if plan.language == "de" else "No budget is set for this period."))
     else:
         def fetch(a, b):
             before = perf_counter()

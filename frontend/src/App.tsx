@@ -18,6 +18,7 @@ import { NavigationIcon } from "./components/NavigationIcon";
 import { PrivacyNotes } from "./components/PrivacyNotes";
 import { ProfilePanel, SetupReminder, CreateHousehold } from "./household/HouseholdSettings";
 import { HouseholdPage } from "./household/HouseholdBudget";
+import { AnalysisBudgetContext } from "./analysis/BudgetContext";
 
 type HouseholdOption = {
   id: string;
@@ -345,8 +346,6 @@ function Analysis({
   const [endDate, setEndDate] = useState(initialRange.end_date);
   const [appliedRange, setAppliedRange] = useState(initialRange);
   const [overviewExpanded, setOverviewExpanded] = useState(false);
-  const budgetOverview = useShoppingOverview(session, household);
-  const budget = budgetOverview.data?.budget;
   const rangeError = startDate && endDate && endDate < startDate
     ? "To date must be on or after From date."
     : null;
@@ -406,13 +405,13 @@ function Analysis({
           {rangeError && <p className="spending-date-error" id="spending-date-error" role="alert">{rangeError}</p>}
         </div>
       </header>
-      <section className="analysis-budget-summary" aria-label="Spending and budget at a glance">
-        <article className="analysis-stat"><span>Recorded purchases</span><strong>{data ? formatMoney(data.total_cents) : "—"}</strong><small>Confirmed records · selected dates</small></article>
-        <article className="analysis-stat"><span>Total budget</span><strong>{budget ? formatMoney(budget.amount_cents) : "—"}</strong><small>{budget ? formatDateRange(budget.start_date, budget.end_date) : "No current budget"}</small></article>
-        <article className="analysis-stat"><span>Reserved commitments</span><strong>{budget ? formatMoney(budget.reserved_cents) : "—"}</strong><small>Not recorded as spending</small></article>
-        <article className="analysis-stat available"><span>Available to plan</span><strong>{budget ? formatMoney(budget.available_cents) : "—"}</strong><small>Current budget after spending & reservations</small></article>
-      </section>
-      {budgetOverview.error && <p className="field-error" role="alert">Budget figures could not be loaded. <button className="text-link" onClick={() => void budgetOverview.refetch()}>Try again</button></p>}
+      <AnalysisBudgetContext
+        session={session}
+        householdId={household.id}
+        startDate={appliedRange.start_date}
+        endDate={appliedRange.end_date}
+        totalCents={data?.total_cents}
+      />
       <section className="analysis-overview-panel" aria-labelledby="spending-overview-title">
         <button
           className="analysis-panel-toggle"

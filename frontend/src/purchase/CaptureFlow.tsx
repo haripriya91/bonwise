@@ -1,3 +1,4 @@
+import {AIWorking} from "../components/AIWorking";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { Session } from "@supabase/supabase-js";
@@ -668,7 +669,7 @@ export function CaptureFlow({
                   {busy === "extraction" ? "Preparing details…" : "Get purchase details"}
                 </button>
               </div>
-              {busy === "extraction" && <p className="long-running-note" role="status">Preparing your purchase details can take a little while. Please keep this window open.</p>}
+              {busy === "extraction" && <AIWorking label="Preparing purchase details for review"/>}
             </section>
           )}
             </div>

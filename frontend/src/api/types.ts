@@ -280,6 +280,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{household_id}/analysis/budget-context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Budget Context */
+        get: operations["budget_context_households__household_id__analysis_budget_context_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{household_id}/product-suggestions": {
         parameters: {
             query?: never;
@@ -694,6 +711,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{household_id}/weekly-plans/{plan_id}/history-options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** History Options */
+        get: operations["history_options_households__household_id__weekly_plans__plan_id__history_options_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/weekly-plans/{plan_id}/refresh-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh Suggestions */
+        post: operations["refresh_suggestions_households__household_id__weekly_plans__plan_id__refresh_suggestions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{household_id}/activity-calendar": {
         parameters: {
             query?: never;
@@ -793,6 +844,15 @@ export interface components {
              */
             category: "groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other";
         };
+        /** AnalysisBudgetContext */
+        AnalysisBudgetContext: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "covered" | "not_set" | "partial";
+            budget: components["schemas"]["BudgetOut"] | null;
+        };
         /** AnalysisInput */
         AnalysisInput: {
             /** Question */
@@ -858,7 +918,9 @@ export interface components {
              * Operation
              * @enum {string}
              */
-            operation: "summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "quantity" | "clarify" | "unsupported";
+            operation: "summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "quantity" | "budget" | "clarify" | "unsupported";
+            /** Detail */
+            detail?: ("merchant" | "date") | null;
             /**
              * Language
              * @enum {string}
@@ -899,7 +961,7 @@ export interface components {
              */
             clarification_reason: "ranking" | "period" | "scope" | "none";
             /** Clarification Target */
-            clarification_target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "quantity") | null;
+            clarification_target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "quantity" | "budget") | null;
         };
         /** ApprovePlan */
         ApprovePlan: {
@@ -1724,7 +1786,7 @@ export interface components {
         /** PendingAnalysisContext */
         PendingAnalysisContext: {
             /** Target */
-            target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "quantity") | null;
+            target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "quantity" | "budget") | null;
             /**
              * Reason
              * @enum {string}
@@ -3062,6 +3124,40 @@ export interface operations {
             };
         };
     };
+    budget_context_households__household_id__analysis_budget_context_get: {
+        parameters: {
+            query: {
+                start_date: string;
+                end_date: string;
+            };
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisBudgetContext"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     suggestions_households__household_id__product_suggestions_post: {
         parameters: {
             query?: never;
@@ -4065,6 +4161,74 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["AcceptText"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PlanOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    history_options_households__household_id__weekly_plans__plan_id__history_options_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    refresh_suggestions_households__household_id__weekly_plans__plan_id__refresh_suggestions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Version"];
             };
         };
         responses: {
