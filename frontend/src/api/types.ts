@@ -38,6 +38,111 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Household */
+        post: operations["create_household_households_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Profile */
+        get: operations["profile_profile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Profile */
+        patch: operations["update_profile_profile_patch"];
+        trace?: never;
+    };
+    "/households/{household_id}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Settings */
+        get: operations["settings_households__household_id__settings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Settings */
+        patch: operations["update_settings_households__household_id__settings_patch"];
+        trace?: never;
+    };
+    "/households/{household_id}/upcoming-needs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Needs */
+        get: operations["needs_households__household_id__upcoming_needs_get"];
+        put?: never;
+        /** Save Needs */
+        post: operations["save_needs_households__household_id__upcoming_needs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/upcoming-needs/{need_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Need */
+        delete: operations["delete_need_households__household_id__upcoming_needs__need_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{household_id}/weekly-plans/{plan_id}/needs-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview */
+        post: operations["preview_households__household_id__weekly_plans__plan_id__needs_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{household_id}/purchase-drafts": {
         parameters: {
             query?: never;
@@ -949,6 +1054,11 @@ export interface components {
         /** CommitmentOut */
         CommitmentOut: {
             /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "commitment" | "shopping_plan";
+            /**
              * Id
              * Format: uuid
              */
@@ -1272,6 +1382,16 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** HouseholdCreate */
+        HouseholdCreate: {
+            /**
+             * Client Request Id
+             * Format: uuid
+             */
+            client_request_id: string;
+            /** Name */
+            name: string;
+        };
         /** ImageExtractionOut */
         ImageExtractionOut: {
             extracted: components["schemas"]["ExtractedPurchase"];
@@ -1443,6 +1563,25 @@ export interface components {
             pack_base_quantity: string | null;
             /** Base Unit */
             base_unit: string | null;
+        };
+        /** NeedsPreview */
+        NeedsPreview: {
+            /** Expected Version */
+            expected_version: number;
+            /**
+             * Occasion
+             * @enum {string}
+             */
+            occasion: "seasonal" | "guests" | "replacement" | "other";
+            /** Text */
+            text: string;
+            /**
+             * Privacy Reviewed
+             * @constant
+             */
+            privacy_reviewed: true;
+            /** Extra Budget Cents */
+            extra_budget_cents?: number | null;
         };
         /** OfferCard */
         OfferCard: {
@@ -1834,6 +1973,13 @@ export interface components {
             /** Candidates */
             candidates?: components["schemas"]["ProductCandidateOut"][];
         };
+        /** ProfileEdit */
+        ProfileEdit: {
+            /** Expected Version */
+            expected_version: number;
+            /** Display Name */
+            display_name: string;
+        };
         /** PurchaseContent */
         "PurchaseContent-Input": {
             /** Merchant */
@@ -2055,6 +2201,34 @@ export interface components {
             product: components["schemas"]["ProductOption"];
             comparison: components["schemas"]["ProductOffers"];
         };
+        /** SaveNeeds */
+        SaveNeeds: {
+            /** Needs */
+            needs: components["schemas"]["SavedNeed"][];
+        };
+        /** SavedNeed */
+        SavedNeed: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            item: components["schemas"]["ItemEdit"];
+        };
+        /** SettingsEdit */
+        SettingsEdit: {
+            /** Expected Version */
+            expected_version: number;
+            /** Name */
+            name: string;
+            /** Shopping Day */
+            shopping_day?: number | null;
+            /**
+             * Setup Completed
+             * @default false
+             */
+            setup_completed: boolean;
+        };
         /** SettlePlan */
         SettlePlan: {
             /** Expected Version */
@@ -2269,6 +2443,292 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_household_households_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HouseholdCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    profile_profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    update_profile_profile_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    settings_households__household_id__settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_settings_households__household_id__settings_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettingsEdit"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    needs_households__household_id__upcoming_needs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_needs_households__household_id__upcoming_needs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveNeeds"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_need_households__household_id__upcoming_needs__need_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                need_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_households__household_id__weekly_plans__plan_id__needs_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+                plan_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NeedsPreview"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

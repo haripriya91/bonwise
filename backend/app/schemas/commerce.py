@@ -48,6 +48,7 @@ class CommitmentSettle(VersionInput):
 
 
 class CommitmentOut(BaseModel):
+    kind: Literal["commitment", "shopping_plan"]
     id: UUID
     title: str
     planned_on: date

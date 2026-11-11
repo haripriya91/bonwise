@@ -11,6 +11,7 @@ from langsmith import Client
 from app.core.config import get_settings
 
 NAMES = {
+    "planner_suggest_needs": "llm",
     "load_product_catalogue": "tool",
     "check_catalogue_index": "tool",
     "embed_catalogue_text": "embedding",
@@ -68,7 +69,7 @@ def trace_client():
 
 class AnalysisTrace:
     def __init__(self, prompt_version, model, *, root_name="ask_bonwise"):
-        if root_name not in {"ask_bonwise", "catalogue_index", "catalogue_retrieval", "product_suggestions", "weekly_planner", "planner_text_changes", "planner_evaluation", "correction_index", "correction_evaluation"}:
+        if root_name not in {"seasonal_needs", "ask_bonwise", "catalogue_index", "catalogue_retrieval", "product_suggestions", "weekly_planner", "planner_text_changes", "planner_evaluation", "correction_index", "correction_evaluation"}:
             raise ValueError("Unsupported trace root.")
         self.root_name = root_name
         self.id = uuid4()

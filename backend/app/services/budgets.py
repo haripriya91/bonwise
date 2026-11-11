@@ -67,6 +67,10 @@ def snapshot(db, budget):
         )
         .order_by(BudgetCommitment.planned_on, BudgetCommitment.id)
     ).all()
+    from app.db.planner import WeeklyPlan
+    shopping_ids = set(db.scalars(select(WeeklyPlan.commitment_id).where(
+        WeeklyPlan.household_id == budget.household_id,
+        WeeklyPlan.commitment_id.in_([c.id for c in commitments]))).all())
     reserved = sum(c.amount_cents for c in commitments if c.status == "open")
     return dict(
         id=budget.id,
@@ -83,6 +87,7 @@ def snapshot(db, budget):
             dict(
                 id=c.id,
                 title=c.title,
+                kind="shopping_plan" if c.id in shopping_ids else "commitment",
                 planned_on=c.planned_on,
                 amount_cents=c.amount_cents,
                 status=c.status,
