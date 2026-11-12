@@ -33,6 +33,7 @@ def resolve(question, plan, memory, body):
         start = previous.start_date if previous_ok and not page_changed else body.start_date
         end = previous.end_date if previous_ok and not page_changed else body.end_date
         values = dict(operation='budget' if kind=='budget' else 'records',
+            related=None, reference_scope=None,
             detail=kind if kind in {'merchant','date'} else None,
             start_date=start, end_date=end, comparison_start_date=None, comparison_end_date=None,
             clarification_reason='none', clarification_target=None, sort_direction='highest',

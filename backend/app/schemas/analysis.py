@@ -8,6 +8,23 @@ from app.schemas.purchase import Category, SpendingSummary
 from app.schemas.commerce import BudgetOut
 
 
+class RelatedQuestion(BaseModel):
+    """One optional read-only subquestion. Identity and dates belong to the parent."""
+    model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
+    operation: Literal["summary", "highest_category", "items", "merchants",
+                       "records", "quantity", "budget", "unsupported"]
+    detail: Literal["merchant", "date"] | None = None
+    scope: Literal["period", "highest_category", "clarify"] = "period"
+    category: Category | None = None
+    product_query: str | None = Field(default=None, max_length=120)
+    merchant_query: str | None = Field(default=None, max_length=120)
+    quantity_unit: Literal["pack", "each", "kg", "l"] | None = None
+    metric: Literal["spending", "purchase_frequency"] = "spending"
+    sort_direction: Literal["highest", "lowest"] = "highest"
+    top_n: int = Field(default=3, ge=1, le=10)
+    unsupported_reason: Literal["none", "offers", "prediction", "write", "causal", "quantity_ranking", "unrelated", "limit"] = "none"
+
+
 class AnalysisPlan(BaseModel):
     model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
     operation: Literal["summary", "highest_category", "items", "merchants",
@@ -28,6 +45,8 @@ class AnalysisPlan(BaseModel):
     clarification_reason: Literal["ranking", "period", "scope", "none"]
     clarification_target: Literal["summary", "highest_category", "items", "merchants",
                                   "records", "compare", "quantity", "budget"] | None = None
+    related: RelatedQuestion | None = None
+    reference_scope: Literal["highest_category", "ranked_items", "first_result", "second_result"] | None = None
 
 
 class ContextPeriod(BaseModel):
@@ -46,7 +65,8 @@ class PendingAnalysisContext(BaseModel):
     model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
     target: Literal["summary", "highest_category", "items", "merchants",
                     "records", "compare", "quantity", "budget"] | None = None
-    reason: Literal["ranking", "period"]
+    reason: Literal["ranking", "period", "scope"]
+    detail: Literal["merchant", "date"] | None = None
     category: Category | None = None
     product_query: str | None = Field(default=None, max_length=120)
     merchant_query: str | None = Field(default=None, max_length=120)
@@ -68,6 +88,7 @@ class ConversationContext(BaseModel):
     focus_category: Category | None = None
     focus_product: str | None = Field(default=None, max_length=120)
     focus_merchant: str | None = Field(default=None, max_length=120)
+    compound_plan: AnalysisPlan | None = None
 
 
 class AnalysisInput(BaseModel):

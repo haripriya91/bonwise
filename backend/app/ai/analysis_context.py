@@ -11,9 +11,12 @@ def checked_context(context):
     if context is None:
         return None
     candidates = [context.focus_product, context.focus_merchant]
-    for plan in (context.last_plan, context.pending):
+    for plan in (context.last_plan, context.pending, context.compound_plan):
         if plan is not None:
             candidates.extend([plan.product_query, plan.merchant_query])
+            related = getattr(plan, "related", None)
+            if related:
+                candidates.extend([related.product_query, related.merchant_query])
     for text in candidates:
         if text and (redact_text(text)[1] or "[REMOVED]" in text):
             raise HTTPException(422, "Remove personal details from the question and retry.")
@@ -36,8 +39,24 @@ def next_context(previous, plan, body, payload):
     """Remember resolved intent or a pending clarification, not totals/history."""
     period = ContextPeriod(start_date=body.start_date, end_date=body.end_date)
     status = payload["status"]
+    if plan.related is not None and status in {"answered", "no_data", "clarification_required"}:
+        context = ConversationContext(last_plan=plan, compound_plan=plan, selected_period=period)
+        if plan.related.scope == "clarify" and plan.related.operation != "unsupported":
+            context.pending = PendingAnalysisContext(target=plan.related.operation, reason="scope",
+                start_date=plan.start_date, end_date=plan.end_date)
+        return checked_context(context)
+    if (plan.operation == "clarify" and plan.clarification_reason == "scope"
+            and previous and previous.compound_plan):
+        context = previous.model_copy(deep=True)
+        context.pending = PendingAnalysisContext(target="records", reason="scope",
+            detail=plan.detail,
+            start_date=plan.start_date or body.start_date, end_date=plan.end_date or body.end_date)
+        context.selected_period = period
+        return checked_context(context)
     if status in {"answered", "no_data"}:
         context = ConversationContext(last_plan=plan, selected_period=period)
+        if plan.reference_scope and previous:
+            context.compound_plan = previous.compound_plan
         refs = payload.get("evidence", [])
         if plan.operation == "highest_category":
             categories = {r.category for r in refs if r.category}

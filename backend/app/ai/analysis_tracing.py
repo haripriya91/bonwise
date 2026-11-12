@@ -82,6 +82,7 @@ class AnalysisTrace:
         self.children = []
         self.outcome = None
         self.operation = None
+        self.subquestion_count = 1
         self.finished = False
         self.payload = None
 
@@ -128,6 +129,8 @@ class AnalysisTrace:
             metadata["outcome"] = self.outcome
         if self.operation in OPERATIONS:
             metadata["operation"] = self.operation
+        if self.subquestion_count in {1, 2}:
+            metadata["subquestion_count"] = self.subquestion_count
         root = dict(id=self.id, name=self.root_name, run_type="chain",
                     inputs={}, outputs={}, start_time=self.start,
                     end_time=datetime.now(timezone.utc), trace_id=self.id,

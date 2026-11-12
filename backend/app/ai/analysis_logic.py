@@ -100,6 +100,34 @@ def filtered_lines(records, plan, include_other_units=False):
                  or i["quantity_unit"] == plan.quantity_unit)]
 
 
+def item_identity(item):
+    return (("product", item["product_id"]) if item["product_id"]
+            else ("text", normal(item["description"])))
+
+
+def item_groups(plan, records):
+    groups = {}
+    for p, i in filtered_lines(records, plan):
+        key = item_identity(i)
+        group = groups.setdefault(key, {"identity": key, "label": i["description"],
+            "total": 0, "purchases": set(), "refs": []})
+        group["total"] += i["line_total_cents"]
+        group["purchases"].add(p["id"])
+        group["refs"].append(purchase_ref(p, plan, i))
+    return groups
+
+
+def rank_groups(groups, plan):
+    """Same exact ranking and tie cutoff for answers and record follow-ups."""
+    if not groups:
+        return []
+    score = (lambda g: len(g["purchases"])) if plan.metric == "purchase_frequency" else (lambda g: g["total"])
+    lowest = plan.sort_direction == "lowest"
+    ranked = sorted(groups.values(), key=lambda g: (score(g) if lowest else -score(g), normal(g["label"])))
+    cutoff = score(ranked[min(plan.top_n, len(ranked)) - 1])
+    return [g for g in ranked if (score(g) <= cutoff if lowest else score(g) >= cutoff)]
+
+
 def quantity_text(value):
     whole, _, fraction = format(value, "f").partition(".")
     fraction = fraction.rstrip("0")
@@ -196,8 +224,9 @@ def execute(plan, records, baseline=None):
         base["evidence"] = [summary_ref(current, plan.category)]
         name = label[plan.category] if plan.category else ("Gesamtausgaben" if de else "Total spending")
         if plan.operation == "highest_category":
-            peak = max(c.total_cents for c in current.categories)
-            winners = [c for c in current.categories if c.total_cents == peak]
+            observed = {i["category"] for p in records for i in p["items"]} | {a["category"] for p in records for a in p["adjustments"]}
+            peak = max(c.total_cents for c in current.categories if c.category in observed)
+            winners = [c for c in current.categories if c.category in observed and c.total_cents == peak]
             names = join_names([label[c.category] for c in winners], de)
             if len(winners) == 1:
                 answer = (f"Am meisten haben Sie für {names} ausgegeben: {money(peak)}."
@@ -251,7 +280,7 @@ def execute(plan, records, baseline=None):
             "answer":("Mehrere Einkäufe passen. Welchen meinen Sie?" if de else "Several purchases match. Which one do you mean?") + "\n" + "\n".join(rows)}
 
     if plan.operation == "records":
-        if plan.category or plan.product_query:
+        if plan.category or plan.product_query or plan.reference_scope:
             refs = [purchase_ref(p, plan, i) for p, i in lines]
             rows = [f"• {i['description']} — {money(i['line_total_cents'])}"
                     + ((f" bei {p['merchant']}" if de else f" at {p['merchant']}")
@@ -279,13 +308,7 @@ def execute(plan, records, baseline=None):
 
     groups = {}
     if plan.operation == "items":
-        for p, i in lines:
-            key = ("product", i["product_id"]) if i["product_id"] else ("text", normal(i["description"]))
-            g = groups.setdefault(key, {"label": i["description"], "total": 0,
-                                        "purchases": set(), "refs": []})
-            g["total"] += i["line_total_cents"]
-            g["purchases"].add(p["id"])
-            g["refs"].append(purchase_ref(p, plan, i))
+        groups = item_groups(plan, records)
     else:  # merchants
         for p in records:
             relevant = [i for i in p["items"] if plan.category is None or i["category"] == plan.category]
@@ -308,11 +331,8 @@ def execute(plan, records, baseline=None):
             "Ich habe keine passenden gespeicherten Artikel oder Händler gefunden." if de else
             "I could not find any matching saved items or stores.") + qualifier}
     frequency = plan.metric == "purchase_frequency"
-    score = (lambda g: len(g["purchases"])) if frequency else (lambda g: g["total"])
     lowest = plan.sort_direction == "lowest"
-    ranked = sorted(groups.values(), key=lambda g: (score(g) if lowest else -score(g), normal(g["label"])))
-    cutoff = score(ranked[min(plan.top_n, len(ranked)) - 1])
-    winners = [g for g in ranked if (score(g) <= cutoff if lowest else score(g) >= cutoff)]  # Preserve ties.
+    winners = rank_groups(groups, plan)
     displayed = winners[:10]
     names = join_names([g["label"] for g in displayed], de)
     single_rank = plan.top_n == 1 and len(winners) <= 3

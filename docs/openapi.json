@@ -1079,6 +1079,74 @@
         }
       }
     },
+    "/households/{household_id}/analysis/budget-context": {
+      "get": {
+        "tags": [
+          "analysis"
+        ],
+        "summary": "Budget Context",
+        "operationId": "budget_context_households__household_id__analysis_budget_context_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "household_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Household Id"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Start Date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "End Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisBudgetContext"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/households/{household_id}/product-suggestions": {
       "post": {
         "tags": [
@@ -2926,6 +2994,130 @@
         }
       }
     },
+    "/households/{household_id}/weekly-plans/{plan_id}/history-options": {
+      "get": {
+        "tags": [
+          "weekly planner"
+        ],
+        "summary": "History Options",
+        "operationId": "history_options_households__household_id__weekly_plans__plan_id__history_options_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "household_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Household Id"
+            }
+          },
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/households/{household_id}/weekly-plans/{plan_id}/refresh-suggestions": {
+      "post": {
+        "tags": [
+          "weekly planner"
+        ],
+        "summary": "Refresh Suggestions",
+        "operationId": "refresh_suggestions_households__household_id__weekly_plans__plan_id__refresh_suggestions_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "household_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Household Id"
+            }
+          },
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Version"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/households/{household_id}/activity-calendar": {
       "get": {
         "tags": [
@@ -3196,6 +3388,35 @@
         ],
         "title": "AdjustmentInput"
       },
+      "AnalysisBudgetContext": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "covered",
+              "not_set",
+              "partial"
+            ],
+            "title": "Status"
+          },
+          "budget": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BudgetOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "budget"
+        ],
+        "title": "AnalysisBudgetContext"
+      },
       "AnalysisInput": {
         "properties": {
           "question": {
@@ -3376,10 +3597,26 @@
               "records",
               "compare",
               "quantity",
+              "budget",
               "clarify",
               "unsupported"
             ],
             "title": "Operation"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "merchant",
+                  "date"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
           },
           "language": {
             "type": "string",
@@ -3542,7 +3779,8 @@
                   "merchants",
                   "records",
                   "compare",
-                  "quantity"
+                  "quantity",
+                  "budget"
                 ]
               },
               {
@@ -3550,6 +3788,33 @@
               }
             ],
             "title": "Clarification Target"
+          },
+          "related": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RelatedQuestion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reference_scope": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "highest_category",
+                  "ranked_items",
+                  "first_result",
+                  "second_result"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference Scope"
           }
         },
         "additionalProperties": false,
@@ -4178,6 +4443,16 @@
               }
             ],
             "title": "Focus Merchant"
+          },
+          "compound_plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalysisPlan"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -5081,7 +5356,8 @@
                 "exclusiveMinimum": 0.0
               },
               {
-                "type": "string"
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,9}|(?=[\\d.]{1,13}0*$)\\d{0,9}\\.\\d{0,3}0*$)"
               }
             ],
             "title": "Quantity",
@@ -5149,6 +5425,7 @@
           },
           "quantity": {
             "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,9}|(?=[\\d.]{1,13}0*$)\\d{0,9}\\.\\d{0,3}0*$)",
             "title": "Quantity",
             "default": "1"
           },
@@ -5214,6 +5491,7 @@
           },
           "quantity": {
             "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,9}|(?=[\\d.]{1,13}0*$)\\d{0,9}\\.\\d{0,3}0*$)",
             "title": "Quantity",
             "default": "1"
           },
@@ -5293,7 +5571,8 @@
           "pack_base_quantity": {
             "anyOf": [
               {
-                "type": "string"
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
               },
               {
                 "type": "null"
@@ -5639,7 +5918,8 @@
                   "merchants",
                   "records",
                   "compare",
-                  "quantity"
+                  "quantity",
+                  "budget"
                 ]
               },
               {
@@ -5652,9 +5932,25 @@
             "type": "string",
             "enum": [
               "ranking",
-              "period"
+              "period",
+              "scope"
             ],
             "title": "Reason"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "merchant",
+                  "date"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
           },
           "category": {
             "anyOf": [
@@ -7348,6 +7644,157 @@
           "expected_version"
         ],
         "title": "VersionInput"
+      },
+      "RelatedQuestion": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "highest_category",
+              "items",
+              "merchants",
+              "records",
+              "quantity",
+              "budget",
+              "unsupported"
+            ],
+            "title": "Operation"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "merchant",
+                  "date"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "period",
+              "highest_category",
+              "clarify"
+            ],
+            "title": "Scope",
+            "default": "period"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "groceries",
+                  "clothing",
+                  "household",
+                  "personal_care",
+                  "transport",
+                  "dining_out",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "product_query": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Query"
+          },
+          "merchant_query": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merchant Query"
+          },
+          "quantity_unit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pack",
+                  "each",
+                  "kg",
+                  "l"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity Unit"
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "spending",
+              "purchase_frequency"
+            ],
+            "title": "Metric",
+            "default": "spending"
+          },
+          "sort_direction": {
+            "type": "string",
+            "enum": [
+              "highest",
+              "lowest"
+            ],
+            "title": "Sort Direction",
+            "default": "highest"
+          },
+          "top_n": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Top N",
+            "default": 3
+          },
+          "unsupported_reason": {
+            "type": "string",
+            "enum": [
+              "none",
+              "offers",
+              "prediction",
+              "write",
+              "causal",
+              "quantity_ranking",
+              "unrelated",
+              "limit"
+            ],
+            "title": "Unsupported Reason",
+            "default": "none"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation"
+        ],
+        "title": "RelatedQuestion",
+        "description": "One optional read-only subquestion. Identity and dates belong to the parent."
       }
     },
     "securitySchemes": {

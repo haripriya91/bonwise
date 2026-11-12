@@ -962,6 +962,9 @@ export interface components {
             clarification_reason: "ranking" | "period" | "scope" | "none";
             /** Clarification Target */
             clarification_target?: ("summary" | "highest_category" | "items" | "merchants" | "records" | "compare" | "quantity" | "budget") | null;
+            related?: components["schemas"]["RelatedQuestion"] | null;
+            /** Reference Scope */
+            reference_scope?: ("highest_category" | "ranked_items" | "first_result" | "second_result") | null;
         };
         /** ApprovePlan */
         ApprovePlan: {
@@ -1243,6 +1246,7 @@ export interface components {
             focus_product?: string | null;
             /** Focus Merchant */
             focus_merchant?: string | null;
+            compound_plan?: components["schemas"]["AnalysisPlan"] | null;
         };
         /** DraftCreate */
         DraftCreate: {
@@ -1791,7 +1795,9 @@ export interface components {
              * Reason
              * @enum {string}
              */
-            reason: "ranking" | "period";
+            reason: "ranking" | "period" | "scope";
+            /** Detail */
+            detail?: ("merchant" | "date") | null;
             /** Category */
             category?: ("groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other") | null;
             /** Product Query */
@@ -2465,6 +2471,56 @@ export interface components {
         VersionInput: {
             /** Expected Version */
             expected_version: number;
+        };
+        /**
+         * RelatedQuestion
+         * @description One optional read-only subquestion. Identity and dates belong to the parent.
+         */
+        RelatedQuestion: {
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "summary" | "highest_category" | "items" | "merchants" | "records" | "quantity" | "budget" | "unsupported";
+            /** Detail */
+            detail?: ("merchant" | "date") | null;
+            /**
+             * Scope
+             * @default period
+             * @enum {string}
+             */
+            scope: "period" | "highest_category" | "clarify";
+            /** Category */
+            category?: ("groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other") | null;
+            /** Product Query */
+            product_query?: string | null;
+            /** Merchant Query */
+            merchant_query?: string | null;
+            /** Quantity Unit */
+            quantity_unit?: ("pack" | "each" | "kg" | "l") | null;
+            /**
+             * Metric
+             * @default spending
+             * @enum {string}
+             */
+            metric: "spending" | "purchase_frequency";
+            /**
+             * Sort Direction
+             * @default highest
+             * @enum {string}
+             */
+            sort_direction: "highest" | "lowest";
+            /**
+             * Top N
+             * @default 3
+             */
+            top_n: number;
+            /**
+             * Unsupported Reason
+             * @default none
+             * @enum {string}
+             */
+            unsupported_reason: "none" | "offers" | "prediction" | "write" | "causal" | "quantity_ranking" | "unrelated" | "limit";
         };
     };
     responses: never;
