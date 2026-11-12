@@ -18,6 +18,10 @@ Bonwise is an AI-assisted household shopping and spending application. Capture a
 
 Home keeps the calendar and budget summary prominent. The dedicated Purchases screen loads five records initially, with more available on request.
 
+## Live demo
+
+[Open Bonwise](https://bonwise.vercel.app/)
+
 ## Technology
 
 | Area | Tools |
