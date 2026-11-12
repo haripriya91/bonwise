@@ -367,9 +367,13 @@ export function ImageCapture({
     <section className="image-capture workflow-surface" aria-labelledby="image-capture-title">
       <h2 id="image-capture-title">Receipt image</h2>
       <p className="workflow-copy">Choose a JPEG or PNG. Nothing is uploaded until you choose Get purchase details.</p>
+      <aside className="receipt-privacy-warning" role="note" aria-label="Protect personal information before uploading">
+        <span className="receipt-warning-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M12 5v9"/><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none"/></svg></span>
+        <div><strong>Check personal details before sending</strong><p>No automatic detection. Cover names, contact or payment details, membership IDs and identifying codes in the image review.</p></div>
+      </aside>
       <div className="image-inputs">
         <label className="image-file-control mobile-camera-control">
-          <span>Take a receipt photo (mobile)</span>
+          <span>Take a receipt photo</span>
           <input
             type="file"
             accept="image/jpeg,image/png"
@@ -396,9 +400,7 @@ export function ImageCapture({
           />
         </label>
       </div>
-      <p className="image-privacy-note">
-        This version does not automatically detect personal information. Check for names, addresses, phone numbers or email, payment information, membership IDs, and machine-readable codes that may contain identifiers.
-      </p>
+
 
       {preparing && <p className="status-message" role="status">Preparing image on this device…</p>}
       {(localError || error) && <p className="workflow-error" role="alert">{localError ?? error}</p>}

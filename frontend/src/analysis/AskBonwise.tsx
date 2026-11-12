@@ -300,7 +300,7 @@ export function AskBonwise({
   endDate: string;
 }) {
   const [expanded, setExpanded] = useState(true);
-  const pendingAnchor = useRef<HTMLDivElement>(null);
+  const conversationView = useRef<HTMLDivElement>(null);
   const {
     entries,
     question,
@@ -397,7 +397,9 @@ export function AskBonwise({
     setExpanded((current) => !current);
   }
 
-  useEffect(() => { if(pending && expanded) pendingAnchor.current?.scrollIntoView({block:"nearest"}); }, [pending, expanded]);
+  useEffect(() => {
+    if(expanded && conversationView.current)conversationView.current.scrollTop=conversationView.current.scrollHeight;
+  }, [entries.length, pending, expanded]);
 
   function submitTypedQuestion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -451,15 +453,18 @@ export function AskBonwise({
           ))}
         </div>
 
+        <div className="analysis-conversation" ref={conversationView} role="region" aria-label="Conversation" tabIndex={0}>
+        {entries.length===0 && !pending && <div className="analysis-chat-empty"><span className="analysis-chat-avatar" aria-hidden="true">b</span><h3>A clearer picture starts with a question.</h3><p>Ask about your saved purchases, spending or budget. Choose a prompt above or write below.</p></div>}
         {entries.length > 0 && (
           <ol className="analysis-answer-list" aria-label="Questions and answers">
             {entries.map((entry, index) => (
-              <li className="analysis-answer-entry" key={`${entry.startDate}-${index}`}>
+              <li className={`analysis-answer-entry analysis-turn-${entry.result.status}`} key={`${entry.startDate}-${index}`}>
                 <div className="analysis-asked-question">
+                  <small className="analysis-speaker-label">You</small>
                   <strong>{entry.question}</strong>
                   {(entry.result.analysis_period || entry.result.status === "answered" || entry.result.status === "no_data") && <span>Answer period: {responsePeriod(entry.result, entry.startDate, entry.endDate)}</span>}
                 </div>
-                <div className="analysis-answer">
+                <div className="analysis-assistant-message"><span className="analysis-chat-avatar" aria-hidden="true">b</span><div className="analysis-answer">
                   <span className="analysis-answer-status">{statusLabel(entry.result.status)}</span>
                   <p>{entry.result.answer}</p>
                   {entry.result.tool_activity.length > 0 && (
@@ -484,13 +489,14 @@ export function AskBonwise({
                       <p>{entry.result.calculation_note}</p>
                     </details>
                   )}
-                </div>
+                </div></div>
               </li>
             ))}
           </ol>
         )}
 
-        {pending && <div className="analysis-pending-turn" ref={pendingAnchor}><div className="analysis-asked-question"><strong>{pendingQuestion}</strong></div><AIWorking label="Checking your question against saved records" onCancel={stopWaiting}/></div>}
+        {pending && <div className="analysis-pending-turn"><div className="analysis-asked-question"><small className="analysis-speaker-label">You</small><strong>{pendingQuestion}</strong></div><div className="analysis-assistant-message"><span className="analysis-chat-avatar" aria-hidden="true">b</span><AIWorking label="Checking your question against saved records" onCancel={stopWaiting}/></div></div>}
+        </div>
         {error && <p className="analysis-ask-error" role="alert">{error}</p>}
 
         <form className="analysis-question-form" onSubmit={submitTypedQuestion}>
@@ -499,7 +505,6 @@ export function AskBonwise({
           ) : (
             <label htmlFor="analysis-question">Your question</label>
           )}
-          {!voiceActive && <p className="analysis-voice-note">Audio is sent for transcription when you stop.</p>}
           <div className="analysis-question-controls">
             {voiceActive ? (
               <VoiceCapture
@@ -559,6 +564,7 @@ export function AskBonwise({
               </>
             )}
           </div>
+          {!voiceActive && <p className="analysis-voice-note">Using voice? Audio is sent for transcription when you stop.</p>}
           {!voiceActive && transcriptionError && <p className="analysis-ask-error" role="alert">{transcriptionError}</p>}
         </form>
 

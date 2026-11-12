@@ -312,8 +312,8 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
   const openAmount = plan?.budget ? plan.budget.available_cents + (plan.is_revision ? plan.reservation_cents : 0) : null;
 
   return <section className="shopping-planner" aria-labelledby="planner-title">
-    <header className="planner-heading"><div><p className="planner-eyebrow">YOUR NEXT SHOPPING ROUND</p><h1 id="planner-title">Your weekly shopping list</h1>
-      <p>Suggestions from your confirmed purchases. Choose what you need and check what is already at home.</p></div>
+    <header className="planner-heading"><div><h1 id="planner-title">Your weekly shopping list</h1>
+      <p>Review suggestions from past purchases, adjust quantities and choose what you need.</p></div>
       <label>Shopping date<input type="date" value={plan ? plannedOn : browseDate} disabled={busy !== null} onChange={event => {
         const value = event.target.value;
         if (!value) return;

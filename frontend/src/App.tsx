@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, FormEvent } from "react";
 import type { QueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
@@ -7,18 +7,22 @@ import { apiRequest, getErrorText } from "./api/client";
 import type { components } from "./api/types";
 import { hasSupabaseConfig, supabase } from "./auth/supabase";
 import { AnalysisChatProvider, AskBonwise } from "./analysis/AskBonwise";
-import { CaptureFlow } from "./purchase/CaptureFlow";
-import { ConfirmedPurchaseDetails } from "./purchase/ConfirmedPurchaseDetails";
-import { DraftReview } from "./purchase/DraftReview";
+const CaptureFlow = lazy(() => import("./purchase/CaptureFlow").then(module => ({ default: module.CaptureFlow })));
+const ConfirmedPurchaseDetails = lazy(() => import("./purchase/ConfirmedPurchaseDetails").then(module => ({ default: module.ConfirmedPurchaseDetails })));
+const DraftReview = lazy(() => import("./purchase/DraftReview").then(module => ({ default: module.DraftReview })));
 import { clearPendingDraftSubmission, getDraftScopeKey, getSourceSnapshotKey } from "./purchase/workflow";
 import type { SourceContext } from "./purchase/workflow";
-import { ShoppingPlanner } from "./planner/ShoppingPlanner";
-import { ActivityCalendar } from "./components/ActivityCalendar";
+const ShoppingPlanner = lazy(() => import("./planner/ShoppingPlanner").then(module => ({ default: module.ShoppingPlanner })));
+const ActivityCalendar = lazy(() => import("./components/ActivityCalendar").then(module => ({ default: module.ActivityCalendar })));
 import { NavigationIcon } from "./components/NavigationIcon";
 import { PrivacyNotes } from "./components/PrivacyNotes";
 import { ProfilePanel, SetupReminder, CreateHousehold } from "./household/HouseholdSettings";
-import { HouseholdPage } from "./household/HouseholdBudget";
+const HouseholdPage = lazy(() => import("./household/HouseholdBudget").then(module => ({ default: module.HouseholdPage })));
 import { AnalysisBudgetContext } from "./analysis/BudgetContext";
+
+import { Welcome } from "./welcome/Welcome";
+import { PageLoading } from "./components/PageLoading";
+import { SectionBoundary } from "./components/SectionBoundary";
 
 type HouseholdOption = {
   id: string;
@@ -116,78 +120,44 @@ function currentRoute(): AppRoute {
   }
 }
 
-function SignIn({
-  onSignedIn,
-  initialError,
-}: {
-  onSignedIn: () => void;
-  initialError: string | null;
-}) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(initialError);
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!supabase) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInError) {
-        setError("Sign-in failed. Check your email and password, then try again.");
-        return;
-      }
-      onSignedIn();
-    } catch {
-      setError("Sign-in failed. Check your email and password, then try again.");
-    } finally {
-      setBusy(false);
-    }
+function SignIn({onSignedIn,initialError,onClose}:{onSignedIn:()=>void;initialError:string|null;onClose:()=>void}) {
+  const [email,setEmail]=useState("");
+  const [password,setPassword]=useState("");
+  const [showPassword,setShowPassword]=useState(false);
+  const [busy,setBusy]=useState(false);
+  const [error,setError]=useState<string|null>(initialError);
+  const dialog=useRef<HTMLDialogElement>(null);
+  useEffect(()=>{
+    const element=dialog.current,opener=document.activeElement as HTMLElement|null;
+    const previousOverflow=document.body.style.overflow;
+    if(element&&!element.open)element.showModal();
+    document.body.style.overflow="hidden";
+    return()=>{element?.close();document.body.style.overflow=previousOverflow;opener?.focus();};
+  },[]);
+  async function submit(event:FormEvent<HTMLFormElement>){
+    event.preventDefault();if(!supabase||busy)return;
+    setBusy(true);setError(null);
+    try{
+      const {error:signInError}=await supabase.auth.signInWithPassword({email,password});
+      if(signInError){setError("Sign-in failed. Check your email and password, then try again.");return;}
+      setPassword("");onSignedIn();
+    }catch{setError("Sign-in failed. Check your email and password, then try again.");}
+    finally{setBusy(false);}
   }
-
-  return (
-    <main className="auth-page">
-      <div className="auth-brand" aria-label="Bonwise">bonwise<span>.</span></div>
-      <section className="auth-panel" aria-labelledby="signin-title">
-        <h1 id="signin-title">Welcome back</h1>
-        <p className="auth-copy">Sign in to your household account.</p>
-        {!hasSupabaseConfig && (
-          <p className="notice" role="alert">
-            Authentication is not configured. Set the Supabase URL and publishable key in the frontend environment.
-          </p>
-        )}
-        {error && <p className="error-message" role="alert">{error}</p>}
-        <form className="sign-in-form" onSubmit={submit}>
-          <label htmlFor="email">Email address</label>
-          <input
-            id="email"
-            autoComplete="email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-            disabled={!hasSupabaseConfig || busy}
-          />
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            autoComplete="current-password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-            disabled={!hasSupabaseConfig || busy}
-          />
-          <button className="button button-primary sign-in-button" type="submit" disabled={!hasSupabaseConfig || busy}>
-            {busy ? "Signing in…" : "Sign in"}
-          </button>
-        </form>
-      </section>
-      <PrivacyNotes />
-    </main>
-  );
+  return <dialog className="bonwise-login" ref={dialog} aria-labelledby="signin-title" aria-describedby="signin-description"
+    onCancel={event=>{event.preventDefault();onClose();}}
+    onClick={event=>{if(event.target!==event.currentTarget)return;const box=event.currentTarget.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)onClose();}}>
+    <button type="button" className="login-close" aria-label="Close login popup" onClick={onClose}>×</button>
+    <div className="login-brand"><span className="login-mark" aria-hidden="true">b</span>bonwise.</div>
+    <h2 id="signin-title">Welcome back.</h2><p className="login-description" id="signin-description">A clearer picture of your household starts here.</p>
+    <form onSubmit={submit}>
+      <label htmlFor="login-email">Email address</label><input id="login-email" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={event=>setEmail(event.target.value)} required disabled={!hasSupabaseConfig||busy}/>
+      <label htmlFor="login-password">Password</label><div className="login-password"><input id="login-password" type={showPassword?"text":"password"} autoComplete="current-password" placeholder="Your password" value={password} onChange={event=>setPassword(event.target.value)} required disabled={!hasSupabaseConfig||busy}/><button type="button" aria-label={showPassword?"Hide password":"Show password"} onClick={()=>setShowPassword(value=>!value)}>{showPassword?"Hide":"Show"}</button></div>
+      {!hasSupabaseConfig&&<p className="notice" role="alert">Sign-in is not configured in this environment.</p>}
+      {error&&<p className="notice error-message" role="alert">{error}</p>}
+      <button className="login-submit" type="submit" disabled={!hasSupabaseConfig||busy}>{busy?"Signing in…":"Log in"}<span aria-hidden="true">→</span></button>
+    </form><p className="login-end">Photo · Voice · Text — your household, your way.</p>
+  </dialog>;
 }
 
 function PurchaseRow({
@@ -919,15 +889,15 @@ function Home({
   return (
     <section className="home-section" aria-labelledby="capture-title">
       <div className="home-top-row">
-        <CaptureFlow
+        <Suspense fallback={<PageLoading label="Opening purchase capture"/>}><CaptureFlow
           session={session}
           householdId={household.id}
           onDraftCreated={onDraftCreated}
-        />
+        /></Suspense>
 
         <aside className="budget-context-panel" aria-live="polite">
           {overviewQuery.isPending ? (
-            <p className="status-message" role="status">Loading budget overview…</p>
+            <PageLoading label="Loading budget overview"/>
           ) : overview ? (
             <>
               <div className="budget-context-header">
@@ -986,6 +956,8 @@ function Home({
         </div>
       )}
 
+      <div className="home-next-steps">
+      {overviewQuery.isPending && <section className="home-offers-panel" aria-labelledby="home-offers-title"><div className="recent-heading"><h2 id="home-offers-title">Offers for your usual buys</h2><button className="text-link" onClick={onGoToOffers}>Browse offers</button></div><PageLoading label="Loading offers"/></section>}
       {overview && overview.offers_status === "ready" && (
         <section className="home-offers-panel" aria-labelledby="home-offers-title">
           <div className="recent-heading">
@@ -1030,19 +1002,20 @@ function Home({
       )}
 
       <section className="planner-home-card" aria-labelledby="home-plan-title">
-        <div><p className="planner-eyebrow">WHEN YOU ARE READY TO SHOP</p><h2 id="home-plan-title">Start with a suggested weekly list.</h2>
-          <p>Check what you need, change the list and review estimated costs before reserving funds.</p></div>
+        <div><h2 id="home-plan-title">Your next shop</h2>
+          <p>Start with suggestions from confirmed purchases. Review your list before reserving funds.</p></div>
         <button className="button button-outline" onClick={() => onGoToPlan()}>Open shopping plan</button>
       </section>
+      </div>
 
-      <ActivityCalendar session={session} householdId={household.id} onAddPurchase={() => document.querySelector<HTMLElement>(".capture-receipt-action")?.click()} onOpenPlan={(date, planId) => onGoToPlan(date, planId)} onManageCommitments={onGoToBudget} />
+      <Suspense fallback={<PageLoading label="Opening your calendar"/>}><ActivityCalendar session={session} householdId={household.id} onAddPurchase={() => document.querySelector<HTMLElement>(".capture-receipt-action")?.click()} onOpenPlan={(date, planId) => onGoToPlan(date, planId)} onManageCommitments={onGoToBudget} /></Suspense>
 
       <section className="recent-section" aria-labelledby="recent-title">
         <div className="recent-heading">
           <h2 id="recent-title">Recent purchases</h2>
           <button className="text-link" onClick={onViewPurchases}>View all purchases</button>
         </div>
-        {isPending && <p className="status-message" role="status">Loading recent purchases…</p>}
+        {isPending && <PageLoading label="Loading recent purchases"/>}
         {error && (
           <div className="error-block" role="alert">
             <p>{getErrorText(error)}</p>
@@ -1070,6 +1043,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
   const sourceSnapshots = useRef(new Map<string, SourceContext>());
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [showSignIn, setShowSignIn] = useState(() => window.location.hash === "#login" || window.location.pathname !== "/");
   const [page, setPage] = useState<Page>("home");
   const [calendarPlan, setCalendarPlan] = useState<{date: string; id: string} | null>(null);
   const [route, setRoute] = useState<AppRoute>(currentRoute);
@@ -1207,11 +1181,11 @@ function App({ queryClient }: { queryClient: QueryClient }) {
   }
 
   if (authLoading) {
-    return <main className="auth-page"><p className="status-message" role="status">Loading your account…</p></main>;
+    return <main className="auth-page"><PageLoading label="Restoring your account"/></main>;
   }
 
   if (!session) {
-    return <SignIn onSignedIn={() => setAuthError(null)} initialError={authError} />;
+    return <><Welcome onLogin={() => setShowSignIn(true)}/>{showSignIn&&<SignIn onClose={()=>setShowSignIn(false)} onSignedIn={() => {setAuthError(null);setShowSignIn(false);}} initialError={authError}/>}</>;
   }
 
   return (
@@ -1223,8 +1197,8 @@ function App({ queryClient }: { queryClient: QueryClient }) {
     <div className="app-shell">
       <aside className="sidebar">
         <a className="wordmark" href="#home" onClick={(event) => { event.preventDefault(); setPage("home"); }}>
-          <span className="brand-mark" aria-hidden="true" />
-          bonwise
+          <span className="brand-mark brand-monogram" aria-hidden="true">b</span>
+          <span>bonwise.</span>
         </a>
         <nav className="side-navigation" aria-label="Main navigation">
           <button className={page === "home" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("home")}><NavigationIcon name="home" /><span>Home</span></button>
@@ -1234,7 +1208,6 @@ function App({ queryClient }: { queryClient: QueryClient }) {
           <button className={page === "analysis" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("analysis")}><NavigationIcon name="analysis" /><span>Analysis</span></button>
           <button className={page === "household" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("household")}><NavigationIcon name="household" /><span>My household</span></button>
         </nav>
-        <div className="sidebar-privacy"><PrivacyNotes /></div>
         <div className="sidebar-account">
           {meQuery.isPending && <span className="household-loading">Loading household…</span>}
           {selectedHousehold && households.length > 1 && (
@@ -1250,9 +1223,10 @@ function App({ queryClient }: { queryClient: QueryClient }) {
           {selectedHousehold && households.length === 1 && (
             <span className="household-name">{selectedHousehold.name}</span>
           )}
+          <div className="sidebar-footer-links"><PrivacyNotes />
           <button className="sign-out-button" onClick={() => void signOut()} disabled={signingOut}>
             {signingOut ? "Signing out…" : "Sign out"}
-          </button>
+          </button></div>
         </div>
       </aside>
       <div className="workspace">
@@ -1281,6 +1255,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
           </div>
         </header>
         <main className="main-content">
+          <SectionBoundary key={`${page}:${route.kind}:${selectedHousehold?.id ?? ""}`}><Suspense fallback={<PageLoading/>}>
           {selectedHousehold && route.kind === "main" && page !== "household" && <SetupReminder key={`setup:${session.user.id}:${selectedHousehold.id}`} session={session} householdId={selectedHousehold.id} onOpen={()=>navigateToPage("household")} />}
           {authError && <p className="error-message" role="alert">{authError}</p>}
           {signOutError && <p className="error-message" role="alert">{signOutError}</p>}
@@ -1367,6 +1342,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
               household={selectedHousehold}
             />
           )}
+          </Suspense></SectionBoundary>
         </main>
         <nav className="mobile-navigation" aria-label="Main navigation">
           <button className={page === "home" ? "mobile-nav-link active" : "mobile-nav-link"} onClick={() => navigateToPage("home")}><NavigationIcon name="home" /><span>Home</span></button>
