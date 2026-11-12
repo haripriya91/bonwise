@@ -20,6 +20,7 @@ from app.ai.purchase_extractor import (
 )
 from app.core.config import get_settings
 from app.core.privacy import has_detectable_pii
+from app.core.receipt_privacy import omit_item_identifiers
 from app.schemas.extraction import ExtractedPurchase
 
 
@@ -184,6 +185,7 @@ def extract_image(encoded):
                 "or enter missing fields manually.",
             )
 
+        result, identifiers_omitted = omit_item_identifiers(result)
         if has_detectable_pii(
             result.model_dump(mode="json")
         ):
@@ -196,6 +198,8 @@ def extract_image(encoded):
             )
 
         answer = assess(result)
+        if identifiers_omitted:
+            answer["warnings"].append("Long numeric identifiers were omitted from item descriptions. Review the remaining product names and amounts.")
         status = "success"
 
     except OpenAIError as error:

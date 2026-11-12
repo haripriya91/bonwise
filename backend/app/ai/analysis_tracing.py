@@ -11,6 +11,7 @@ from langsmith import Client
 from app.core.config import get_settings
 
 NAMES = {
+    "insights_select_suggestions": "llm",
     "load_budget_context": "tool",
     "planner_suggest_needs": "llm",
     "load_product_catalogue": "tool",
@@ -39,7 +40,7 @@ NAMES = {
     "planner_recheck_and_reserve": "tool",
     "planner_interpret_changes": "llm",
 }
-OUTCOMES = {"answered", "no_data", "unsupported", "clarification_required",
+OUTCOMES = {"ready", "fallback", "answered", "no_data", "unsupported", "clarification_required",
             "suggested", "review_required", "no_match", "awaiting_review", "approved"}
 OPERATIONS = {"summary", "highest_category", "items", "merchants", "records",
               "quantity", "budget", "compare", "clarify", "unsupported"}
@@ -70,7 +71,7 @@ def trace_client():
 
 class AnalysisTrace:
     def __init__(self, prompt_version, model, *, root_name="ask_bonwise"):
-        if root_name not in {"seasonal_needs", "ask_bonwise", "catalogue_index", "catalogue_retrieval", "product_suggestions", "weekly_planner", "planner_text_changes", "planner_evaluation", "correction_index", "correction_evaluation"}:
+        if root_name not in {"spending_insights", "seasonal_needs", "ask_bonwise", "catalogue_index", "catalogue_retrieval", "product_suggestions", "weekly_planner", "planner_text_changes", "planner_evaluation", "correction_index", "correction_evaluation"}:
             raise ValueError("Unsupported trace root.")
         self.root_name = root_name
         self.id = uuid4()

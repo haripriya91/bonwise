@@ -22,9 +22,8 @@ h1,h2,h3,h4,.analysis-stat strong,.home-budget-amount,.household-financial-summa
 .planner-item-estimate,.planner-product-picker li>button,.planner-offer-options{background:#F1F8F6}
 .planner-status-approved,.planner-status-settled{background:#D0E7E4;color:#112D32}
 .planner-review{border-color:#254E58}.planner-settings input,.shopping-planner input:not([type=checkbox]),.shopping-planner select,.shopping-planner textarea{border-color:#254E58}
-.page-loading{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:24px 0;color:var(--color-muted);font-size:13px;min-height:140px;max-width:680px}
+.page-loading{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:24px 0;color:var(--color-muted);font-size:13px;min-height:60px;max-width:680px}
 .page-loading-spinner{width:21px;height:21px;border:2px solid var(--color-line);border-top-color:var(--color-accent);border-radius:50%;animation:page-spin .8s linear infinite}
-.page-loading-skeleton{flex-basis:100%;display:grid;gap:12px}.page-loading-skeleton i{height:13px;border-radius:5px;background:var(--color-line);opacity:.55}.page-loading-skeleton i:nth-child(2){width:75%}.page-loading-skeleton i:nth-child(3){width:45%}
 @keyframes page-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.page-loading-spinner{animation:none}.welcome-page{scroll-behavior:auto}}
 
@@ -111,10 +110,7 @@ h1,h2,h3,h4,.analysis-stat strong,.home-budget-amount,.household-financial-summa
 :root :is(.privacy-notes){color: var(--ink, #2a3534)}
 :root :is(.privacy-notes__eyebrow){color: var(--muted, #7d8282)}
 :root :is(.privacy-notes__version){color: var(--muted, #7d8282)}
-:root :is(.ai-working){border:1px solid var(--color-line,#dae0df);color:var(--color-ink,#2c3736)}
-:root :is(.ai-working-body>span){color:var(--color-muted,#687473)}
-:root :is(.ai-working-orbit i){background:var(--color-accent,#496c68)}
-:root :is(.ai-working-lines i){background:var(--color-line,#e4ebea)}
+:root :is(.ai-working){border:0;background:transparent;box-shadow:none;color:var(--color-ink,#2c3736)}
 :root :is(.household-settings,.household-onboarding,.account-profile-content){color:var(--color-ink, #2b3736);border:1px solid var(--color-line, #d9e4e3)}
 :root :is(.household-settings input:not([type=checkbox]),.household-settings select,.account-profile-content input){border:1px solid var(--color-line, #d9e4e3)}
 :root :is(.household-setup-reminder){border-bottom:1px solid var(--color-line,#d9e4e3)}

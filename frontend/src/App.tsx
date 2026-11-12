@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, FormEvent } from "react";
 import type { QueryClient } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import type { Session } from "@supabase/supabase-js";
 import { apiRequest, getErrorText } from "./api/client";
 import type { components } from "./api/types";
@@ -19,6 +19,7 @@ import { PrivacyNotes } from "./components/PrivacyNotes";
 import { ProfilePanel, SetupReminder, CreateHousehold } from "./household/HouseholdSettings";
 const HouseholdPage = lazy(() => import("./household/HouseholdBudget").then(module => ({ default: module.HouseholdPage })));
 import { AnalysisBudgetContext } from "./analysis/BudgetContext";
+import { SpendingInsights } from "./analysis/SpendingInsights";
 
 import { Welcome } from "./welcome/Welcome";
 import { PageLoading } from "./components/PageLoading";
@@ -55,7 +56,7 @@ const categoryLabels: Record<SpendingSummaryData["categories"][number]["category
   other: "Other",
 };
 
-const pageSize = 20;
+const pageSize = 5;
 const currency = new Intl.NumberFormat("de-DE", {
   style: "currency",
   currency: "EUR",
@@ -225,18 +226,6 @@ function PurchaseRow({
   );
 }
 
-function usePurchasePage(session: Session, household: HouseholdOption, offset = 0, limit = pageSize) {
-  return useQuery({
-    queryKey: ["user", session.user.id, "household", household.id, "purchases", offset, limit],
-    queryFn: ({ signal }) =>
-      apiRequest<PurchasePage>(
-        `/households/${encodeURIComponent(household.id)}/purchases?limit=${limit}&offset=${offset}`,
-        session.access_token,
-        { signal },
-      ),
-  });
-}
-
 function useSpendingSummary(
   session: Session,
   household: HouseholdOption,
@@ -307,9 +296,13 @@ function shortestMoneyLabel(cents: number) {
 function Analysis({
   session,
   household,
+  onAction,
+  onPurchase,
 }: {
   session: Session;
   household: HouseholdOption;
+  onAction: (action: "review" | "offers" | "budget" | "planner") => void;
+  onPurchase: (id: string) => void;
 }) {
   const [initialRange] = useState(currentMonthDateRange);
   const [startDate, setStartDate] = useState(initialRange.start_date);
@@ -470,6 +463,12 @@ function Analysis({
             </section>
           </>
         )}
+      {data && data.purchase_count > 0 && <SpendingInsights
+        key={`${session.user.id}:${household.id}:${appliedRange.start_date}:${appliedRange.end_date}`}
+        session={session} householdId={household.id}
+        startDate={appliedRange.start_date} endDate={appliedRange.end_date}
+        purchaseCount={data.purchase_count} onAction={onAction} onPurchase={onPurchase}
+      />}
         </div>
       </section>
       <AskBonwise
@@ -495,11 +494,18 @@ function Purchases({
   onSelectPurchase: (purchaseId: string) => void;
   onBackToPurchases: () => void;
 }) {
-  const [offset, setOffset] = useState(0);
-  const { data, error, isPending, isFetching, refetch } = usePurchasePage(session, household, offset);
-
-  const total = data?.total ?? 0;
-  const pageCount = Math.ceil(total / pageSize);
+  const {data, error, isPending, isFetching, refetch, fetchNextPage, hasNextPage, isFetchingNextPage} = useInfiniteQuery({
+    queryKey: ["user", session.user.id, "household", household.id, "purchases", "infinite", pageSize],
+    initialPageParam: 0,
+    enabled: !selectedPurchaseId,
+    queryFn: ({pageParam, signal}) => apiRequest<PurchasePage>(
+      `/households/${encodeURIComponent(household.id)}/purchases?limit=${pageSize}&offset=${pageParam}`,
+      session.access_token, {signal}),
+    getNextPageParam: (last, _pages, offset) => last.purchases.length && offset + last.purchases.length < last.total
+      ? offset + last.purchases.length : undefined,
+    staleTime: 60_000,
+  });
+  const purchases = Array.from(new Map((data?.pages.flatMap(page => page.purchases) ?? []).map(purchase => [purchase.id, purchase])).values());
 
   if (selectedPurchaseId) {
     return (
@@ -517,7 +523,6 @@ function Purchases({
     <section className="page-section" aria-labelledby="purchases-title">
       <div className="section-heading">
         <h1 id="purchases-title">Purchases</h1>
-        {data && <span className="record-count">{total} {total === 1 ? "record" : "records"}</span>}
       </div>
       <div className="records-surface">
         {isPending && <p className="status-message" role="status">Loading purchases…</p>}
@@ -529,13 +534,13 @@ function Purchases({
             </button>
           </div>
         )}
-        {!isPending && !error && data?.purchases.length === 0 && (
+        {!isPending && !error && purchases.length === 0 && (
           <p className="empty-state">No confirmed purchases yet.</p>
         )}
-        {data && data.purchases.length > 0 && (
+        {purchases.length > 0 && (
           <>
             <ul className="purchase-list" aria-label="Purchase history">
-              {data.purchases.map((purchase) => (
+              {purchases.map((purchase) => (
                 <PurchaseRow
                   key={purchase.id}
                   purchase={purchase}
@@ -543,29 +548,11 @@ function Purchases({
                 />
               ))}
             </ul>
-            {pageCount > 1 && (
-              <div className="pagination">
-                <span className="pagination-count">
-                  {offset + 1}–{Math.min(offset + data.purchases.length, total)} of {total}
-                </span>
-                <div className="pagination-actions">
-                  <button
-                    className="button button-outline"
-                    onClick={() => setOffset(Math.max(0, offset - pageSize))}
-                    disabled={offset === 0 || isFetching}
-                  >
-                    Previous
-                  </button>
-                  <button
-                    className="button button-outline"
-                    onClick={() => setOffset(offset + pageSize)}
-                    disabled={offset + data.purchases.length >= total || isFetching}
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            )}
+            {hasNextPage && <div className="pagination">
+              <button type="button" className="button button-outline" onClick={() => void fetchNextPage()} disabled={isFetching}>
+                {isFetchingNextPage ? "Loading purchases…" : "Load 5 more purchases"}
+              </button>
+            </div>}
           </>
         )}
       </div>
@@ -867,7 +854,6 @@ function OffersPage({
 function Home({
   session,
   household,
-  onViewPurchases,
   onDraftCreated,
   onGoToBudget,
   onGoToOffers,
@@ -875,13 +861,11 @@ function Home({
 }: {
   session: Session;
   household: HouseholdOption;
-  onViewPurchases: () => void;
   onDraftCreated: (draft: DraftOut, source: SourceContext) => void;
   onGoToBudget: () => void;
   onGoToOffers: () => void;
   onGoToPlan: (date?: string, planId?: string) => void;
 }) {
-  const { data, error, isPending, isFetching, refetch } = usePurchasePage(session, household);
   const overviewQuery = useShoppingOverview(session, household);
   const overview = overviewQuery.data;
   const offerRecommendations = overview?.offers?.recommendations ?? [];
@@ -1010,29 +994,7 @@ function Home({
 
       <Suspense fallback={<PageLoading label="Opening your calendar"/>}><ActivityCalendar session={session} householdId={household.id} onAddPurchase={() => document.querySelector<HTMLElement>(".capture-receipt-action")?.click()} onOpenPlan={(date, planId) => onGoToPlan(date, planId)} onManageCommitments={onGoToBudget} /></Suspense>
 
-      <section className="recent-section" aria-labelledby="recent-title">
-        <div className="recent-heading">
-          <h2 id="recent-title">Recent purchases</h2>
-          <button className="text-link" onClick={onViewPurchases}>View all purchases</button>
-        </div>
-        {isPending && <PageLoading label="Loading recent purchases"/>}
-        {error && (
-          <div className="error-block" role="alert">
-            <p>{getErrorText(error)}</p>
-            <button className="button button-outline" onClick={() => void refetch()} disabled={isFetching}>
-              {isFetching ? "Trying again…" : "Try again"}
-            </button>
-          </div>
-        )}
-        {!isPending && !error && data?.purchases.length === 0 && (
-          <p className="empty-state">No confirmed purchases yet.</p>
-        )}
-        {data && data.purchases.length > 0 && (
-          <ul className="purchase-list recent-list" aria-label="Recent purchases">
-            {data.purchases.slice(0, 3).map((purchase) => <PurchaseRow key={purchase.id} purchase={purchase} />)}
-          </ul>
-        )}
-      </section>
+
     </section>
   );
 }
@@ -1292,7 +1254,6 @@ function App({ queryClient }: { queryClient: QueryClient }) {
               key={`${session.user.id}:${selectedHousehold.id}`}
               session={session}
               household={selectedHousehold}
-              onViewPurchases={() => navigateToPage("purchases")}
               onDraftCreated={navigateToDraft}
               onGoToBudget={() => navigateToPage("household")}
               onGoToOffers={() => navigateToPage("offers")}
@@ -1340,6 +1301,8 @@ function App({ queryClient }: { queryClient: QueryClient }) {
               key={`${session.user.id}:${selectedHousehold.id}`}
               session={session}
               household={selectedHousehold}
+              onAction={action => navigateToPage(action === "review" ? "purchases" : action === "offers" ? "offers" : action === "planner" ? "planner" : "household")}
+              onPurchase={openPurchaseDetails}
             />
           )}
           </Suspense></SectionBoundary>

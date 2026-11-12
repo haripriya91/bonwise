@@ -263,6 +263,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{household_id}/analysis/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Insights */
+        post: operations["insights_households__household_id__analysis_insights_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{household_id}/analysis/ask": {
         parameters: {
             query?: never;
@@ -1500,6 +1517,96 @@ export interface components {
              */
             privacy_reviewed: true;
         };
+        /** InsightCard */
+        InsightCard: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+            /** Detail */
+            detail: string;
+            /** Suggestion */
+            suggestion?: string | null;
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "review" | "offers" | "budget" | "planner";
+            /** Evidence */
+            evidence?: components["schemas"]["InsightEvidence"][];
+            /**
+             * Evidence Truncated
+             * @default false
+             */
+            evidence_truncated: boolean;
+        };
+        /** InsightEvidence */
+        InsightEvidence: {
+            /**
+             * Purchase Id
+             * Format: uuid
+             */
+            purchase_id: string;
+            /**
+             * Purchased On
+             * Format: date
+             */
+            purchased_on: string;
+            /** Total Cents */
+            total_cents: number;
+        };
+        /** InsightRequest */
+        InsightRequest: {
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+        };
+        /** InsightsOut */
+        InsightsOut: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "fallback" | "no_data";
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Purchase Count */
+            purchase_count: number;
+            /** Total Cents */
+            total_cents: number;
+            /** Top Items */
+            top_items: components["schemas"]["RankedInsightItem"][];
+            /** Cards */
+            cards: components["schemas"]["InsightCard"][];
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Revision */
+            revision: string;
+            /** Prompt Version */
+            prompt_version: string;
+            /** Model Calls */
+            model_calls: number;
+            /** Notice */
+            notice: string;
+        };
         /** ItemEdit */
         ItemEdit: {
             /**
@@ -1888,6 +1995,12 @@ export interface components {
              * @default false
              */
             force_new: boolean;
+            /**
+             * Mode
+             * @default suggested
+             * @enum {string}
+             */
+            mode: "suggested" | "manual";
         };
         /** PrivacyInput */
         PrivacyInput: {
@@ -2194,6 +2307,15 @@ export interface components {
              */
             quantity_unit: "pack" | "each" | "kg" | "l";
         };
+        /** RankedInsightItem */
+        RankedInsightItem: {
+            /** Label */
+            label: string;
+            /** Total Cents */
+            total_cents: number;
+            /** Purchase Count */
+            purchase_count: number;
+        };
         /** ReceiptAttachInput */
         ReceiptAttachInput: {
             /** Image Base64 */
@@ -2268,6 +2390,56 @@ export interface components {
         RecommendedProduct: {
             product: components["schemas"]["ProductOption"];
             comparison: components["schemas"]["ProductOffers"];
+        };
+        /**
+         * RelatedQuestion
+         * @description One optional read-only subquestion. Identity and dates belong to the parent.
+         */
+        RelatedQuestion: {
+            /**
+             * Operation
+             * @enum {string}
+             */
+            operation: "summary" | "highest_category" | "items" | "merchants" | "records" | "quantity" | "budget" | "unsupported";
+            /** Detail */
+            detail?: ("merchant" | "date") | null;
+            /**
+             * Scope
+             * @default period
+             * @enum {string}
+             */
+            scope: "period" | "highest_category" | "clarify";
+            /** Category */
+            category?: ("groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other") | null;
+            /** Product Query */
+            product_query?: string | null;
+            /** Merchant Query */
+            merchant_query?: string | null;
+            /** Quantity Unit */
+            quantity_unit?: ("pack" | "each" | "kg" | "l") | null;
+            /**
+             * Metric
+             * @default spending
+             * @enum {string}
+             */
+            metric: "spending" | "purchase_frequency";
+            /**
+             * Sort Direction
+             * @default highest
+             * @enum {string}
+             */
+            sort_direction: "highest" | "lowest";
+            /**
+             * Top N
+             * @default 3
+             */
+            top_n: number;
+            /**
+             * Unsupported Reason
+             * @default none
+             * @enum {string}
+             */
+            unsupported_reason: "none" | "offers" | "prediction" | "write" | "causal" | "quantity_ranking" | "unrelated" | "limit";
         };
         /** SaveNeeds */
         SaveNeeds: {
@@ -2471,56 +2643,6 @@ export interface components {
         VersionInput: {
             /** Expected Version */
             expected_version: number;
-        };
-        /**
-         * RelatedQuestion
-         * @description One optional read-only subquestion. Identity and dates belong to the parent.
-         */
-        RelatedQuestion: {
-            /**
-             * Operation
-             * @enum {string}
-             */
-            operation: "summary" | "highest_category" | "items" | "merchants" | "records" | "quantity" | "budget" | "unsupported";
-            /** Detail */
-            detail?: ("merchant" | "date") | null;
-            /**
-             * Scope
-             * @default period
-             * @enum {string}
-             */
-            scope: "period" | "highest_category" | "clarify";
-            /** Category */
-            category?: ("groceries" | "clothing" | "household" | "personal_care" | "transport" | "dining_out" | "other") | null;
-            /** Product Query */
-            product_query?: string | null;
-            /** Merchant Query */
-            merchant_query?: string | null;
-            /** Quantity Unit */
-            quantity_unit?: ("pack" | "each" | "kg" | "l") | null;
-            /**
-             * Metric
-             * @default spending
-             * @enum {string}
-             */
-            metric: "spending" | "purchase_frequency";
-            /**
-             * Sort Direction
-             * @default highest
-             * @enum {string}
-             */
-            sort_direction: "highest" | "lowest";
-            /**
-             * Top N
-             * @default 3
-             */
-            top_n: number;
-            /**
-             * Unsupported Reason
-             * @default none
-             * @enum {string}
-             */
-            unsupported_reason: "none" | "offers" | "prediction" | "write" | "causal" | "quantity_ranking" | "unrelated" | "limit";
         };
     };
     responses: never;
@@ -3132,6 +3254,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TranscriptionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    insights_households__household_id__analysis_insights_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                household_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InsightRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightsOut"];
                 };
             };
             /** @description Validation Error */

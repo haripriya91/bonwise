@@ -191,3 +191,23 @@
 :root .app-shell .home-section .calendar-details{background:transparent;border:0;border-radius:0;padding:4px 0;box-shadow:none}
 :root .app-shell .home-section .calendar-detail-grid{gap:32px;margin-top:22px}
 @media(max-width:760px){:root .app-shell .home-next-steps{grid-template-columns:1fr;gap:16px}:root .app-shell .home-next-steps :is(.home-offers-panel,.planner-home-card){padding:20px}:root .app-shell .home-top-row .budget-grid{gap:12px}:root .app-shell .home-top-row .budget-stat-box{padding:8px 0}:root .app-shell .home-top-row .budget-stat-box+.budget-stat-box{border-left:0}:root .app-shell .home-top-row .budget-stat-box.available{margin-left:0;padding:8px 12px}}
+
+/* Purchase days remain distinct from ordinary and selected days. */
+:root .app-shell .home-section .calendar-day.has-purchases{background:#DEEEEB;border-color:#719F99;box-shadow:inset 4px 0 #254E58}
+:root .app-shell .home-section .calendar-day.has-purchases.selected{background:#C4E0DB;border-color:#173D43;box-shadow:inset 4px 0 #173D43,inset 0 0 0 1px #173D43}
+
+/* Compact conversation: avatar stays beside its copy; no empty chat canvas. */
+:root .app-shell .analysis-conversation{min-height:0;padding:4px 4px 12px 0}
+:root .app-shell .analysis-chat-empty{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:start;align-content:start;gap:12px;min-height:0;padding:12px 0}
+:root .app-shell .analysis-chat-empty>div{min-width:0}
+:root .app-shell .analysis-chat-empty h3{font-size:15px;margin:0 0 5px;line-height:1.5}
+:root .app-shell .analysis-chat-empty p{font-size:13px;margin:0;max-width:64ch;line-height:1.6}
+@media(max-width:650px){:root .app-shell .analysis-chat-empty{grid-template-columns:26px minmax(0,1fr);gap:9px}}
+
+/* Budget totals: soft surfaces keep figures readable without heavy outlines. */
+:root .app-shell .home-top-row .budget-grid{gap:12px}
+:root .app-shell .home-top-row .budget-stat-box,
+:root .app-shell .home-top-row .budget-stat-box:first-child,
+:root .app-shell .home-top-row .budget-stat-box+.budget-stat-box{padding:16px 18px;border:1px solid rgba(241,248,246,.45);border-radius:12px;background:rgba(241,248,246,.66);box-shadow:none}
+:root .app-shell .home-top-row .budget-stat-box.available{margin-left:0;background:#D0E7E4;border:1px solid rgba(241,248,246,.5);border-radius:12px}
+@media(max-width:480px){:root .app-shell .home-top-row .budget-grid{gap:8px}:root .app-shell .home-top-row .budget-stat-box,:root .app-shell .home-top-row .budget-stat-box:first-child,:root .app-shell .home-top-row .budget-stat-box+.budget-stat-box{padding:12px}}

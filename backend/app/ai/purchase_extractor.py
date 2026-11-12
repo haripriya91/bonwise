@@ -11,12 +11,13 @@ from pydantic import ValidationError
 
 from app.core.config import get_settings
 from app.core.privacy import has_detectable_pii, redact_text
+from app.core.receipt_privacy import omit_item_identifiers
 from app.schemas.extraction import ExtractedPurchase
 from app.schemas.purchase import PurchaseContent
 from app.services.purchases import calculate
 
 
-PROMPT_VERSION = "purchase-extraction-v3"
+PROMPT_VERSION = "purchase-extraction-v4-omit-item-identifiers"
 
 PROMPT = """
 Extract structured purchase details from German or English purchase notes,
@@ -32,6 +33,8 @@ Exclude customer/cashier names, contact details, addresses, payment/card/account
 information, membership IDs, order IDs and invoice reference numbers.
 Merchant means the selling business, never the customer.
 Never copy redaction markers into purchase fields.
+Omit unnecessary article/SKU/EAN identifier numbers from item descriptions.
+Keep readable product names, variants and package sizes; do not copy store addresses.
 
 Dates:
 Use the actual purchase or invoice date, not delivery dates or payment due dates.
@@ -312,6 +315,7 @@ def extract_text(reviewed_text):
                 "Review or shorten the input.",
             )
 
+        result, identifiers_omitted = omit_item_identifiers(result)
         if has_detectable_pii(
             result.model_dump(mode="json")
         ):
@@ -323,6 +327,8 @@ def extract_text(reviewed_text):
             )
 
         answer = assess(result)
+        if identifiers_omitted:
+            answer["warnings"].append("Long numeric identifiers were omitted from item descriptions. Review the remaining product names and amounts.")
         status = "success"
 
     except OpenAIError:

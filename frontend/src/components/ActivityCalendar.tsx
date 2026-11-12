@@ -49,9 +49,13 @@ export function ActivityCalendar({session, householdId, onAddPurchase, onOpenPla
     {query.data?.truncated && <p role="status">Some entries are not shown because this period has more than 500 records of one type.</p>}
     <div className={`calendar-days ${mode}`} aria-label="Choose a day">{Array.from({length:count},(_,index) => {
       const day = move(start,index), dayKey = key(day), entries = byDay.get(dayKey) ?? [];
-      return <button type="button" key={dayKey} className={`calendar-day${selected===dayKey?" selected":""}${day.getMonth()!==date.getMonth()?" outside-month":""}`} aria-pressed={selected===dayKey} aria-current={dayKey===key(new Date())?"date":undefined} aria-label={`${day.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}, ${entries.length} entries`} onClick={()=>setSelected(dayKey)}>
+      const purchases = entries.filter(event => event.kind === "purchase");
+      const recorded = purchases.reduce((sum,event) => sum + (event.amount_cents ?? 0),0);
+      const otherEntries = entries.filter(event => event.kind !== "purchase");
+      return <button type="button" key={dayKey} className={`calendar-day${purchases.length?" has-purchases":""}${selected===dayKey?" selected":""}${day.getMonth()!==date.getMonth()?" outside-month":""}`} aria-pressed={selected===dayKey} aria-current={dayKey===key(new Date())?"date":undefined} aria-label={`${day.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}, ${entries.length} entries${purchases.length?`, ${purchases.length} confirmed ${purchases.length===1?"purchase":"purchases"}, ${money(recorded)} recorded`:""}`} onClick={()=>setSelected(dayKey)}>
         <span className="calendar-weekday">{day.toLocaleDateString("en-GB",{weekday:"short"})}{dayKey===key(new Date())?" · Today":""}</span><strong>{day.getDate()}</strong>
-        <span className="calendar-day-events">{entries.slice(0,2).map(event=><span key={`${event.kind}:${event.id}`}>{event.kind==="purchase"?`${money(event.amount_cents??0)} recorded`:event.kind==="plan"?"Shopping plan":event.title}</span>)}{entries.length>2&&<span>+{entries.length-2} more</span>}</span>
+        {purchases.length > 0 && <span className="calendar-purchase-badge"><span className="calendar-purchase-label">✓ {purchases.length} {purchases.length===1?"purchase":"purchases"}</span><span className="calendar-purchase-compact" aria-hidden="true">✓ {purchases.length}</span><strong className="calendar-purchase-total">{money(recorded)}</strong></span>}
+        <span className="calendar-day-events">{otherEntries.slice(0,2).map(event=><span key={`${event.kind}:${event.id}`}>{event.kind==="plan"?"Shopping plan":event.title}</span>)}{otherEntries.length>2&&<span>+{otherEntries.length-2} more</span>}</span>
       </button>;
     })}</div>
     <div className="calendar-detail-grid"><section className="calendar-details"><h3>{date.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})}</h3>

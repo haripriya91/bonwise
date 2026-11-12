@@ -454,7 +454,7 @@ export function AskBonwise({
         </div>
 
         <div className="analysis-conversation" ref={conversationView} role="region" aria-label="Conversation" tabIndex={0}>
-        {entries.length===0 && !pending && <div className="analysis-chat-empty"><span className="analysis-chat-avatar" aria-hidden="true">b</span><h3>A clearer picture starts with a question.</h3><p>Ask about your saved purchases, spending or budget. Choose a prompt above or write below.</p></div>}
+        {entries.length===0 && !pending && <div className="analysis-chat-empty"><span className="analysis-chat-avatar" aria-hidden="true">b</span><div><h3>A clearer picture starts with a question.</h3><p>Ask about your saved purchases, spending or budget. Choose a prompt above or write below.</p></div></div>}
         {entries.length > 0 && (
           <ol className="analysis-answer-list" aria-label="Questions and answers">
             {entries.map((entry, index) => (

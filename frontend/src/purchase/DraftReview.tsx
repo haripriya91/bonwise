@@ -53,11 +53,25 @@ export function DraftReview({
   const [confirmUncertain, setConfirmUncertain] = useState(false);
   const [busy, setBusy] = useState<"reload" | "save" | "confirm" | null>(null);
   const [confirmedPurchase, setConfirmedPurchase] = useState<components["schemas"]["PurchaseOut"] | null>(null);
+  const viewPurchaseButton = useRef<HTMLButtonElement | null>(null);
+  const focusedConfirmation = useRef<string | null>(null);
   const requestController = useRef<AbortController | null>(null);
   const loadedRevision = useRef<string | null>(null);
   const initializedDraft = useRef(false);
   const uncertainRevision = useRef<string | null>(null);
   const draftQueryKey = ["user", session.user.id, "household", householdId, "draft", draftId] as const;
+
+  useEffect(() => {
+    if (!confirmedPurchase || focusedConfirmation.current === confirmedPurchase.id) return;
+    const frame = requestAnimationFrame(() => {
+      const button = viewPurchaseButton.current;
+      if (!button) return;
+      button.scrollIntoView({behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center"});
+      button.focus({preventScroll: true});
+      focusedConfirmation.current = confirmedPurchase.id;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [confirmedPurchase]);
 
   const draftQuery = useQuery({
     queryKey: draftQueryKey,
@@ -341,10 +355,7 @@ export function DraftReview({
       setConfirmUncertain(false);
       uncertainRevision.current = null;
       void queryClient.invalidateQueries({
-        queryKey: ["user", session.user.id, "household", householdId, "purchases"],
-      });
-      void queryClient.invalidateQueries({
-        queryKey: ["user", session.user.id, "household", householdId, "draft", draftId],
+        queryKey: ["user", session.user.id, "household", householdId],
       });
     } catch (requestError) {
       if (isAbort(requestError)) return;
@@ -443,7 +454,7 @@ export function DraftReview({
             <strong>Purchase confirmed</strong>
             <span>{confirmedPurchase.merchant?.trim() || "Purchase"} · {moneyFormat.format(confirmedPurchase.total_cents / 100)}</span>
           </div>
-          <button className="button button-primary" onClick={() => onViewPurchase(confirmedPurchase.id)}>View purchase details</button>
+          <button ref={viewPurchaseButton} className="button button-primary" onClick={() => onViewPurchase(confirmedPurchase.id)}>View purchase details</button>
         </div>
       )}
 

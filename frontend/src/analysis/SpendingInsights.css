@@ -1,0 +1,20 @@
+.spending-insights{margin:24px 0 0;padding:22px 0 0;border-top:1px solid rgba(37,76,82,.15)}
+.insights-heading{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.insights-heading h2{margin:0 0 6px;font-size:1.1rem;letter-spacing:-.02em}
+.insights-heading p{margin:0;font-size:.83rem;line-height:1.6}
+.insights-heading .button{flex-shrink:0}
+.insights-privacy,.insights-footnote{font-size:.75rem;line-height:1.65;opacity:.85;max-width:100ch;margin:12px 0 0}
+.insights-privacy summary{cursor:pointer;width:fit-content}
+.insights-privacy p{margin:8px 0}
+.insights-grid{display:grid;grid-template-columns:1fr;gap:0;margin-top:14px}
+.insight-card{min-width:0;padding:18px 0;background:transparent;border:0;border-top:1px solid rgba(37,76,82,.12);border-radius:0}
+.insight-card h3{font-size:.95rem;margin:0 0 8px}
+.insight-card p{font-size:.83rem;line-height:1.75;overflow-wrap:anywhere;max-width:100ch;margin:0 0 12px}
+.insight-card details{margin-top:12px;font-size:.77rem}
+.insight-card summary{cursor:pointer;line-height:1.5}
+.insight-card ul{padding:0;margin:10px 0 0;list-style:none;max-width:600px}
+.insight-card li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:7px 0}
+.insight-card .text-link{font-size:.8rem}
+.insights-fallback,.insights-empty{font-size:.83rem;line-height:1.7;margin:14px 0 0}
+@media(max-width:850px){.insights-heading{align-items:flex-start;flex-direction:column}}
+@media(max-width:480px){.spending-insights{padding-top:18px}.insights-heading .button{width:100%;white-space:normal}}

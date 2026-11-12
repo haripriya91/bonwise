@@ -131,7 +131,6 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
   const [needsOpen, setNeedsOpen] = useState(false);
   useEffect(() => { setNeedsOpen(false); }, [plan?.id, plan?.version]);
   const requests = useRef(new Set<AbortController>());
-  const autoStarted = useRef(new Set<string>());
   const createIds = useRef(new Map<string, string>());
   const approvalRequest = useRef<{ signature: string; body: Record<string, unknown> } | null>(null);
   const commitmentRequest = useRef<{ signature: string; body: Record<string, unknown> } | null>(null);
@@ -207,26 +206,18 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
     finally { requests.current.delete(controller); if (!controller.signal.aborted) setBusy(null); }
   }
 
-  async function prepare(signal: AbortSignal, forceNew = false) {
-    const scope = `${browseDate}:${forceNew ? "new" : "initial"}`;
+  async function prepare(signal: AbortSignal, forceNew = false, mode: "suggested" | "manual" = "suggested") {
+    const scope = `${browseDate}:${forceNew ? "new" : "initial"}:${mode}`;
     let id = createIds.current.get(scope);
     if (!id) { id = crypto.randomUUID(); createIds.current.set(scope, id); }
     const saved = await apiRequest<Plan>(`${base}/weekly-plans`, session.access_token, {
-      method: "POST", signal, body: { client_request_id: id, planned_on: browseDate, force_new: forceNew },
+      method: "POST", signal, body: { client_request_id: id, planned_on: browseDate, force_new: forceNew, mode },
     });
     if (!signal.aborted) {
       receive(saved);
       if (forceNew && saved.status !== "cancelled" && saved.status !== "settled") createIds.current.delete(scope);
     }
   }
-
-  useEffect(() => {
-    if (!preferencesReady || !query.data || query.data.plans.length || busy || autoStarted.current.has(week) || browseDate < dayInput(new Date())) return;
-    autoStarted.current.add(week);
-    void perform("Preparing your suggested list", signal => prepare(signal));
-    // Initial preparation is idempotent on the server and is not repeated on errors.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.data, week, busy, preferencesReady]);
 
   async function reload(signal: AbortSignal) {
     if (!plan) { await query.refetch(); return; }
@@ -327,9 +318,16 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
     {busy && <AIWorking label={busy}/>}
     {error && errorPlace==="page" && <p ref={errorPanel} className="field-error planner-inline-error" role="alert" tabIndex={-1}>{error}</p>}
     {message && <p className="planner-notice" role="status">{message}</p>}
-    {!plan && !query.isPending && !busy && <button type="button" className="button button-primary" onClick={() => void perform("Preparing your suggested list", signal => prepare(signal))}>Prepare suggested list</button>}
+    {!plan && !query.isPending && !query.error && !busy && <div className="planner-notice">
+      <h2>Plan your next shop</h2>
+      <p>Prepare suggestions from confirmed purchases, or start your own list. Your list is created only when you choose an option.</p>
+      <div className="planner-actions">
+        <button type="button" className="button button-primary" onClick={() => void perform("Preparing your suggested list", signal => prepare(signal))}>Prepare suggested list</button>
+        <button type="button" className="button button-outline" onClick={() => void perform("Starting your manual list", signal => prepare(signal, false, "manual"))}>Start a manual list</button>
+      </div>
+    </div>}
     {plan && <>
-      <div className="planner-status-row"><span className={`planner-status planner-status-${plan.status}`}>{plan.is_revision ? "Changes awaiting approval" : plan.phase === "retry_required" ? "Suggestions unavailable" : plan.phase === "preparing" ? "Preparing suggestions" : plan.status === "draft" ? "Suggested · awaiting approval" : plan.status === "settled" ? "Purchase linked" : plan.status}</span>
+      <div className="planner-status-row"><span className={`planner-status planner-status-${plan.status}`}>{plan.is_revision ? "Changes awaiting approval" : plan.phase === "retry_required" ? "Suggestions unavailable" : plan.phase === "preparing" ? "Preparing suggestions" : plan.status === "draft" ? items.length ? "Draft · review before approval" : "No items prepared" : plan.status === "settled" ? "Purchase linked" : plan.status}</span>
         <span>{dateLabel(plan.week_start)} — {dateLabel(dayInput(new Date(new Date(`${plan.week_start}T12:00:00`).getTime()+6*86400000)))}</span>
         <button className="text-link" disabled={busy !== null || dirty} onClick={() => void perform("Refreshing list", reload)}>Refresh</button>
       </div>
@@ -404,12 +402,12 @@ export function ShoppingPlanner({ session, householdId, onManageBudget, onViewPu
             {editablePlan && <button type="button" className="button button-outline planner-add-bottom" disabled={busy!==null || dirty || items.length>=40} onClick={addItem}>Add item</button>}
             {plan.status === "draft" && !items.length && !dirty && <div className="planner-notice">
               <h3>Start from your purchase history</h3>
-              <p>An empty draft can have been prepared before you added purchases, or there may be too little repeated history for a usual list. Existing drafts do not change automatically.</p>
+              <p>One confirmed purchase is enough to offer candidates. Prepare suggestions using the latest eligible history, or choose items from your recorded purchases.</p>
               <div className="planner-actions"><button type="button" className="button button-outline" disabled={busy!==null} onClick={()=>void perform("Loading purchase history",async signal=>{
                 const result=await apiRequest<{base_version:number;items:Item[];message:string}>(`${base}/weekly-plans/${plan.id}/history-options`,session.access_token,{signal,cache:"no-store"});
                 if(!signal.aborted){setHistoryOptions(result);setHistorySelected([]);}
               })}>Review purchase history</button>
-              <button type="button" className="button button-outline" disabled={busy!==null || plan.reservation_cents>0} onClick={()=>void perform("Refreshing empty draft",signal=>mutate(signal,"refresh-suggestions",{expected_version:plan.version}))}>Refresh suggestions</button></div>
+              <button type="button" className="button button-primary" disabled={busy!==null || plan.reservation_cents>0} onClick={()=>void perform("Preparing suggestions",signal=>mutate(signal,"refresh-suggestions",{expected_version:plan.version}))}>Prepare suggestions</button></div>
               {historyOptions&&<div><p>{historyOptions.message}</p>{!historyOptions.items.length&&<p>No eligible items found. Check the household, confirmed status and purchase dates; older than 90 days is outside this window.</p>}
                 {historyOptions.items.map(item=><label className="planner-checkbox" key={item.id}><input type="checkbox" checked={historySelected.includes(item.id)} onChange={e=>setHistorySelected(s=>e.target.checked?[...s,item.id]:s.filter(id=>id!==item.id))}/><span><strong>{item.name}</strong> · {item.quantity} {item.unit}<br/>{item.reason}</span></label>)}
                 <button type="button" className="button button-primary" disabled={busy!==null || !historySelected.length || historyOptions.base_version!==plan.version} onClick={()=>{

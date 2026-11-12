@@ -8,6 +8,11 @@
 .calendar-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 8px; }
 .calendar-day { min-width: 0; min-height: 122px; padding: 12px; border: 1px solid var(--color-line); border-radius: 10px; background: var(--color-surface); color: var(--color-ink); text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 8px; }
 .calendar-day.selected { border-color: var(--color-accent); background: #F0EAF4; box-shadow: inset 0 0 0 1px var(--color-accent); }
+.calendar-day.has-purchases { background:#deeeeb;border-color:#719f99;box-shadow:inset 4px 0 #254e58; }
+.calendar-purchase-badge { display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:5px 7px;border-radius:7px;background:#254e58;color:#f1f8f6;max-width:100%;font-size:11px;line-height:1.4; }
+.calendar-purchase-total { font-size:13px;font-weight:700; }
+.calendar-purchase-compact { display:none; }
+.calendar-day.outside-month.has-purchases:not(.selected) { opacity:.9; }
 .calendar-day[aria-current="date"] .calendar-weekday { color: var(--color-accent); font-weight: 700; }
 .calendar-day.outside-month:not(.selected) { opacity: .6; }
 .calendar-day > strong { font-size: 23px; }
@@ -27,4 +32,7 @@
   .calendar-day-events { font-size: 9px; }
   .calendar-days.month .calendar-day-events { display: none; }
   .calendar-days.month .calendar-day:has(.calendar-day-events > span)::after { content: "•"; color: var(--color-accent); }
+  .calendar-purchase-badge { padding:3px 5px;font-size:10px; }
+  .calendar-purchase-label,.calendar-purchase-total { display:none; }
+  .calendar-purchase-compact { display:inline; }
 }

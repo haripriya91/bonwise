@@ -54,6 +54,7 @@ class PreparePlan(Input):
     client_request_id: UUID
     planned_on: date
     force_new: bool = False
+    mode: Literal["suggested", "manual"] = "suggested"
 
 
 class Version(Input):

@@ -1021,6 +1021,64 @@
         }
       }
     },
+    "/households/{household_id}/analysis/insights": {
+      "post": {
+        "tags": [
+          "analysis"
+        ],
+        "summary": "Insights",
+        "operationId": "insights_households__household_id__analysis_insights_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "household_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Household Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InsightRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InsightsOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/households/{household_id}/analysis/ask": {
       "post": {
         "tags": [
@@ -5219,6 +5277,190 @@
         ],
         "title": "ImageExtractionRequest"
       },
+      "InsightCard": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "suggestion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggestion"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "review",
+              "offers",
+              "budget"
+            ],
+            "title": "Action"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/InsightEvidence"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "evidence_truncated": {
+            "type": "boolean",
+            "title": "Evidence Truncated",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "detail",
+          "action"
+        ],
+        "title": "InsightCard"
+      },
+      "InsightEvidence": {
+        "properties": {
+          "purchase_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Purchase Id"
+          },
+          "purchased_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Purchased On"
+          },
+          "total_cents": {
+            "type": "integer",
+            "title": "Total Cents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "purchase_id",
+          "purchased_on",
+          "total_cents"
+        ],
+        "title": "InsightEvidence"
+      },
+      "InsightRequest": {
+        "properties": {
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Start Date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "title": "End Date"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "start_date",
+          "end_date"
+        ],
+        "title": "InsightRequest"
+      },
+      "InsightsOut": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "fallback",
+              "no_data"
+            ],
+            "title": "Status"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Start Date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date",
+            "title": "End Date"
+          },
+          "purchase_count": {
+            "type": "integer",
+            "title": "Purchase Count"
+          },
+          "total_cents": {
+            "type": "integer",
+            "title": "Total Cents"
+          },
+          "top_items": {
+            "items": {
+              "$ref": "#/components/schemas/RankedInsightItem"
+            },
+            "type": "array",
+            "title": "Top Items"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/InsightCard"
+            },
+            "type": "array",
+            "title": "Cards"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "revision": {
+            "type": "string",
+            "title": "Revision"
+          },
+          "prompt_version": {
+            "type": "string",
+            "title": "Prompt Version"
+          },
+          "model_calls": {
+            "type": "integer",
+            "title": "Model Calls"
+          },
+          "notice": {
+            "type": "string",
+            "title": "Notice"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "start_date",
+          "end_date",
+          "purchase_count",
+          "total_cents",
+          "top_items",
+          "cards",
+          "generated_at",
+          "revision",
+          "prompt_version",
+          "model_calls",
+          "notice"
+        ],
+        "title": "InsightsOut"
+      },
       "ItemEdit": {
         "properties": {
           "id": {
@@ -5356,8 +5598,7 @@
                 "exclusiveMinimum": 0.0
               },
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,9}|(?=[\\d.]{1,13}0*$)\\d{0,9}\\.\\d{0,3}0*$)"
+                "type": "string"
               }
             ],
             "title": "Quantity",
@@ -5425,7 +5666,6 @@
           },
           "quantity": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,9}|(?=[\\d.]{1,13}0*$)\\d{0,9}\\.\\d{0,3}0*$)",
             "title": "Quantity",
             "default": "1"
           },
@@ -5491,7 +5731,6 @@
           },
           "quantity": {
             "type": "string",
-            "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,9}|(?=[\\d.]{1,13}0*$)\\d{0,9}\\.\\d{0,3}0*$)",
             "title": "Quantity",
             "default": "1"
           },
@@ -5571,8 +5810,7 @@
           "pack_base_quantity": {
             "anyOf": [
               {
-                "type": "string",
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+                "type": "string"
               },
               {
                 "type": "null"
@@ -6203,6 +6441,15 @@
             "type": "boolean",
             "title": "Force New",
             "default": false
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "suggested",
+              "manual"
+            ],
+            "title": "Mode",
+            "default": "suggested"
           }
         },
         "additionalProperties": false,
@@ -6996,6 +7243,29 @@
         ],
         "title": "QuantityTotal"
       },
+      "RankedInsightItem": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "total_cents": {
+            "type": "integer",
+            "title": "Total Cents"
+          },
+          "purchase_count": {
+            "type": "integer",
+            "title": "Purchase Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "total_cents",
+          "purchase_count"
+        ],
+        "title": "RankedInsightItem"
+      },
       "ReceiptAttachInput": {
         "properties": {
           "image_base64": {
@@ -7133,6 +7403,157 @@
           "comparison"
         ],
         "title": "RecommendedProduct"
+      },
+      "RelatedQuestion": {
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "summary",
+              "highest_category",
+              "items",
+              "merchants",
+              "records",
+              "quantity",
+              "budget",
+              "unsupported"
+            ],
+            "title": "Operation"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "merchant",
+                  "date"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "period",
+              "highest_category",
+              "clarify"
+            ],
+            "title": "Scope",
+            "default": "period"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "groceries",
+                  "clothing",
+                  "household",
+                  "personal_care",
+                  "transport",
+                  "dining_out",
+                  "other"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "product_query": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Product Query"
+          },
+          "merchant_query": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merchant Query"
+          },
+          "quantity_unit": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pack",
+                  "each",
+                  "kg",
+                  "l"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity Unit"
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "spending",
+              "purchase_frequency"
+            ],
+            "title": "Metric",
+            "default": "spending"
+          },
+          "sort_direction": {
+            "type": "string",
+            "enum": [
+              "highest",
+              "lowest"
+            ],
+            "title": "Sort Direction",
+            "default": "highest"
+          },
+          "top_n": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Top N",
+            "default": 3
+          },
+          "unsupported_reason": {
+            "type": "string",
+            "enum": [
+              "none",
+              "offers",
+              "prediction",
+              "write",
+              "causal",
+              "quantity_ranking",
+              "unrelated",
+              "limit"
+            ],
+            "title": "Unsupported Reason",
+            "default": "none"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "operation"
+        ],
+        "title": "RelatedQuestion",
+        "description": "One optional read-only subquestion. Identity and dates belong to the parent."
       },
       "SaveNeeds": {
         "properties": {
@@ -7644,157 +8065,6 @@
           "expected_version"
         ],
         "title": "VersionInput"
-      },
-      "RelatedQuestion": {
-        "properties": {
-          "operation": {
-            "type": "string",
-            "enum": [
-              "summary",
-              "highest_category",
-              "items",
-              "merchants",
-              "records",
-              "quantity",
-              "budget",
-              "unsupported"
-            ],
-            "title": "Operation"
-          },
-          "detail": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "merchant",
-                  "date"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Detail"
-          },
-          "scope": {
-            "type": "string",
-            "enum": [
-              "period",
-              "highest_category",
-              "clarify"
-            ],
-            "title": "Scope",
-            "default": "period"
-          },
-          "category": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "groceries",
-                  "clothing",
-                  "household",
-                  "personal_care",
-                  "transport",
-                  "dining_out",
-                  "other"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Category"
-          },
-          "product_query": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 120
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Product Query"
-          },
-          "merchant_query": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 120
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Merchant Query"
-          },
-          "quantity_unit": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "pack",
-                  "each",
-                  "kg",
-                  "l"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Quantity Unit"
-          },
-          "metric": {
-            "type": "string",
-            "enum": [
-              "spending",
-              "purchase_frequency"
-            ],
-            "title": "Metric",
-            "default": "spending"
-          },
-          "sort_direction": {
-            "type": "string",
-            "enum": [
-              "highest",
-              "lowest"
-            ],
-            "title": "Sort Direction",
-            "default": "highest"
-          },
-          "top_n": {
-            "type": "integer",
-            "maximum": 10.0,
-            "minimum": 1.0,
-            "title": "Top N",
-            "default": 3
-          },
-          "unsupported_reason": {
-            "type": "string",
-            "enum": [
-              "none",
-              "offers",
-              "prediction",
-              "write",
-              "causal",
-              "quantity_ranking",
-              "unrelated",
-              "limit"
-            ],
-            "title": "Unsupported Reason",
-            "default": "none"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "operation"
-        ],
-        "title": "RelatedQuestion",
-        "description": "One optional read-only subquestion. Identity and dates belong to the parent."
       }
     },
     "securitySchemes": {

@@ -127,7 +127,7 @@ class WorkflowTests(unittest.TestCase):
         with Session(self.engine) as db,db.begin():
             db.execute(delete(PurchaseItem));db.execute(delete(Purchase));db.execute(delete(PurchaseDraft))
     def test_empty_draft_can_review_new_single_purchase_without_writes(self):
-        self.clear_history();plan=self.prepare()
+        self.clear_history();plan=self.prepare(mode="manual")
         self.assertEqual(plan.content['items'],[])
         with Session(self.engine) as db,db.begin():
             self.purchase(db,self.day-timedelta(days=67),[(self.milk,'Milk','1',150)])
@@ -139,7 +139,7 @@ class WorkflowTests(unittest.TestCase):
         with Session(self.engine) as db:
             self.assertEqual(db.scalar(select(func.count()).select_from(BudgetCommitment)),0)
     def test_empty_draft_refresh_uses_new_checkpoint_and_current_history(self):
-        self.clear_history();plan=self.prepare()
+        self.clear_history();plan=self.prepare(mode="manual")
         with Session(self.engine) as db,db.begin():
             self.purchase(db,self.day-timedelta(days=1),[(self.milk,'Milk','1',150)])
         old=self.read(plan.id)

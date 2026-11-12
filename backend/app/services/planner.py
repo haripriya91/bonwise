@@ -93,6 +93,33 @@ def get_plan(db, household_id, user_id, plan_id):
         return snapshot(db, load(db, household_id, user_id, plan_id))
 
 
+def untouched_no_history(plan):
+    """Only the original automatic empty result; never an edited/manual/approved list."""
+    return (plan.status == "draft" and plan.phase == "review" and plan.version == 2
+            and not plan.commitment_id and not plan.content.get("items")
+            and plan.content.get("generation_method") == "no_history"
+            and plan.content.get("target_cents") is None
+            and not plan.content.get("buffer_cents") and not plan.pending_text)
+
+
+def require_history(db, household_id, planned_on):
+    if not evidence.collect(db, household_id, planned_on)["candidates"]:
+        raise HTTPException(409, "No eligible confirmed purchases are available for this shopping date. Add a purchase or choose Start a manual list.")
+
+
+def reuse_for_preparation(db, household_id, plan, mode):
+    if mode == "suggested" and untouched_no_history(plan):
+        ensure_idle(plan)
+        require_history(db, household_id, plan.planned_on)
+        # Reset the paused empty workflow, preserving identity and avoiding duplicate plans.
+        plan.thread_id = uuid4()
+        plan.phase = "preparing"
+        plan.content = {**plan.content, "notice": None}
+        touch(plan)
+        db.flush()
+    return snapshot(db, plan)
+
+
 def prepare(db, household_id, user_id, body):
     with db.begin():
         budgets.lock_household(db, household_id, user_id)
@@ -104,15 +131,19 @@ def prepare(db, household_id, user_id, body):
         if prior:
             if prior.planned_on != body.planned_on:
                 raise HTTPException(409, "This request was already used for another shopping date.")
-            return snapshot(db, prior)
+            return reuse_for_preparation(db, household_id, prior, body.mode)
         rows = db.scalars(select(WeeklyPlan).where(WeeklyPlan.household_id == household_id,
             WeeklyPlan.week_start == monday(body.planned_on)).order_by(WeeklyPlan.created_at.desc())).all()
         for row in rows:
             if actual_status(db, row) in {"draft", "approved"}:
-                return snapshot(db, row)
+                return reuse_for_preparation(db, household_id, row, body.mode)
+        if body.mode == "suggested":
+            require_history(db, household_id, body.planned_on)
         row = WeeklyPlan(household_id=household_id, client_request_id=body.client_request_id,
-            week_start=monday(body.planned_on), planned_on=body.planned_on, status="draft", phase="preparing",
-            content={"items": [], "target_cents": None, "buffer_cents": 0, "notice": None})
+            week_start=monday(body.planned_on), planned_on=body.planned_on, status="draft",
+            phase="review" if body.mode == "manual" else "preparing",
+            content={"items": [], "target_cents": None, "buffer_cents": 0, "notice": None,
+                     "generation_method": "manual" if body.mode == "manual" else None})
         db.add(row)
         db.flush()
         return snapshot(db, row)
@@ -455,6 +486,7 @@ def refresh_empty(db, household_id, user_id, plan_id, body):
         if (actual_status(db, plan) != 'draft' or plan.content.get('items')
                 or commitment(db, plan) is not None):
             raise HTTPException(409, 'Only an empty draft without a reservation can refresh suggestions.')
+        require_history(db, household_id, plan.planned_on)
         plan.thread_id = uuid4()
         plan.phase = 'preparing'
         plan.content = {**plan.content, 'notice':None}

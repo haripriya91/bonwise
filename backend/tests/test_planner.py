@@ -82,9 +82,9 @@ class PlannerTests(unittest.TestCase):
         db.flush()
         return purchase.id
 
-    def prepare(self):
+    def prepare(self, mode="suggested"):
         with Session(self.engine) as db:
-            plan=service.prepare(db,self.household,self.user,PreparePlan(client_request_id=uuid4(),planned_on=self.day))
+            plan=service.prepare(db,self.household,self.user,PreparePlan(client_request_id=uuid4(),planned_on=self.day,mode=mode))
             return workflow.run(db,self.household,self.user,plan.id)
 
     def read(self, pid):
@@ -230,9 +230,9 @@ class PlannerTests(unittest.TestCase):
     def test_empty_history_allows_manual_draft(self):
         with Session(self.engine) as db,db.begin():
             db.query(PurchaseItem).delete();db.query(Purchase).delete();db.query(PurchaseDraft).delete()
-        plan=self.prepare()
+        plan=self.prepare(mode="manual")
         self.assertEqual(plan.content["items"],[])
-        self.assertEqual(plan.content["generation_method"],"no_history")
+        self.assertEqual(plan.content["generation_method"],"manual")
 
     def test_target_buffer_and_manual_estimate(self):
         plan=self.prepare()
