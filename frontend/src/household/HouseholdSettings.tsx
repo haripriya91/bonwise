@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Session } from "@supabase/supabase-js";
 import type { components } from "../api/types";
@@ -17,7 +17,7 @@ export function useHouseholdSettings(session: Session, householdId: string) {
 export function SetupReminder({session,householdId,onOpen}:{session:Session;householdId:string;onOpen:()=>void}) {
   const query=useHouseholdSettings(session,householdId);
   if(!query.data?.can_edit||query.data.setup_completed)return null;
-  return <div className="household-settings-heading household-setup-reminder"><span>Choose your shopping day and review your household budget.</span><button type="button" className="button button-outline" onClick={onOpen}>Set up household</button></div>;
+  return <div className="household-settings-heading household-setup-reminder"><span>Finish your household setup when you’re ready.</span><button type="button" className="button button-outline" onClick={onOpen}>Set up household</button></div>;
 }
 
 type Budget = components["schemas"]["BudgetOut"];
@@ -96,5 +96,38 @@ export function ProfilePanel({session}:{session:Session}) {
   const [name,setName]=useState(""),[busy,setBusy]=useState(false),[error,setError]=useState(""),[message,setMessage]=useState("");const active=useRef<AbortController|null>(null);
   useEffect(()=>()=>active.current?.abort(),[]);useEffect(()=>{if(query.data)setName(query.data.display_name);},[query.data]);
   async function save(){if(!query.data||busy)return;const c=new AbortController();active.current=c;setBusy(true);setError("");setMessage("");try{const result=await apiRequest<{display_name:string;version:number}>("/profile",session.access_token,{method:"PATCH",signal:c.signal,body:{expected_version:query.data.version,display_name:name.trim()}});if(!c.signal.aborted){qc.setQueryData(key,result);setMessage("Profile saved.");}}catch(e){if(!c.signal.aborted)setError(getErrorText(e));}finally{if(!c.signal.aborted)setBusy(false);}}
-  return <details className="account-profile"><summary>Your profile</summary><div className="account-profile-content"><h2>Your profile</h2><p>Personal details are separate from shared household settings.</p><label>Display name<input value={name} maxLength={80} disabled={busy||!query.data} onChange={e=>setName(e.target.value)}/></label><p>Email: {session.user.email??"Signed-in account"}</p>{(error||query.error)&&<p className="error-message" role="alert">{error||getErrorText(query.error)}</p>}{query.isPending&&<p role="status">Loading profile…</p>}{query.error&&<button className="button button-outline" onClick={()=>void query.refetch()}>Retry</button>}<button className="button button-primary" disabled={busy||!query.data} onClick={()=>void save()}>Save profile</button>{message&&<p role="status">{message}</p>}</div></details>;
+  const profileId=useId();
+  const [open,setOpen]=useState(false);
+  const profilePopover=useRef<HTMLDivElement>(null),profileTrigger=useRef<HTMLButtonElement>(null);
+  function positionProfile(){
+    const trigger=profileTrigger.current,panel=profilePopover.current;
+    if(!trigger||!panel)return;
+    const bounds=trigger.getBoundingClientRect();
+    panel.style.top=`${bounds.bottom+8}px`;
+    panel.style.right=`${Math.max(12,document.documentElement.clientWidth-bounds.right)}px`;
+    panel.style.maxHeight=`${Math.max(160,window.innerHeight-bounds.bottom-24)}px`;
+  }
+  useEffect(()=>{
+    if(!open)return;
+    window.addEventListener("resize",positionProfile);
+    window.addEventListener("scroll",positionProfile,true);
+    return()=>{window.removeEventListener("resize",positionProfile);window.removeEventListener("scroll",positionProfile,true);};
+  },[open]);
+  function closeProfile(){profilePopover.current?.hidePopover();requestAnimationFrame(()=>profileTrigger.current?.focus());}
+  return <>
+    <button type="button" className="profile-trigger" ref={profileTrigger} popoverTarget={profileId} aria-controls={profileId} aria-expanded={open} onClick={positionProfile}>Your profile<span aria-hidden="true">⌄</span></button>
+    <div id={profileId} popover="auto" role="dialog" aria-modal="false" className="profile-popover" ref={profilePopover} aria-labelledby={`${profileId}-title`} onBeforeToggle={event=>{if(event.newState==="open")positionProfile();}} onToggle={event=>setOpen(event.newState==="open")}>
+      <div className="profile-popover-header"><div><span className="profile-popover-eyebrow">YOUR ACCOUNT</span><h2 id={`${profileId}-title`}>Your profile</h2></div><button type="button" className="profile-close" aria-label="Close profile" onClick={closeProfile}><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div className="account-profile-content">
+        <p>Personal details are separate from shared household settings.</p>
+        <label>Display name<input value={name} maxLength={80} disabled={busy||!query.data} onChange={e=>setName(e.target.value)}/></label>
+        <p className="profile-email">{session.user.email??"Signed-in account"}</p>
+        {(error||query.error)&&<p className="error-message" role="alert">{error||getErrorText(query.error)}</p>}
+        {query.isPending&&<p role="status">Loading profile…</p>}
+        {query.error&&<button className="button button-outline" onClick={()=>void query.refetch()}>Retry</button>}
+        <button className="button button-primary" disabled={busy||!query.data} onClick={()=>void save()}>Save profile</button>
+        {message&&<p role="status">{message}</p>}
+      </div>
+    </div>
+  </>;
 }

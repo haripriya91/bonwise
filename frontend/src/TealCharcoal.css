@@ -1,0 +1,189 @@
+/* Bonwise: teal & charcoal. Import AFTER theme.css. Remove this import to restore the previous palette. */
+:root{
+ --purple:var(--color-accent);--ink:var(--color-ink);--paper:var(--color-paper);--line:var(--color-line);--muted:var(--color-muted);
+ --color-paper:#88BDBC;--color-surface:#F1F8F6;--color-sidebar:#B5D9D7;
+ --color-line:#254E58;--color-ink:#112D32;--color-muted:#284549;
+ --color-accent:#254E58;--color-accent-hover:#112D32;
+ --color-lime:#D0E7E4;--color-lavender:#F1F8F6;
+ --color-warn-bg:#fff2d5;--color-warn-ink:#6b480e;--color-danger:#a3362b;
+ --font-heading:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--font-body:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+/* Important content stays charcoal; teal indicates an action or selection. */
+h1,h2,h3,h4,.analysis-stat strong,.home-budget-amount,.household-financial-summary strong{color:var(--color-ink)}
+.brand-mark{background:var(--color-accent)}
+.nav-link.active,.mobile-nav-link.active{background:var(--color-ink);color:#fff}
+.button-primary{background:var(--color-accent);color:#fff;border-color:var(--color-accent)}
+.button-primary:hover:not(:disabled){background:var(--color-accent-hover);border-color:var(--color-accent-hover)}
+.button-outline{background:#F1F8F6;color:#112D32;border-color:#254E58}
+.button-outline:hover:not(:disabled){background:#D0E7E4;color:#112D32}
+.button-lime,.analysis-stat.available,.planner-money>.planner-available{background:#D0E7E4;color:#112D32}
+.shopping-planner{--planner-border:#254E58}
+.planner-notice,.planner-change-preview,.planner-save-bar{background:#F1F8F6;border-color:#254E58}
+.planner-item-estimate,.planner-product-picker li>button,.planner-offer-options{background:#F1F8F6}
+.planner-status-approved,.planner-status-settled{background:#D0E7E4;color:#112D32}
+.planner-review{border-color:#254E58}.planner-settings input,.shopping-planner input:not([type=checkbox]),.shopping-planner select,.shopping-planner textarea{border-color:#254E58}
+.page-loading{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:24px 0;color:var(--color-muted);font-size:13px;min-height:140px;max-width:680px}
+.page-loading-spinner{width:21px;height:21px;border:2px solid var(--color-line);border-top-color:var(--color-accent);border-radius:50%;animation:page-spin .8s linear infinite}
+.page-loading-skeleton{flex-basis:100%;display:grid;gap:12px}.page-loading-skeleton i{height:13px;border-radius:5px;background:var(--color-line);opacity:.55}.page-loading-skeleton i:nth-child(2){width:75%}.page-loading-skeleton i:nth-child(3){width:45%}
+@keyframes page-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.page-loading-spinner{animation:none}.welcome-page{scroll-behavior:auto}}
+
+/* Legacy component colour harmonisation. Error and warning colours remain distinct. */
+:root :is(.sidebar-account){border-top: 1px solid #d4d7d7}
+:root :is(.household-select-label select){border: 1px solid #b2b9b8}
+:root :is(.topbar-page::before){color: #a0a7a6}
+:root :is(.records-surface,
+.recent-section){border: 1px solid #d9dfde}
+:root :is(.breakdown-row){border-top: 1px solid #eef1f1}
+:root :is(.adjustment-list){border-top: 1px dashed #d5dcdb}
+:root :is(.button-outline){border-color: #a2aaa9}
+:root :is(.budget-context-panel,
+.budget-create-form,
+.budget-edit-form,
+.compare-selector,
+.home-offers-panel,
+.recent-section){border: 1px solid #d9dfde}
+:root :is(.budget-stat-box){border: 1px solid #d9dfde}
+:root :is(.budget-stat-box.available){background: #D0E7E4}
+:root :is(.budget-form-grid input,
+.reserve-grid input,
+.budget-edit-form input,
+.product-search-wrap input,
+.compare-selector select){border: 1px solid #b6bebd}
+:root :is(.autocomplete-list){border: 1px solid #d2d8d7}
+:root :is(.selected-product-chip,
+.shortcut-chip){border: 1px solid #b6bebd}
+:root :is(.capture-launch .capture-intro){color: #eef4f3}
+:root :is(.capture-eyebrow){color: #deeae9}
+:root :is(.capture-receipt-action:hover){background: #D0E7E4}
+:root :is(.capture-action-copy > span,
+.capture-secondary-actions button > span){color: #5a6261}
+:root :is(.capture-secondary-actions button > span){color: #deeae9}
+:root :is(.capture-panel-footer){color: #deeae9}
+:root :is(.capture-dialog){border: 1px solid #d9dfde}
+:root :is(.capture-text-step textarea){border: 1px solid #8e9998}
+:root :is(.voice-transcript textarea){border: 1px solid #8e9998}
+:root :is(.capture-intro){color: #eef4f3}
+:root :is(.entry-surface textarea,
+.sign-in-form input){border: 1px solid #d3dad9}
+:root :is(.entry-surface textarea:disabled){background: #f4f6f6}
+:root :is(.capture-footer){color: #eef4f3}
+:root :is(.capture-flow .capture-footer > span){color: #eef4f3}
+:root :is(.capture-choice-back){color: #eef4f3}
+:root :is(.button-lime:hover:not(:disabled)){background: #D0E7E4}
+:root :is(.workflow-surface){border: 1px solid #d9dfde}
+:root :is(.image-file-control input){border: 1px solid #8e9998}
+:root :is(.image-viewer-viewport,
+.review-image-viewport){border: 1px solid #8e9998}
+:root :is(.coordinate-mask-fields input){border: 1px solid #8e9998}
+:root :is(.workflow-surface textarea,
+.workflow-surface input,
+.workflow-surface select){border: 1px solid #8e9998}
+:root :is(.confirmed-notice){border: 1px solid #D0E7E4}
+:root :is(.purchase-editor-fields,
+.review-source-pane){border: 1px solid #d9dfde}
+:root :is(.review-field input,
+.review-item input,
+.review-item select,
+.adjustment-editor input,
+.adjustment-editor select){border: 1px solid #8e9998}
+:root :is(.adjustment-editor){border-top: 1px solid #eef1f1}
+:root :is(.source-dialog){border: 1px solid #d9dfde}
+:root :is(.analysis-overview-panel,
+.analysis-ask-panel){border: 1px solid #d9dfde}
+:root :is(.analysis-bar.negative){background: #7f908e}
+:root :is(.auth-panel){border: 1px solid #d9dfde}
+:root :is(.comparison-toolbar input){border: 1px solid #b3b9b8}
+:root :is(.product-chip.active){background: #D0E7E4}
+:root :is(.demo-offers-label){background: #D0E7E4}
+:root :is(.offer-tag.success){background: #D0E7E4}
+:root :is(.budget-summary-box.available){background: #D0E7E4}
+:root :is(.reserve-grid input,
+.budget-edit-field input,
+.link-purchase-panel select,
+.household-budget-row select){border: 1px solid #b2b9b8}
+:root :is(.button-outline){background: #edf4f3;border-color: #ccdddb}
+:root :is(.button-outline:hover:not(:disabled)){background: #e1eeed}
+:root :is(.analysis-stat.available){background: #edf4f3}
+:root :is(.calendar-day.selected){background: #edf4f3}
+:root :is(.information-tip__panel){border:1px solid #dae0df;color:var(--color-ink,#2a3534)}
+:root :is(.privacy-link){color: var(--purple, #446360)}
+:root :is(.privacy-notes){color: var(--ink, #2a3534)}
+:root :is(.privacy-notes__eyebrow){color: var(--muted, #7d8282)}
+:root :is(.privacy-notes__version){color: var(--muted, #7d8282)}
+:root :is(.ai-working){border:1px solid var(--color-line,#dae0df);color:var(--color-ink,#2c3736)}
+:root :is(.ai-working-body>span){color:var(--color-muted,#687473)}
+:root :is(.ai-working-orbit i){background:var(--color-accent,#496c68)}
+:root :is(.ai-working-lines i){background:var(--color-line,#e4ebea)}
+:root :is(.household-settings,.household-onboarding,.account-profile-content){color:var(--color-ink, #2b3736);border:1px solid var(--color-line, #d9e4e3)}
+:root :is(.household-settings input:not([type=checkbox]),.household-settings select,.account-profile-content input){border:1px solid var(--color-line, #d9e4e3)}
+:root :is(.household-setup-reminder){border-bottom:1px solid var(--color-line,#d9e4e3)}
+:root :is(.household-page-heading p){color:var(--color-muted,#697372)}
+:root :is(.household-section){border:1px solid var(--color-line,#e2e5e5)}
+:root :is(.household-section-heading p,.household-settings-heading p){color:var(--color-muted,#697372)}
+:root :is(.household-explanation){color:var(--color-muted,#697372)}
+:root :is(.household-period select,.household-section input,.household-section select){border:1px solid var(--color-line,#e2e5e5)}
+:root :is(.household-financial-summary span){color:var(--color-muted,#697372)}
+:root :is(.household-financial-summary small){color:var(--color-muted,#697372)}
+:root :is(.household-financial-summary>.household-available){background:var(--color-lavender,#ecf3f2)}
+:root :is(.household-inline-form){border-top:1px solid var(--color-line,#e2e5e5)}
+:root :is(.household-next-period){border-top:1px solid var(--color-line,#e2e5e5)}
+:root :is(.household-reservation-row){border-bottom:1px solid var(--color-line,#e2e5e5)}
+:root :is(.household-muted){color:var(--color-muted,#697372)}
+:root :is(.household-history,.household-shopping-reservations){border-top:1px solid var(--color-line,#e2e5e5)}
+:root :is(.household-history summary){color:var(--color-muted,#697372)}
+:root :is(.shopping-planner){--planner-border: #dae0df}
+:root :is(.shopping-planner input:not([type=checkbox]), .shopping-planner select, .shopping-planner textarea){border: 1px solid #8e9998}
+:root :is(.planner-status-approved, .planner-status-settled){background: #D0E7E4}
+:root :is(.planner-notice){background: #eef4f3}
+:root :is(.planner-change-preview){background: #f2f7f7}
+:root :is(.planner-product-picker li > button){background: #f4f8f8}
+:root :is(.planner-save-bar){background: #edf5f4;border: 1px solid #c0d2d0}
+:root :is(.planner-money > .planner-available){background: #D0E7E4}
+:root :is(.planner-review){border-color: #b5c9c7}
+:root :is(.app-privacy-footer){border-top: 1px solid var(--planner-border, #dae0df)}
+:root :is(.planner-home-card){border: 1px solid #dae0df}
+:root :is(.upcoming-needs select,.upcoming-needs textarea){border:1px solid var(--color-line, #d4e0df)}
+:root :is(.upcoming-need-row){border-bottom:1px solid var(--color-line, #d4e0df)}
+:root :is(.needs-idea){background: var(--color-lavender, #f2f7f7)}
+:root :is(.needs-purpose){background: var(--color-lavender, #f2f7f7)}
+
+:root :is(.nav-link.active,.mobile-nav-link.active){background:#112D32;color:#fff}
+:root :is(.button-primary){background:#254E58;color:#fff}
+:root :is(.button-primary:hover:not(:disabled)){background:#112D32}
+:root :is(.button-outline){background:#F1F8F6;color:#112D32;border-color:#254E58}
+:root :is(.button-outline:hover:not(:disabled)){background:#D0E7E4;color:#112D32}
+:root :is(.analysis-stat.available,.planner-money>.planner-available){background:#D0E7E4;color:#112D32}
+
+/* Reference finishing: charcoal rules, legible amounts, consistent real application surfaces. */
+:root{--line:#254E58;--paper:#88BDBC;--ink:#112D32;--purple:#254E58;--muted:#284549}
+:root :is(.app-shell,.workspace,.main-content){background:#88BDBC}
+:root :is(.sidebar){background:#B5D9D7;border-color:#254E58}
+:root :is(.app-header){background:#F1F8F6;border-color:#254E58}
+:root :is(.purchase-card,.purchase-table,.planner-card,.budget-card,.analysis-stat,.analysis-overview-panel,.analysis-ask,.household-section,.household-settings,.auth-panel){background:#F1F8F6;border-color:#254E58}
+:root :is(table,th,td,.purchase-row,.purchase-items,.planner-item,.planner-list-tools,.budget-row,.commitment-row){border-color:#254E58}
+:root :is(.card,.panel,.offer-card,.offer-row,.offer-result,.budget-context-panel,.capture-launch,.household-onboarding,.account-profile-content,.shopping-planner input:not([type=checkbox]),.shopping-planner select,.shopping-planner textarea){border-color:#254E58}
+:root :is(h1,h2,h3,h4,.analysis-stat strong,.budget-value,.household-amount){color:#000;font-weight:700}
+:root :is(.capture-launch h1){color:#F1F8F6}
+:root :is(.button-outline,.text-link,.privacy-link){color:#112D32}
+:root :is(.button-outline){border-color:#254E58}
+/* Tailwind resets dialog margins: explicitly centre both modal types in the viewport. */
+:root :is(dialog.privacy-notes,dialog.bonwise-login){position:fixed;inset:0;margin:auto;max-height:calc(100dvh - 40px);overflow:auto;border:1px solid #254E58;background:#F1F8F6;color:#112D32;border-radius:18px;box-shadow:0 25px 100px #112D3230}
+:root :is(dialog.privacy-notes){width:min(720px,calc(100vw - 32px));padding:0}
+:root :is(.privacy-notes__header){background:#F1F8F6;border-color:#254E58;height:auto}
+:root :is(dialog.privacy-notes)::backdrop,:root :is(dialog.bonwise-login)::backdrop{background:#112D3260;backdrop-filter:blur(5px)}
+:root :is(dialog.bonwise-login){width:min(440px,calc(100vw - 32px));padding:35px}
+.bonwise-login .login-close{position:absolute;right:16px;top:13px;background:none;border:0;font-size:25px;color:#284549;line-height:1;padding:7px;cursor:pointer}
+.bonwise-login .login-brand{display:flex;align-items:center;gap:10px;font-size:22px;letter-spacing:-1px;font-weight:700;color:#000}
+.bonwise-login .login-mark{display:grid;place-items:center;width:27px;height:30px;background:#254E58;color:#F1F8F6;font:600 21px Georgia,serif;border-radius:8px 8px 8px 3px}
+.bonwise-login h2{font-size:29px;letter-spacing:-.8px;margin:28px 0 8px;color:#000;font-weight:700;line-height:1.2}.bonwise-login .login-description{font-size:13px;line-height:1.6;color:#284549;margin-bottom:22px}.bonwise-login label{display:block;font-size:12px;font-weight:650;margin:17px 0 8px;color:#000}.bonwise-login input{width:100%;border:1px solid #568C91;border-radius:7px;padding:12px;font-size:13px;color:#112D32;background:#F1F8F6}.bonwise-login .login-password{position:relative}.bonwise-login .login-password input{padding-right:65px}.bonwise-login .login-password button{position:absolute;right:10px;top:10px;border:0;background:none;font-size:11px;color:#254E58;padding:4px;cursor:pointer}.bonwise-login .login-submit{margin-top:22px;width:100%;display:flex;justify-content:center;gap:20px;padding:15px 22px;border-radius:8px;border:1px solid #254E58;background:#254E58;color:white;font-size:14px;font-weight:600;cursor:pointer}.bonwise-login .login-submit:disabled{opacity:.55;cursor:not-allowed}.bonwise-login .login-end{text-align:center;font-size:10px;color:#284549;margin:16px 0 0}.bonwise-login .notice{margin:20px 0 0;font-size:11px;background:#D0E7E4;color:#284549;line-height:1.6;padding:12px;border-radius:7px}.bonwise-login :focus-visible{outline:3px solid #112D32;outline-offset:3px}
+@media(max-width:650px){:root :is(dialog.bonwise-login){padding:28px}.bw-reference .nav [data-privacy-slot]{display:contents}}
+:root :is(dialog.privacy-notes){font-size:14px;font-weight:400;line-height:1.65}
+:root :is(.privacy-notes__body p){font-size:14px;font-weight:400;line-height:1.65}
+:root :is(.privacy-notes__header h2){margin:4px 0 0;font-size:24px;line-height:1.3}
+:root :is(.privacy-notes__body h3){font-size:16px;font-weight:700;line-height:1.4}
+:root .app-shell :is(section,article,table,thead,tbody,tr,th,td,fieldset,div,ul,li,input,select,textarea,button){border-color:#254E58}
+:root .app-shell :is(.budget-stat-box,.home-offers-panel,.planner-home-card,.recent-section,.purchase-list,.purchase-detail-card,.comparison-card,.offer-card){background:#F1F8F6;border-color:#254E58}
+:root .app-shell .budget-stat-box.available{background:#D0E7E4}
+:root .app-shell [aria-invalid=true]{border-color:var(--color-danger)!important}
+:root .app-shell :is(.error-block,.planner-error){border-color:var(--color-danger)}

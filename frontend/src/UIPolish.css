@@ -1,0 +1,193 @@
+/* Final presentation layer. Import after TealCharcoal.css. No data or financial rules. */
+:root .app-shell{font-size:14px;line-height:1.55}
+:root .app-shell .main-content h1{font-size:28px;line-height:1.2;letter-spacing:-.7px;margin:0 0 10px;font-weight:700}
+:root .app-shell .main-content h2{font-size:19px;line-height:1.35;letter-spacing:-.25px}
+:root .app-shell .main-content h3{font-size:16px;line-height:1.4}
+:root .app-shell .main-content :is(input,select,textarea){font-size:14px}
+/* Same b-mark and wordmark as Welcome, with contrast adapted to the dark rail. */
+:root .app-shell .sidebar .wordmark{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:26px;font-weight:730;letter-spacing:-1px;gap:10px}
+:root .app-shell .sidebar .brand-monogram{display:grid;place-items:center;width:34px;height:37px;flex:0 0 34px;border-radius:10px 10px 10px 3px;transform:none;background:#254E58;color:#F1F8F6;font:600 25px Georgia,serif;letter-spacing:-3px;padding-right:3px}
+:root .app-shell .sidebar-footer-links{display:grid;gap:2px;margin-top:4px}
+:root .app-shell .sidebar-footer-links .privacy-link{justify-self:start;padding:5px 0;min-height:34px;font-size:13px;text-align:left}
+:root .app-shell .sidebar-footer-links .sign-out-button{min-height:34px;padding:5px 0}
+/* Anchored account popover: no backdrop and no interruption to the page. */
+:root .app-shell .profile-trigger{display:inline-flex;align-items:center;gap:8px;margin-left:auto;border:0;background:transparent;color:#112D32;font-size:13px;font-weight:600;min-height:44px;padding:6px 10px;cursor:pointer;border-radius:7px}
+:root .app-shell .profile-trigger:hover,:root .app-shell .profile-trigger[aria-expanded=true]{background:#D0E7E4}
+:root .app-shell .profile-popover{position:fixed;inset:auto;margin:0;width:min(360px,calc(100vw - 24px));padding:0;overflow:auto;border:1px solid #568C91;border-radius:14px;background:#F1F8F6;color:#112D32;font-size:14px;line-height:1.55;box-shadow:0 16px 48px #112D3230,0 3px 10px #112D3210}
+:root .app-shell .profile-popover::backdrop{background:transparent;backdrop-filter:none}
+:root .app-shell .profile-popover-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 20px 16px;border-bottom:1px solid #D0E7E4}
+:root .app-shell .profile-popover-eyebrow{display:block;color:#46676c;font-size:10px;font-weight:700;letter-spacing:.1em;margin-bottom:3px}
+:root .app-shell .profile-popover-header h2{font-size:20px;line-height:1.3;margin:0;color:#112D32}
+:root .app-shell .profile-close{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;min-height:34px;padding:0;border:0;border-radius:50%;background:transparent;color:#46676c;cursor:pointer}
+:root .app-shell .profile-close:hover{background:#D0E7E4;color:#112D32}
+:root .app-shell .profile-popover .account-profile-content{max-width:none;padding:18px 20px 20px;margin:0;border:0;background:transparent}
+:root .app-shell .profile-popover p{font-size:13px;line-height:1.65;margin:0 0 16px;color:#46676c}
+:root .app-shell .profile-popover label{display:block;font-size:13px;font-weight:600}
+:root .app-shell .profile-popover input{width:100%;margin:7px 0 12px;padding:10px 12px;font-size:14px;background:#fff;border:1px solid #568C91;border-radius:7px}
+:root .app-shell .profile-popover .profile-email{overflow-wrap:anywhere;font-size:12px;margin-bottom:18px}
+:root .app-shell .profile-popover .error-message{color:#97372f}
+/* A consistent dialog canvas and padding for receipt, voice and text. */
+:root .app-shell dialog.capture-dialog{position:fixed;inset:0;margin:auto;width:min(960px,calc(100vw - 40px));max-width:960px;max-height:calc(100dvh - 40px);padding:0;overflow:auto;border:1px solid #254E58;border-radius:14px;background:#F1F8F6;color:#112D32;font-size:14px;line-height:1.6;box-shadow:0 24px 80px #112D3230}
+:root .app-shell dialog.capture-dialog::backdrop{background:#112D3260;backdrop-filter:blur(4px)}
+:root .app-shell .capture-dialog .capture-dialog-header{position:sticky;top:0;margin:0;padding:20px 24px 16px;background:#F1F8F6;align-items:center;border-bottom:1px solid #254E58;z-index:4}
+:root .app-shell .capture-dialog .capture-eyebrow{color:#284549;font-size:12px;line-height:1.4;font-weight:700;letter-spacing:.06em;margin:0 0 5px}
+:root .app-shell .capture-dialog .capture-dialog-header h2{font-size:24px;line-height:1.25;margin:0;color:#000}
+:root .app-shell .capture-dialog .capture-mode-tabs{margin:0;padding:14px 24px;gap:8px;background:#E3F0ED;border-bottom:1px solid #88BDBC}
+:root .app-shell .capture-dialog .capture-mode-tabs button{min-height:42px;padding:9px 20px;font-size:14px;border:1px solid transparent;border-radius:7px;background:transparent;color:#284549}
+:root .app-shell .capture-dialog .capture-mode-tabs button[aria-selected=true]{background:#254E58;color:#fff;border-color:#254E58}
+:root .app-shell .capture-dialog .capture-mode-tabs button::after{display:none}
+:root .app-shell .capture-dialog [role=tabpanel]{padding:24px}
+:root .app-shell .capture-dialog :is(.image-capture,.voice-capture,.capture-text-step,.privacy-step,.capture-correction-form){padding:0;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none;min-width:0}
+:root .app-shell .capture-dialog .privacy-step,:root .app-shell .capture-dialog .capture-correction-form{padding:24px}
+:root .app-shell .capture-dialog :is(h2,h3){color:#000}
+:root .app-shell .capture-dialog .image-capture>h2,:root .app-shell .capture-dialog .voice-capture>h3,:root .app-shell .capture-dialog .capture-text-step>h3{font-size:18px;line-height:1.4;margin:0}
+:root .app-shell .capture-dialog :is(.capture-intro,.workflow-copy){color:#284549;font-size:14px;line-height:1.65;margin:0 0 8px}
+:root .app-shell .capture-dialog :is(label,.image-file-control){font-size:14px;color:#112D32;font-weight:600}
+:root .app-shell .capture-dialog :is(textarea,input:not([type=checkbox])){background:#fff;border:1px solid #568C91;border-radius:7px;font-size:15px;padding:11px 12px}
+:root .app-shell .capture-dialog .image-inputs{display:grid;grid-template-columns:1fr;gap:16px}
+:root .app-shell .capture-dialog .image-file-control{display:grid;gap:8px;min-width:0;width:100%;margin:0}
+:root .app-shell .capture-dialog .mobile-camera-control{display:none!important}
+:root .app-shell .capture-dialog .image-file-control input{width:100%;max-width:100%;font-size:14px;min-height:48px;background:#fff}
+:root .app-shell .capture-dialog .image-file-control input::file-selector-button{padding:8px 12px;margin-right:12px;border:0;border-radius:5px;background:#D0E7E4;color:#112D32;font-weight:600;cursor:pointer}
+:root .app-shell .capture-dialog .receipt-privacy-warning{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;border:1px solid #D0E7E4;border-radius:12px;background:#fff;color:#112D32;margin:0;box-shadow:0 4px 14px #112D3208}
+:root .app-shell .receipt-privacy-eyebrow{display:block;color:#54777b;font-size:10px;font-weight:700;letter-spacing:.1em;line-height:1.5;margin:0 0 5px}
+:root .app-shell .receipt-privacy-warning strong{display:block;font-size:14px;font-weight:700;line-height:1.4;margin-bottom:3px;color:#254E58}
+:root .app-shell .receipt-privacy-warning p{font-size:13px;line-height:1.55;margin:0;color:#284549;max-width:720px}
+:root .app-shell .receipt-privacy-footnote{display:block;font-size:12px;color:#54777b;line-height:1.6;margin-top:10px}
+:root .app-shell .receipt-warning-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border:1px solid #88BDBC;border-radius:50%;background:#D0E7E4;color:#254E58;box-shadow:inset 0 1px 0 #fff}
+:root .app-shell .capture-dialog .image-viewer-viewport{margin:0;border:1px solid #568C91;border-radius:8px;background:#D0E7E4}
+:root .app-shell .capture-dialog .capture-dialog-actions,:root .app-shell .capture-dialog .step-actions{margin-top:16px;padding-top:16px;border-top:1px solid #b8cfcb;gap:12px}
+/* Distinct purchase cards, with no duplicated outer list rules. Shared by Home. */
+:root .app-shell .records-surface{padding:0;border:0;background:transparent;box-shadow:none}
+:root .app-shell .purchase-list{display:grid;gap:16px;border:0;background:transparent;padding:0;margin:0;list-style:none}
+:root .app-shell .purchase-record{border:1px solid #254E58;border-radius:11px;background:#F1F8F6;overflow:hidden;box-shadow:none}
+:root .app-shell .purchase-record-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:0}
+:root .app-shell .purchase-record-row:not(.has-details-action){grid-template-columns:1fr}
+:root .app-shell .purchase-row{padding:16px 18px;min-height:78px;gap:18px}
+:root .app-shell .purchase-merchant{font-size:15px;font-weight:700;color:#000}
+:root .app-shell .purchase-date{font-size:13px;color:#284549}
+:root .app-shell .purchase-total{font-size:16px;font-weight:700}
+:root .app-shell .purchase-view-details{align-self:start;margin:14px 14px 0 0;padding:7px 12px!important;min-height:36px!important;border:1px solid #568C91;border-radius:6px;background:#E3F0ED;text-decoration:none;font-size:12px!important;font-weight:600}
+:root .app-shell .item-breakdown{padding:0 16px 16px;margin:0;border:0}
+:root .app-shell .breakdown-header{padding:10px 12px;background:#D0E7E4;border:0;border-radius:6px 6px 0 0;font-size:12px;letter-spacing:0}
+:root .app-shell .breakdown-row{padding:12px;min-height:46px;border:0;font-size:14px;line-height:1.5}
+:root .app-shell .breakdown-row:nth-child(odd){background:#E3F0ED}
+:root .app-shell .breakdown-row:nth-child(even){background:#F1F8F6}
+:root .app-shell .adjustment-row{border:0;background:#edf3e5;padding:12px;font-size:13px}
+:root .app-shell .recent-section{padding:0;background:transparent;border:0;box-shadow:none}
+:root .app-shell .recent-heading{min-height:0;margin:0 0 14px}
+/* One hierarchy for planner headings, helpful rows and item actions. */
+:root .app-shell .household-setup-reminder{padding:10px 14px;margin:0 0 22px;border:1px solid #568C91;border-radius:8px;background:#B5D9D7;font-size:13px;line-height:1.5;gap:12px}
+:root .app-shell .household-setup-reminder .button{min-height:34px;padding:6px 11px;font-size:12px}
+:root .app-shell .planner-heading{align-items:start;gap:22px;margin-bottom:18px}
+:root .app-shell .planner-heading h1{font-size:28px;margin:0 0 10px;line-height:1.2}
+:root .app-shell .planner-heading p{font-size:14px;line-height:1.65;margin:0;max-width:620px}
+:root .app-shell .planner-heading label{font-size:13px;margin:0;min-width:165px}
+:root .app-shell .planner-status-row{font-size:13px;margin:0 0 16px;gap:12px;align-items:center}
+:root .app-shell .planner-hint{font-size:13px;line-height:1.6}
+:root .app-shell .planner-items{display:grid;gap:10px;border:0;padding:16px 0;margin:0}
+:root .app-shell .planner-item{padding:16px;border:1px solid #8aabaa;border-radius:8px;margin:0}
+:root .app-shell .planner-item:nth-child(odd){background:#E3F0ED}
+:root .app-shell .planner-item:nth-child(even){background:#F1F8F6}
+:root .app-shell .planner-item:last-child{border-bottom:1px solid #8aabaa}
+:root .app-shell .planner-item-top h3{font-size:16px;line-height:1.4}
+:root .app-shell .planner-item-quantity{font-size:13px;margin-top:5px}
+:root .app-shell .planner-item-actions{gap:8px;margin-top:12px}
+:root .app-shell .planner-item-actions .text-link,:root .app-shell .planner-item-top>.text-link{display:inline-flex;align-items:center;justify-content:center;border:1px solid #568C91;border-radius:6px;background:#F1F8F6;color:#112D32;min-height:34px;padding:6px 10px;font-size:12px;font-weight:600;text-decoration:none;line-height:1.4}
+:root .app-shell .planner-item-actions .text-link:hover:not(:disabled),:root .app-shell .planner-item-top>.text-link:hover:not(:disabled){background:#D0E7E4}
+:root .app-shell .planner-item-actions .text-link:disabled{opacity:.5}
+/* Every financial metric has the same boundary; only the available tint differs. */
+:root .app-shell .household-financial-summary>div{padding:16px;border:1px solid #254E58;border-radius:8px;background:#F1F8F6}
+:root .app-shell .household-financial-summary>.household-available{border:1px solid #254E58;background:#D0E7E4}
+:root .app-shell .household-financial-summary span{font-size:13px;line-height:1.5}
+:root .app-shell .household-financial-summary strong{font-size:23px;line-height:1.25;margin-top:9px}
+:root .app-shell .household-financial-summary small{font-size:12px;line-height:1.6;margin-top:6px}
+/* Keep the Home capture priority, without oversized promotional typography. */
+:root .app-shell .capture-launch{padding:24px;gap:12px}
+:root .app-shell .capture-launch>h1{font-size:28px;line-height:1.25;margin:0;color:#F1F8F6}
+:root .app-shell .capture-launch>.capture-eyebrow{font-size:11px;letter-spacing:.04em;color:#D0E7E4}
+:root .app-shell .capture-launch>.capture-intro{font-size:14px;line-height:1.6;color:#F1F8F6}
+:root .app-shell .capture-launch :is(.capture-receipt-action,.capture-secondary-actions button){border:1px solid #88BDBC;border-radius:8px;box-shadow:none}
+@media(max-width:767px) and (pointer:coarse){:root .app-shell .capture-dialog .mobile-camera-control{display:grid!important}:root .app-shell .capture-dialog .image-inputs{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){:root .app-shell .main-content h1,:root .app-shell .planner-heading h1{font-size:24px}:root .app-shell dialog.capture-dialog{width:calc(100vw - 20px);max-height:calc(100dvh - 20px)}:root .app-shell .capture-dialog .capture-dialog-header{padding:16px}:root .app-shell .capture-dialog .capture-mode-tabs{padding:12px 16px}:root .app-shell .capture-dialog [role=tabpanel],:root .app-shell .capture-dialog .privacy-step,:root .app-shell .capture-dialog .capture-correction-form{padding:18px 16px}:root .app-shell .capture-dialog .image-inputs{grid-template-columns:1fr}:root .app-shell .capture-dialog :is(input,textarea,select){font-size:16px}:root .app-shell .planner-heading{flex-direction:column;gap:16px}:root .app-shell .planner-heading label{width:100%}:root .app-shell .purchase-record-row{display:flex;flex-direction:column}:root .app-shell .purchase-record-row .purchase-details{width:100%}:root .app-shell .purchase-view-details{margin:0 16px 14px;align-self:flex-end}:root .app-shell .purchase-row{padding:14px 16px;gap:12px}:root .app-shell .capture-dialog .receipt-privacy-warning{padding:12px;gap:10px}:root .app-shell .receipt-warning-icon{width:32px;height:32px;flex-basis:32px}:root .app-shell .receipt-privacy-warning strong{font-size:14px}:root .app-shell .profile-popover input{font-size:16px}}
+
+/* Home uses open sections and soft surfaces, rather than a grid of outlined boxes. */
+/* Conversational analysis: separate speakers with spacing, not horizontal rules. */
+:root .app-shell .analysis-ask-panel{border:1px solid #568C9140;border-radius:14px;background:#F1F8F6;overflow:hidden}
+:root .app-shell .analysis-ask-header{padding:20px 24px 12px}
+:root .app-shell .analysis-ask-heading .analysis-panel-title{font-size:22px;line-height:1.3}
+:root .app-shell .analysis-panel-helper{font-size:13px}
+:root .app-shell .analysis-new-conversation{font-size:12px;min-height:36px;border:1px solid #568C9160;border-radius:7px;padding:7px 12px;text-decoration:none}
+:root .app-shell .analysis-question-help{margin:0 24px 4px;border:0;font-size:12px;color:#46676c}
+:root .app-shell .analysis-question-help summary{cursor:pointer}
+:root .app-shell .analysis-question-help p{font-size:13px;line-height:1.6}
+:root .app-shell .analysis-ask-content{border-top:0;padding:16px 24px 22px;gap:16px}
+:root .app-shell .analysis-suggestions{gap:8px}
+:root .app-shell .analysis-suggestions .button{border:1px solid #568C9150;border-radius:20px;background:transparent;font-size:12px;font-weight:500;min-height:34px;padding:6px 12px}
+:root .app-shell .analysis-suggestions .button:hover{background:#D0E7E4}
+:root .app-shell .analysis-conversation{min-height:200px;max-height:clamp(240px,45dvh,480px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:8px 6px 20px 0;scroll-padding-block:16px}
+:root .app-shell .analysis-answer-list{gap:30px;border:0}
+:root .app-shell .analysis-answer-entry,:root .app-shell .analysis-pending-turn{display:grid;gap:18px;padding:0;border:0;margin:0}
+:root .app-shell .analysis-pending-turn{margin-top:26px}
+:root .app-shell .analysis-asked-question{justify-self:end;justify-items:start;max-width:84%;gap:5px;padding:12px 16px;background:#D0E7E4;border:0;border-radius:14px 14px 4px 14px;text-align:left;overflow-wrap:anywhere}
+:root .app-shell .analysis-speaker-label{font-size:11px;line-height:1.4;font-weight:600;color:#46676c}
+:root .app-shell .analysis-asked-question strong{font-size:14px;font-weight:500;line-height:1.6;white-space:pre-wrap}
+:root .app-shell .analysis-asked-question>span{font-size:11px;line-height:1.5;color:#46676c}
+:root .app-shell .analysis-assistant-message{display:grid;grid-template-columns:32px minmax(0,1fr);align-items:start;gap:12px;max-width:94%}
+:root .app-shell .analysis-chat-avatar{display:grid;place-items:center;width:32px;height:35px;border-radius:9px 9px 9px 3px;background:#254E58;color:#F1F8F6;font:600 24px Georgia,serif;letter-spacing:-2px;padding-right:2px}
+:root .app-shell .analysis-answer{gap:9px;padding:3px 0;background:transparent;border:0;min-width:0}
+:root .app-shell .analysis-answer-status{font-size:12px;color:#254E58;font-weight:700;line-height:1.5}
+:root .app-shell .analysis-answer>p{font-size:14px;line-height:1.8;color:#112D32;overflow-wrap:anywhere}
+:root .app-shell .analysis-answer>.analysis-tool-activity{font-size:11px;line-height:1.6;color:#54777b}
+:root .app-shell .analysis-evidence,:root .app-shell .analysis-calculation{border:0;font-size:12px;color:#46676c}
+:root .app-shell :is(.analysis-evidence,.analysis-calculation)>summary{display:list-item;width:fit-content;border:0;border-radius:6px;background:#E3F0ED;padding:6px 10px;min-height:30px;font-size:12px;font-weight:500;cursor:pointer}
+:root .app-shell .analysis-evidence-list{gap:8px;margin:10px 0 0;padding:0}
+:root .app-shell .analysis-evidence-row{border:0;border-radius:8px;background:#E3F0ED;padding:12px;font-size:12px;line-height:1.6}
+:root .app-shell .analysis-evidence-note{font-size:12px;line-height:1.6;color:#54777b}
+:root .app-shell .analysis-question-form{border:1px solid #568C9170;border-radius:12px;background:#fff;padding:14px;gap:8px;box-shadow:0 3px 12px #112D3205}
+:root .app-shell .analysis-question-form>label,:root .app-shell .analysis-question-label{font-size:12px;color:#46676c;font-weight:500}
+:root .app-shell .analysis-question-controls{gap:10px;align-items:end}
+:root .app-shell .analysis-question-controls textarea{border:0;border-radius:5px;box-shadow:none;background:transparent;padding:5px 0;min-height:64px;font-size:14px;line-height:1.6}
+:root .app-shell .analysis-question-controls textarea:focus{outline:2px solid #88BDBC;outline-offset:3px}
+:root .app-shell .analysis-question-controls .button{min-height:40px;font-size:12px;padding:8px 12px}
+:root .app-shell .analysis-voice-toggle{min-width:100px;border-color:#568C9160}
+:root .app-shell .analysis-send-button{min-width:70px}
+:root .app-shell .analysis-voice-note,:root .app-shell .analysis-selected-period{font-size:11px;line-height:1.6;color:#54777b}
+:root .app-shell .analysis-chat-empty{display:grid;justify-items:start;align-content:center;gap:12px;min-height:190px;padding:20px 8px}
+:root .app-shell .analysis-chat-empty h3{font-size:18px;margin:0;line-height:1.4}
+:root .app-shell .analysis-chat-empty p{font-size:14px;line-height:1.7;max-width:440px;margin:0;color:#46676c}
+@media(max-width:650px){:root .app-shell .analysis-ask-header{padding:16px;gap:8px}:root .app-shell .analysis-ask-content{padding:12px 16px 16px}:root .app-shell .analysis-question-help{margin-inline:16px}:root .app-shell .analysis-ask-heading .analysis-panel-title{font-size:20px}:root .app-shell .analysis-new-conversation{max-width:105px;font-size:11px;padding:6px 8px}:root .app-shell .analysis-asked-question{max-width:94%}:root .app-shell .analysis-assistant-message{max-width:100%;grid-template-columns:26px minmax(0,1fr);gap:9px}:root .app-shell .analysis-chat-avatar{width:26px;height:29px;font-size:20px}:root .app-shell .analysis-question-controls{grid-template-columns:minmax(0,1fr) auto}:root .app-shell .analysis-question-controls textarea{grid-column:1/-1;font-size:16px}:root .app-shell .analysis-send-button{justify-self:end}:root .app-shell .analysis-conversation{max-height:clamp(240px,45dvh,420px)}}
+:root .app-shell .sidebar{background:#17252A;border-right-color:#568C91}
+:root .app-shell .sidebar :is(.wordmark,.nav-link,.household-name){color:#F1F8F6}
+:root .app-shell .sidebar .nav-link{background:transparent}
+:root .app-shell .sidebar .nav-link:not(.active):hover{background:#254E58;color:#F1F8F6}
+:root .app-shell .sidebar .nav-link.active{background:#88BDBC;color:#112D32}
+:root .app-shell .sidebar .nav-link.active:hover{background:#B5D9D7;color:#112D32}
+:root .app-shell .sidebar :is(.privacy-link,.sign-out-button,.household-loading){color:#B5D9D7}
+:root .app-shell .sidebar .sidebar-account{border-top-color:#568C91}
+:root .app-shell .household-setup-reminder{background:transparent;border:0;border-radius:0;padding:0;margin-bottom:20px;box-shadow:none}
+:root .app-shell .home-section{gap:32px}
+:root .app-shell .home-top-row{gap:26px}
+:root .app-shell .home-top-row .budget-context-panel{padding:4px 0 0;border:0;border-radius:0;background:transparent;box-shadow:none}
+:root .app-shell .home-top-row .budget-grid{gap:0}
+:root .app-shell .home-top-row .budget-stat-box{padding:10px 20px;border:0;border-radius:0;background:transparent;box-shadow:none}
+:root .app-shell .home-top-row .budget-stat-box:first-child{padding-left:0}
+:root .app-shell .home-top-row .budget-stat-box+.budget-stat-box{border-left:1px solid #568c9160}
+:root .app-shell .home-top-row .budget-stat-box.available{background:#D0E7E480;border-radius:8px;border-left:0;margin-left:12px}
+:root .app-shell .home-next-steps{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:stretch}
+:root .app-shell .home-next-steps>:only-child{grid-column:1/-1}
+:root .app-shell .home-next-steps :is(.home-offers-panel,.planner-home-card){display:flex;flex-direction:column;align-items:stretch;gap:18px;padding:24px;margin:0;border:0;border-radius:12px;background:#F1F8F6b3;box-shadow:none;min-width:0}
+:root .app-shell .home-next-steps h2{font-size:20px;line-height:1.35;margin:0;font-weight:700;letter-spacing:-.3px}
+:root .app-shell .home-next-steps p{font-size:14px;line-height:1.65;margin:10px 0 0;color:#284549;max-width:480px}
+:root .app-shell .home-next-steps .recent-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0}
+:root .app-shell .home-next-steps .recent-heading .text-link{font-size:12px;white-space:nowrap}
+:root .app-shell .home-next-steps .planner-home-card>.button{align-self:flex-start;margin-top:auto;min-height:40px;padding:9px 16px;border-color:#568C9170;background:#F1F8F6;font-size:13px}
+:root .app-shell .home-next-steps .mini-offer{border-bottom-color:#568C9130;padding:10px 0}
+:root .app-shell .home-next-steps .mini-offer-name{font-size:14px;line-height:1.5}
+:root .app-shell .home-next-steps .mini-offer-meta,:root .app-shell .home-next-steps .mini-offer-price span{font-size:12px}
+:root .app-shell .home-section .activity-calendar{border-top:0;padding-top:0}
+:root .app-shell .home-section .calendar-day{border:1px solid #F1F8F670;background:#F1F8F6a6;box-shadow:none}
+:root .app-shell .home-section .calendar-day.selected{border-color:#254E58;background:#D0E7E4;box-shadow:none}
+:root .app-shell .home-section .calendar-details{background:transparent;border:0;border-radius:0;padding:4px 0;box-shadow:none}
+:root .app-shell .home-section .calendar-detail-grid{gap:32px;margin-top:22px}
+@media(max-width:760px){:root .app-shell .home-next-steps{grid-template-columns:1fr;gap:16px}:root .app-shell .home-next-steps :is(.home-offers-panel,.planner-home-card){padding:20px}:root .app-shell .home-top-row .budget-grid{gap:12px}:root .app-shell .home-top-row .budget-stat-box{padding:8px 0}:root .app-shell .home-top-row .budget-stat-box+.budget-stat-box{border-left:0}:root .app-shell .home-top-row .budget-stat-box.available{margin-left:0;padding:8px 12px}}
