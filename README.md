@@ -4,8 +4,6 @@
 
 Bonwise is an AI-assisted household shopping and spending application. Capture a receipt, review its details, understand recorded spending and prepare your next shopping list with budget and offer context.
 
-**Models interpret and propose. Code verifies. People approve.**
-
 ## What you can do
 
 - **Capture purchases:** upload German or English receipts, describe purchases by voice, or type them. Edit extracted details and confirm before saving.
