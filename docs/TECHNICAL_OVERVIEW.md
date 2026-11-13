@@ -33,7 +33,7 @@ flowchart TD
 | Layer | Tools |
 | --- | --- |
 | Frontend | React, TypeScript, Vite, TanStack Query, CSS/Tailwind tooling |
-| Backend | Python 3.12, FastAPI, Pydantic, SQLAlchemy, Alembic |
+| Backend | Python 3.14, FastAPI, Pydantic, SQLAlchemy, Alembic |
 | AI services | OpenAI vision, speech-to-text, language models and text embeddings |
 | AI workflows | LangChain structured interpretation; LangGraph resumable planning |
 | Retrieval | Pinecone vector index; product catalogue and correction memory |
