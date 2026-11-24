@@ -58,3 +58,34 @@ class CalendarTests(unittest.TestCase):
     def test_unbounded_range_rejected(self):
         with Session(self.engine) as db, self.assertRaises(HTTPException):
             calendar_events(db,self.household,self.user,self.day,self.day+timedelta(days=42))
+
+    def test_two_reads_and_no_large_payload_columns(self):
+        from sqlalchemy import event
+        statements=[]
+        def capture(conn,cursor,statement,params,context,many):
+            if statement.lstrip().upper().startswith(('SELECT','WITH')):statements.append(statement)
+        event.listen(self.engine,'before_cursor_execute',capture)
+        try:result=self.read()
+        finally:event.remove(self.engine,'before_cursor_execute',capture)
+        self.assertEqual(len(statements),2)
+        self.assertEqual(len(result.events),1)
+        self.assertNotIn('weekly_plans.content',statements[1])
+        self.assertNotIn('purchases.adjustments',statements[1])
+
+    def test_purchase_limit_truncates_without_leaking_extra_entries(self):
+        from sqlalchemy import insert
+        from app.db.models import PurchaseItem
+        # One draft can have only one confirmed purchase, so generate valid pairs.
+        with Session(self.engine) as db,db.begin():
+            for _ in range(501):self.purchase(db,self.day,[(self.milk,'Milk','1',100)])
+        result=self.read()
+        self.assertTrue(result.truncated)
+        self.assertEqual(sum(e.kind=='purchase' for e in result.events),500)
+
+    def test_projections_preserve_empty_title_and_pending_status_rules(self):
+        with Session(self.engine) as db,db.begin():
+            pid=self.purchase(db,self.day,[(self.milk,'Milk','1',100)])
+            db.get(Purchase,pid).merchant=''
+        result=self.read()
+        self.assertEqual(next(e for e in result.events if e.id==str(pid)).title,'Purchase')
+        self.assertTrue(all(e.status=='confirmed' for e in result.events if e.kind=='purchase'))

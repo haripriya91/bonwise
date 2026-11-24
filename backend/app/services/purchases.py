@@ -185,12 +185,13 @@ def draft_view(db, draft):
     }
 
 
-def purchase_view(db, purchase):
-    items = db.scalars(
-        select(PurchaseItem)
-        .where(PurchaseItem.purchase_id == purchase.id)
-        .order_by(PurchaseItem.created_at, PurchaseItem.id)
-    ).all()
+def purchase_view(db, purchase, *, items=None):
+    if items is None:
+        items = db.scalars(
+            select(PurchaseItem)
+            .where(PurchaseItem.purchase_id == purchase.id)
+            .order_by(PurchaseItem.created_at, PurchaseItem.id)
+        ).all()
 
     return {
         "id": purchase.id,
@@ -434,12 +435,23 @@ def list_purchases(
             .offset(offset)
         ).all()
 
+        # Fetch only this authorized page's items in one query, rather than
+        # one extra database round trip per purchase. Preserve item ordering.
+        items_by_purchase = {purchase.id: [] for purchase in purchases}
+        if items_by_purchase:
+            for item in db.scalars(
+                select(PurchaseItem)
+                .where(PurchaseItem.purchase_id.in_(items_by_purchase))
+                .order_by(PurchaseItem.created_at, PurchaseItem.id)
+            ).all():
+                items_by_purchase[item.purchase_id].append(item)
+
         return {
             "total": total,
             "limit": limit,
             "offset": offset,
             "purchases": [
-                purchase_view(db, purchase)
+                purchase_view(db, purchase, items=items_by_purchase[purchase.id])
                 for purchase in purchases
             ],
         }

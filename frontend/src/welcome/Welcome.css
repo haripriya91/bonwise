@@ -2,7 +2,7 @@
 .bw-reference{--ink:#112D32;--muted:#284549;--blue:#254E58;--on-primary:#FFFFFF;--primary-hover:#112D32;--paper:#88BDBC;--line:#568C91;--pale:#D0E7E4;--surface:#F1F8F6;--warm-panel:#254E58;--tint:#B5D9D7;--accent:#254E58;--focus:#112D32;--shadow:#112D3220}
 .bw-reference *{box-sizing:border-box}
 .bw-reference{scroll-behavior:smooth;scroll-padding-top:35px}
-.bw-reference{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.bw-reference{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-body)}
 .bw-reference button,.bw-reference input{font:inherit}
 .bw-reference button,.bw-reference a{-webkit-tap-highlight-color:transparent}
 .bw-reference button{cursor:pointer}
@@ -300,14 +300,15 @@
 .bw-reference .palette-status{color:#112D32}
 .bw-reference .everyday-example .paper-slip,.bw-reference .everyday-example .shopping-note,.bw-reference .price-tag{color:#112D32}
 .bw-reference .hero-conversation .answer-bubble{color:#112D32}
-.bw-reference h1,.bw-reference h1 span{color:#000000;font-weight:700}
-.bw-reference .section h2,.bw-reference .feature-copy h3,.bw-reference dialog h2,.bw-reference .panel-card h3{color:#000000;font-weight:700}
+.bw-reference h1,.bw-reference h1 span{color:#000000;font-family:var(--font-display);font-weight:600}
+.bw-reference .section h2{color:#000000;font-family:var(--font-display);font-weight:600}
+.bw-reference .feature-copy h3,.bw-reference dialog h2,.bw-reference .panel-card h3{color:#000000;font-weight:700}
 .bw-reference .brand,.bw-reference .feature-tab strong,.bw-reference .text-link,.bw-reference .bottom strong,.bw-reference .bottom button{color:#000000;font-weight:700}
 .bw-reference .paper-title,.bw-reference .receipt-title,.bw-reference .receipt-total,.bw-reference .price-tag strong,.bw-reference .answer-bubble strong{color:#000000;font-weight:700}
 .bw-reference .eyebrow,.bw-reference .feature-kicker,.bw-reference .showcase-eyebrow{color:#000000!important;font-weight:700}
 .bw-reference .button.outline,.bw-reference label{color:#000000;font-weight:650}
 /* Keep reference geometry independent of the application's Tailwind preflight. */
-.bw-reference{min-height:100dvh;background:#88BDBC;color:#112D32;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:16px;line-height:normal;text-align:left}
+.bw-reference{min-height:100dvh;background:#88BDBC;color:#112D32;font-family:var(--font-body);font-size:16px;line-height:normal;text-align:left}
 .bw-reference p,.bw-reference h1,.bw-reference h2,.bw-reference h3{line-height:revert}.bw-reference h1{line-height:1.09}.bw-reference .feature-copy h3{line-height:1.22}.bw-reference button{font-family:inherit}.bw-reference .nav .privacy-link{color:#000;font-size:13px;font-weight:650;text-decoration:none;padding:0;min-height:40px}.bw-reference [data-privacy-slot]{display:contents}
 /* One combined product illustration, not a second tabbed how-it-works section. */
 .bw-reference .composite-visual{min-height:470px;padding:24px 27px;background:#254E58;border:1px solid #112D32}
@@ -322,3 +323,27 @@
 @media(max-width:650px){.bw-reference .nav{gap:15px}.bw-reference .nav .privacy-link{font-size:11px}.bw-reference .hero h1{font-size:44px;line-height:1.12}.bw-reference .composite-visual{min-height:460px;padding:22px 20px}.bw-reference .composite-stage{height:340px}.bw-reference .composite-receipt{width:62%;padding:17px 13px}.bw-reference .composite-analysis{padding:14px;width:71%}.bw-reference .composite-list{width:65%}}
 @media(prefers-reduced-motion:reduce){.bw-reference *{animation:none!important;scroll-behavior:auto!important}}
 .bw-reference .composite-analysis{top:42px}.bw-reference .composite-bars{height:34px}.bw-reference .composite-total{font-size:28px}.bw-reference .composite-list{width:57%;bottom:-6px}
+
+/* Lighter canvas and real, locally served photography. */
+.bw-reference{background:#E1EEEA;--paper:#E1EEEA;--surface:#F6FAF9;--pale:#D6E8E5;--tint:#D1E4DE;--line:#B3CDC7;--warm-panel:#254E58}
+.bw-reference .hero{gap:52px}
+.bw-reference .everyday-photo-hero{position:relative;isolation:isolate;margin:0;padding:0;min-height:490px;aspect-ratio:1.05;border:0;border-radius:24px;overflow:hidden;background:#254E58;box-shadow:none}
+.bw-reference .everyday-photo-hero::before{display:none}
+.bw-reference .everyday-photo-hero>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:58% center}
+.bw-reference .everyday-photo-hero::after{content:"";position:absolute;inset:30% 0 0;background:linear-gradient(transparent,rgba(17,45,50,.86));z-index:0}
+.bw-reference .everyday-photo-hero figcaption{position:absolute;z-index:1;bottom:0;left:0;right:0;padding:32px;color:#fff}
+.bw-reference .everyday-photo-hero figcaption>span{display:block;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#F1F8F6}
+.bw-reference .everyday-photo-hero figcaption strong{display:block;margin:10px 0 18px;font-size:clamp(26px,3vw,38px);font-weight:650;line-height:1.12;letter-spacing:-1px;color:#fff}
+.bw-reference .everyday-photo-hero figcaption small{font-size:12px;color:#F1F8F6}
+.bw-reference .feature-panel{border:1px solid #B3CDC7;box-shadow:none}
+.bw-reference .feature-tab{border-color:#B3CDC7}
+.bw-reference .everyday-example{position:relative;isolation:isolate;overflow:hidden;min-height:350px;border:0}
+.bw-reference .everyday-example .feature-lifestyle-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:-2}
+.bw-reference .everyday-example::before{content:"";position:absolute;inset:0;z-index:-1;background:rgba(17,45,50,.49)}
+.bw-reference .everyday-example .example-label{font-size:10px;font-weight:600;letter-spacing:.06em;background:rgba(17,45,50,.82);padding:6px 9px;border-radius:5px;color:#fff}
+.bw-reference .everyday-example .paper-slip,.bw-reference .everyday-example .shopping-note{background:rgba(246,250,249,.98);border-color:#D1E4DE;box-shadow:0 10px 24px #112D3220}
+.bw-reference .everyday-example .comparison-caption{background:rgba(17,45,50,.82);border-radius:6px;padding:9px 12px;color:#fff}
+.bw-reference .reference-mini-chart{background:rgba(17,45,50,.88);border:0;padding:10px 12px;border-radius:6px;width:100%;color:#fff}
+.bw-reference .footer{border-color:#B3CDC7}
+@media(max-width:900px){.bw-reference .hero{gap:28px}.bw-reference .everyday-photo-hero{min-height:420px}}
+@media(max-width:650px){.bw-reference .everyday-photo-hero{min-height:360px;aspect-ratio:1.1;width:100%}.bw-reference .everyday-photo-hero figcaption{padding:24px}.bw-reference .everyday-example{min-height:320px}}

@@ -5,7 +5,9 @@ import "@fontsource/dm-sans/latin-400.css";
 import "@fontsource/dm-sans/latin-500.css";
 import "@fontsource/dm-sans/latin-600.css";
 import "@fontsource/dm-sans/latin-700.css";
+import "@fontsource/fraunces/latin-600.css";
 import App from "./App";
+import { ApiError } from "./api/client";
 import "./theme.css";
 import "./TealCharcoal.css";
 import "./UIPolish.css";
@@ -13,7 +15,10 @@ import "./UIPolish.css";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: (failureCount, error) => {
+        if (error instanceof ApiError && [401, 403, 404, 422, 503].includes(error.status ?? 0)) return false;
+        return failureCount < 1;
+      },
       refetchOnWindowFocus: false,
       staleTime: 30_000,
     },

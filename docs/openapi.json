@@ -1689,6 +1689,16 @@
               "format": "uuid",
               "title": "Household Id"
             }
+          },
+          {
+            "name": "include_offers",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Include Offers"
+            }
           }
         ],
         "responses": {
@@ -5307,7 +5317,8 @@
             "enum": [
               "review",
               "offers",
-              "budget"
+              "budget",
+              "planner"
             ],
             "title": "Action"
           },
@@ -7703,7 +7714,8 @@
             "type": "string",
             "enum": [
               "ready",
-              "unavailable"
+              "unavailable",
+              "not_requested"
             ],
             "title": "Offers Status"
           }

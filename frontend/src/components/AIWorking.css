@@ -6,5 +6,5 @@
 .ai-working>.text-link{flex:0 0 auto;min-height:32px;font-size:12px}
 .analysis-pending-turn{margin:18px 0}.analysis-pending-turn .analysis-asked-question{margin-bottom:10px}.analysis-pending-turn .ai-working{margin:0}
 @keyframes ai-working-bounce{0%,80%,100%{opacity:.4;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
-@media(prefers-reduced-motion:reduce){.ai-working-dots i{animation:none}}
+@media(prefers-reduced-motion:reduce){.ai-working-dots i{animation:none;opacity:.75;transform:none}}
 @media(max-width:480px){.ai-working{flex-wrap:wrap}.ai-working>.text-link{margin-left:36px}}

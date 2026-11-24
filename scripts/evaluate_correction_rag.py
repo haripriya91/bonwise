@@ -4,6 +4,7 @@ Default validates synthetic labels only: zero provider calls. Live uses existing
 household history read-only; labels are never supplied to retrieval or the LLM.
 """
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -41,7 +42,7 @@ def main():
     from app.db.session import SessionLocal
     from app.db.models import Product
     from app.services.purchases import require_member
-    from app.ai.product_matching import suggest_products
+    from app.ai.product_matching import suggest_products, PROMPT_VERSION
     from app.ai.analysis_tracing import AnalysisTrace
     from app.core.config import get_settings
     with SessionLocal() as db,db.begin():
@@ -53,7 +54,9 @@ def main():
     report={}
     for mode,enabled in [('baseline',False),('correction_rag',True)]:
         totals=dict(cases=len(selected),positive_cases=0,negative_cases=0,hit1=0,hit3=0,correct_abstentions=0,suggested=0,correct_suggestions=0,semantic_evidence_cases=0,errors=0,latency_ms=0)
+        case_results=[]
         for index,case in enumerate(selected,1):
+            before=dict(totals)
             totals['positive_cases' if case.expected_product_codes else 'negative_cases']+=1
             start=perf_counter()
             try:
@@ -69,17 +72,19 @@ def main():
                     totals['correct_suggestions']+=codes.get(str(result.suggested_product_id)) in case.expected_product_codes
             except Exception:
                 totals['errors']+=1
-            totals['latency_ms']+=round((perf_counter()-start)*1000)
+            elapsed=round((perf_counter()-start)*1000)
+            totals['latency_ms']+=elapsed
+            case_results.append(dict(case_id=case.case_id,latency_ms=elapsed,provider_error=totals['errors']>before['errors'],hit_at_1=totals['hit1']>before['hit1'],hit_at_3=totals['hit3']>before['hit3'],correct_abstention=totals['correct_abstentions']>before['correct_abstentions'],semantic_evidence=totals['semantic_evidence_cases']>before['semantic_evidence_cases']))
             print(f'{mode}: {index}/{len(selected)} completed',file=sys.stderr,flush=True)
         totals['hit_at_1']=totals['hit1']/totals['positive_cases'] if totals['positive_cases'] else None
         totals['hit_at_3']=totals['hit3']/totals['positive_cases'] if totals['positive_cases'] else None
         totals['suggestion_precision']=totals['correct_suggestions']/totals['suggested'] if totals['suggested'] else None
         totals['mean_latency_ms']=round(totals['latency_ms']/totals['cases'])
-        report[mode]=totals
+        report[mode]={**totals,'case_results':case_results}
     trace=AnalysisTrace('correction-evaluation-v1',get_settings().llm_model,root_name='correction_evaluation');trace.finish()
     trace.payload[0]['extra']['metadata']['metrics']={f'{mode}_{key}':value for mode,metrics in report.items() for key,value in metrics.items() if type(value) in (int,float)}
     trace.send()
-    print(json.dumps(dict(live=True,quality_measured=True,seeded_by_this_script=False,
+    print(json.dumps(dict(live=True,quality_measured=True,seeded_by_this_script=False,dataset_sha256=hashlib.sha256(args.cases.read_bytes()).hexdigest(),model=get_settings().llm_model,embedding_model=get_settings().embedding_model,prompt_version=PROMPT_VERSION,
         note='Small synthetic benchmark. Both modes retain exact SQL memory. Zero semantic evidence cases means the correction route was not exercised; do not claim a RAG improvement.',results=report),indent=2))
 
 if __name__=='__main__':main()

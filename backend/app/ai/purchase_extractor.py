@@ -1,3 +1,4 @@
+from app.core.performance import record
 from datetime import datetime, timezone
 from functools import lru_cache
 from time import perf_counter
@@ -347,6 +348,7 @@ def extract_text(reviewed_text):
         ) from None
 
     finally:
+        record("ai_stage", (perf_counter() - clock) * 1000)
         traced = write_trace(
             run_id,
             start,

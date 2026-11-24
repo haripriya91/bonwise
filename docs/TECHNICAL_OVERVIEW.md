@@ -45,9 +45,9 @@ Model identifiers and credentials are configurable. No service credentials are i
 
 ## Verification
 
-The latest refinement passed 218 backend tests and the frontend production build. Ten component interaction checks covered the updated analysis and purchase-history flows. Model responses were simulated; these checks do not measure live extraction quality or certify hosted security. See [release checks](RELEASE_CHECKS.md) for service and deployment verification.
+The reviewed snapshot passes 254 backend tests and the frontend production build. Model responses in regression tests are simulated. See [AI evaluation](EVALUATION.md) for real-provider component checks and LangSmith feedback, and [performance](PERFORMANCE_RESULTS.md) for query-count results and deployment measurements. Neither live AI accuracy nor a hosted speedup is claimed yet.
 
-The final budget-card adjustment changes CSS only. Run the backend suite from `backend` with `python -m unittest discover -s tests -v`, and the frontend build from `frontend` with `npm run build`.
+The review used Python 3.12; the application declares Python 3.14. Repeat tests using the installed project dependencies before deployment.
 
 ## Security and privacy
 
@@ -92,4 +92,23 @@ See the [privacy runbook](privacy/00_RUNBOOK.md) for project-specific checks.
 | `data` | Reference catalogues and evaluation inputs |
 | `docs/openapi.json` | Exported API schema; use `npm run generate:api` from `frontend` to regenerate TypeScript API types |
 
-[Demo walkthrough and presentation notes](DEMO_AND_PRESENTATION.md)
+
+## Feature-to-file map
+
+| Feature | Frontend entry | Backend work |
+| --- | --- | --- |
+| Receipt/voice/text capture | `purchase/CaptureFlow.tsx` and the capture/review components | `api/image_capture.py`, `voice_capture.py`, `extraction.py`; extraction/transcription in `ai/`; confirmed records in `services/purchases.py` |
+| Home and offer comparison | `App.tsx` | `services/shopping_overview.py` and `offers.py`; membership, timezone, catalogue/history and dated offers are read in code |
+| Ask Bonwise | `analysis/AskBonwise.tsx` | `ai/analysis_assistant.py` routes intent; `analysis_logic.py` calculates answers; supporting services fetch scoped facts |
+| Purchase insights | `analysis/SpendingInsights.tsx` | `services/insights.py` builds facts; `ai/spending_insights.py` selects allowed suggestions |
+| Weekly planner | `planner/ShoppingPlanner.tsx` | `services/planner.py`, `planner_context.py`, `workflows/weekly_planner.py` and durable checkpoints |
+| Household and budgets | `household/` | `api/household_setup.py`, `services/household_settings.py` and `budgets.py` |
+| Request profiling | No custom browser recorder | `core/performance.py` adds content-free `Server-Timing`; use Chrome Performance/Network for rendering and request timing |
+
+The public offer endpoints do not call a language model. Product RAG is used while interpreting/reviewing purchase items; confirmed product links then let the offer service compare compatible published prices.
+
+## Scripts versus application code
+
+The web server does not execute `scripts/` on startup. Setup checks verify configured services; import/index tools maintain reference data; `evaluate_*` tools measure AI components. The purchase workflow/privacy smoke scripts may create test records and should only be used with the intended test household. Database migrations belong in `backend/alembic/versions`, not in one-off migration-generator scripts.
+
+The repository keeps three AI evaluation inputs: correction-RAG labels and planner edits in `data/evaluations`, plus the two synthetic receipt/voice cases defined in the unified evaluation runner. Actual voice recordings remain private. Build logs and styling snapshots do not belong in the AI evaluation results.

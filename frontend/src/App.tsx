@@ -149,7 +149,7 @@ function SignIn({onSignedIn,initialError,onClose}:{onSignedIn:()=>void;initialEr
     onCancel={event=>{event.preventDefault();onClose();}}
     onClick={event=>{if(event.target!==event.currentTarget)return;const box=event.currentTarget.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)onClose();}}>
     <button type="button" className="login-close" aria-label="Close login popup" onClick={onClose}>×</button>
-    <div className="login-brand"><span className="login-mark" aria-hidden="true">b</span>bonwise.</div>
+    <div className="login-brand"><span className="login-mark" aria-hidden="true">b</span>bonwise</div>
     <h2 id="signin-title">Welcome back.</h2><p className="login-description" id="signin-description">A clearer picture of your household starts here.</p>
     <form onSubmit={submit}>
       <label htmlFor="login-email">Email address</label><input id="login-email" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={event=>setEmail(event.target.value)} required disabled={!hasSupabaseConfig||busy}/>
@@ -265,13 +265,23 @@ function useOfferOptions(session: Session, household: HouseholdOption) {
 
 function useShoppingOverview(session: Session, household: HouseholdOption) {
   return useQuery({
-    queryKey: ["user", session.user.id, "household", household.id, "shopping-overview"],
+    queryKey: ["user", session.user.id, "household", household.id, "shopping-overview", "ledger-only"],
     queryFn: ({ signal }) =>
       apiRequest<components["schemas"]["ShoppingOverview"]>(
-        `/households/${encodeURIComponent(household.id)}/shopping-overview`,
+        `/households/${encodeURIComponent(household.id)}/shopping-overview?include_offers=false`,
         session.access_token,
         { signal },
       ),
+  });
+}
+
+function useHomeOfferRecommendations(session: Session, household: HouseholdOption) {
+  return useQuery({
+    queryKey: ["user", session.user.id, "household", household.id, "home-offer-recommendations"],
+    queryFn: ({ signal }) => apiRequest<components["schemas"]["Recommendations"]>(
+      `/households/${encodeURIComponent(household.id)}/offers/recommendations`,
+      session.access_token, { signal },
+    ),
   });
 }
 
@@ -868,7 +878,8 @@ function Home({
 }) {
   const overviewQuery = useShoppingOverview(session, household);
   const overview = overviewQuery.data;
-  const offerRecommendations = overview?.offers?.recommendations ?? [];
+  const offersQuery = useHomeOfferRecommendations(session, household);
+  const offerRecommendations = offersQuery.data?.recommendations ?? [];
 
   return (
     <section className="home-section" aria-labelledby="capture-title">
@@ -941,8 +952,8 @@ function Home({
       )}
 
       <div className="home-next-steps">
-      {overviewQuery.isPending && <section className="home-offers-panel" aria-labelledby="home-offers-title"><div className="recent-heading"><h2 id="home-offers-title">Offers for your usual buys</h2><button className="text-link" onClick={onGoToOffers}>Browse offers</button></div><PageLoading label="Loading offers"/></section>}
-      {overview && overview.offers_status === "ready" && (
+      {offersQuery.isPending && <section className="home-offers-panel" aria-labelledby="home-offers-title"><div className="recent-heading"><h2 id="home-offers-title">Offers for your usual buys</h2><button className="text-link" onClick={onGoToOffers}>Browse offers</button></div><PageLoading label="Loading offers"/></section>}
+      {offersQuery.data && (
         <section className="home-offers-panel" aria-labelledby="home-offers-title">
           <div className="recent-heading">
             <h2 id="home-offers-title">Offers for your usual buys</h2>
@@ -973,14 +984,14 @@ function Home({
         </section>
       )}
 
-      {overview && overview.offers_status === "unavailable" && (
+      {offersQuery.error && (
         <section className="home-offers-panel" aria-labelledby="home-offers-title">
           <div className="recent-heading">
             <h2 id="home-offers-title">Offers for your usual buys</h2>
           </div>
           <p className="empty-offer-message">Offers are temporarily unavailable. Please try again in a moment.</p>
-          <button className="button button-outline" type="button" onClick={() => void overviewQuery.refetch()} disabled={overviewQuery.isFetching}>
-            {overviewQuery.isFetching ? "Trying again…" : "Retry"}
+          <button className="button button-outline" type="button" onClick={() => void offersQuery.refetch()} disabled={offersQuery.isFetching}>
+            {offersQuery.isFetching ? "Trying again…" : "Retry"}
           </button>
         </section>
       )}
@@ -1160,7 +1171,7 @@ function App({ queryClient }: { queryClient: QueryClient }) {
       <aside className="sidebar">
         <a className="wordmark" href="#home" onClick={(event) => { event.preventDefault(); setPage("home"); }}>
           <span className="brand-mark brand-monogram" aria-hidden="true">b</span>
-          <span>bonwise.</span>
+          <span>bonwise</span>
         </a>
         <nav className="side-navigation" aria-label="Main navigation">
           <button className={page === "home" ? "nav-link active" : "nav-link"} onClick={() => navigateToPage("home")}><NavigationIcon name="home" /><span>Home</span></button>

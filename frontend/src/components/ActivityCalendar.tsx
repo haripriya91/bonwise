@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Session } from "@supabase/supabase-js";
 import { apiRequest, getErrorText } from "../api/client";
+import { PageLoading } from "./PageLoading";
 import "./ActivityCalendar.css";
 
 type CalendarEvent = { id: string; date: string; kind: "purchase" | "commitment" | "plan"; title: string; amount_cents: number | null; status: string | null };
@@ -44,15 +45,15 @@ export function ActivityCalendar({session, householdId, onAddPurchase, onOpenPla
     <div className="calendar-navigation"><button type="button" className="button button-outline" aria-label={`Previous ${mode}`} onClick={()=>navigate(-1)}>‹</button>
       <strong aria-live="polite">{mode==="month" ? date.toLocaleDateString("en-GB",{month:"long",year:"numeric"}) : `${start.toLocaleDateString("en-GB",{day:"numeric",month:"short"})} – ${end.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"})}`}</strong>
       <button type="button" className="button button-outline" aria-label={`Next ${mode}`} onClick={()=>navigate(1)}>›</button><button type="button" className="text-link" onClick={()=>setSelected(key(new Date()))}>Today</button></div>
-    {query.isPending && <p role="status">Loading calendar…</p>}
+    {query.isPending && <PageLoading label="Loading purchases and scheduled entries"/>}
     {query.error && <p className="field-error" role="alert">{getErrorText(query.error)} <button type="button" className="text-link" onClick={()=>void query.refetch()}>Try again</button></p>}
     {query.data?.truncated && <p role="status">Some entries are not shown because this period has more than 500 records of one type.</p>}
-    <div className={`calendar-days ${mode}`} aria-label="Choose a day">{Array.from({length:count},(_,index) => {
+    <div className={`calendar-days ${mode}`} aria-label="Choose a day" aria-busy={query.isFetching}>{Array.from({length:count},(_,index) => {
       const day = move(start,index), dayKey = key(day), entries = byDay.get(dayKey) ?? [];
       const purchases = entries.filter(event => event.kind === "purchase");
       const recorded = purchases.reduce((sum,event) => sum + (event.amount_cents ?? 0),0);
       const otherEntries = entries.filter(event => event.kind !== "purchase");
-      return <button type="button" key={dayKey} className={`calendar-day${purchases.length?" has-purchases":""}${selected===dayKey?" selected":""}${day.getMonth()!==date.getMonth()?" outside-month":""}`} aria-pressed={selected===dayKey} aria-current={dayKey===key(new Date())?"date":undefined} aria-label={`${day.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}, ${entries.length} entries${purchases.length?`, ${purchases.length} confirmed ${purchases.length===1?"purchase":"purchases"}, ${money(recorded)} recorded`:""}`} onClick={()=>setSelected(dayKey)}>
+      return <button type="button" key={dayKey} className={`calendar-day${purchases.length?" has-purchases":""}${selected===dayKey?" selected":""}${day.getMonth()!==date.getMonth()?" outside-month":""}`} aria-pressed={selected===dayKey} aria-current={dayKey===key(new Date())?"date":undefined} aria-label={`${day.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}${query.isPending || query.error ? ", entries not loaded" : `, ${entries.length} entries`}${purchases.length?`, ${purchases.length} confirmed ${purchases.length===1?"purchase":"purchases"}, ${money(recorded)} recorded`:""}`} onClick={()=>setSelected(dayKey)}>
         <span className="calendar-weekday">{day.toLocaleDateString("en-GB",{weekday:"short"})}{dayKey===key(new Date())?" · Today":""}</span><strong>{day.getDate()}</strong>
         {purchases.length > 0 && <span className="calendar-purchase-badge"><span className="calendar-purchase-label">✓ {purchases.length} {purchases.length===1?"purchase":"purchases"}</span><span className="calendar-purchase-compact" aria-hidden="true">✓ {purchases.length}</span><strong className="calendar-purchase-total">{money(recorded)}</strong></span>}
         <span className="calendar-day-events">{otherEntries.slice(0,2).map(event=><span key={`${event.kind}:${event.id}`}>{event.kind==="plan"?"Shopping plan":event.title}</span>)}{otherEntries.length>2&&<span>+{otherEntries.length-2} more</span>}</span>

@@ -2506,7 +2506,7 @@ export interface components {
              * Offers Status
              * @enum {string}
              */
-            offers_status: "ready" | "unavailable";
+            offers_status: "ready" | "unavailable" | "not_requested";
         };
         /** SpendingCategoryTotal */
         SpendingCategoryTotal: {
@@ -3638,7 +3638,9 @@ export interface operations {
     };
     home_overview_households__household_id__shopping_overview_get: {
         parameters: {
-            query?: never;
+            query?: {
+                include_offers?: boolean;
+            };
             header?: never;
             path: {
                 household_id: string;

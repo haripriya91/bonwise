@@ -10,9 +10,8 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.ai.catalogue import ACTIVE_CATALOGUES
-from app.db.models import Household, Product, Purchase, PurchaseDraft, PurchaseItem
+from app.db.models import Household, HouseholdMember, Product, Purchase, PurchaseDraft, PurchaseItem
 from app.schemas.commerce import CompareInput
-from app.services.purchases import require_member
 from app.services import offer_data as data
 
 
@@ -25,16 +24,34 @@ def week(today):
 
 def clock(db, household_id):
     zone = db.scalar(select(Household.timezone).where(Household.id == household_id))
+    return local_today(zone)
+
+
+def local_today(zone):
     try:
         return datetime.now(ZoneInfo(zone or "Europe/Berlin")).date()
     except (ZoneInfoNotFoundError, ValueError, TypeError):
         raise HTTPException(500, "Household timezone is unavailable.") from None
 
 
-def products(db):
+def authorized_today(db, household_id, user_id):
+    """Authorize and read the household timezone in one round trip."""
+    row = db.execute(
+        select(Household.timezone)
+        .join(HouseholdMember, HouseholdMember.household_id == Household.id)
+        .where(Household.id == household_id, HouseholdMember.user_id == user_id)
+    ).one_or_none()
+    if row is None:
+        raise HTTPException(404, "Household not found or not accessible.")
+    return local_today(row[0])
+
+
+def products(db, product_ids=None):
+    query = select(Product).where(Product.attributes["catalogue"].astext.in_(ACTIVE_CATALOGUES))
+    if product_ids is not None:
+        query = query.where(Product.id.in_(product_ids))
     return db.scalars(
-        select(Product)
-        .where(Product.attributes["catalogue"].astext.in_(ACTIVE_CATALOGUES))
+        query
         .order_by(Product.canonical_name)
         .limit(1001)
     ).all()
@@ -70,40 +87,64 @@ def history(db, household_id, today):
     }
 
 
+def offer_rows(db, today, product_ids=None):
+    context = week(today)
+    query = (
+        select(data.offers, data.links.c.product_id)
+        .join(data.links, (data.links.c.batch_id == data.offers.c.batch_id)
+              & (data.links.c.offer_id == data.offers.c.offer_id))
+        .where(
+            data.offers.c.valid_from <= context["week_end"],
+            data.offers.c.valid_until >= today,
+            data.offers.c.store_scope == "national",
+            data.offers.c.country_code == "DE",
+            data.offers.c.national_scope_basis.in_(
+                ("synthetic_national_fixture_v1", "reviewed_source_national")
+            ),
+        )
+    )
+    if product_ids is not None:
+        query = query.where(data.links.c.product_id.in_(product_ids))
+    try:
+        rows = db.execute(query.limit(10001)).mappings().all()
+    except SQLAlchemyError:
+        raise HTTPException(503, "Demo offers are not loaded or accessible yet.") from None
+    if len(rows) > 10000:
+        raise HTTPException(503, "Demo data exceeds the current comparison limit.")
+    return rows
+
+
 def load(db, household_id, today):
+    """Compatibility entry point for the planner; national offers need no store lookup."""
+    rows = offer_rows(db, today)
+    catalogue = products(db)
+    if len(catalogue) > 1000:
+        raise HTTPException(503, "Demo data exceeds the current comparison limit.")
+    return catalogue, [], rows, history(db, household_id, today)
+
+
+def offer_counts(db, today):
+    """The picker needs counts, not every offer's description and price fields."""
     context = week(today)
     try:
-        stores = db.execute(select(data.stores)).mappings().all()
-        rows = (
-            db.execute(
-                select(data.offers, data.links.c.product_id)
-                .join(
-                    data.links,
-                    (data.links.c.batch_id == data.offers.c.batch_id)
-                    & (data.links.c.offer_id == data.offers.c.offer_id),
-                )
-                .where(
-                    data.offers.c.valid_from <= context["week_end"],
-                    data.offers.c.valid_until >= today,
-                    data.offers.c.store_scope == "national",
-                    data.offers.c.country_code == "DE",
-                    data.offers.c.national_scope_basis.in_(
-                        ("synthetic_national_fixture_v1", "reviewed_source_national")
-                    ),
-                )
-                .limit(10001)
+        return dict(db.execute(
+            select(data.links.c.product_id, func.count())
+            .select_from(data.offers)
+            .join(data.links, (data.links.c.batch_id == data.offers.c.batch_id)
+                  & (data.links.c.offer_id == data.offers.c.offer_id))
+            .where(
+                data.offers.c.valid_from <= context["week_end"],
+                data.offers.c.valid_until >= today,
+                data.offers.c.store_scope == "national",
+                data.offers.c.country_code == "DE",
+                data.offers.c.national_scope_basis.in_(
+                    ("synthetic_national_fixture_v1", "reviewed_source_national")
+                ),
             )
-            .mappings()
-            .all()
-        )
+            .group_by(data.links.c.product_id)
+        ).all())
     except SQLAlchemyError:
-        raise HTTPException(
-            503, "Demo offers are not loaded or accessible yet."
-        ) from None
-    catalogue = products(db)
-    if len(catalogue) > 1000 or len(rows) > 10000:
-        raise HTTPException(503, "Demo data exceeds the current comparison limit.")
-    return catalogue, stores, rows, history(db, household_id, today)
+        raise HTTPException(503, "Demo offers are not loaded or accessible yet.") from None
 
 
 def compatible_alternative(target, candidate):
@@ -250,8 +291,8 @@ def evaluate(target, catalogue, rows, body, store_map, today):
     )
 
 
-def product_options(catalogue, rows, past):
-    counts = {}
+def product_options(catalogue, rows, past, *, counts=None):
+    counts = {} if counts is None else dict(counts)
     for row in rows:
         if (
             row["store_scope"] == "national"
@@ -296,10 +337,12 @@ def product_options(catalogue, rows, past):
 
 def options(db, household_id, user_id):
     with db.begin():
-        require_member(db, household_id, user_id)
-        today = clock(db, household_id)
-        catalogue, stores, rows, past = load(db, household_id, today)
-        opts = product_options(catalogue, rows, past)
+        today = authorized_today(db, household_id, user_id)
+        catalogue = products(db)
+        if len(catalogue) > 1000:
+            raise HTTPException(503, "Demo data exceeds the current comparison limit.")
+        past = history(db, household_id, today)
+        opts = product_options(catalogue, [], past, counts=offer_counts(db, today))
         return dict(
             **week(today),
             products=opts,
@@ -314,8 +357,11 @@ def options(db, household_id, user_id):
 
 
 def recommendations_locked(db, household_id, today, limit=6):
-    catalogue, stores, rows, past = load(db, household_id, today)
-    opts = product_options(catalogue, rows, past)
+    past = history(db, household_id, today)
+    catalogue = products(db, product_ids=list(past)) if past else []
+    if len(catalogue) > 1000:
+        raise HTTPException(503, "Demo data exceeds the current comparison limit.")
+    opts = product_options(catalogue, [], past)
     by_id = {p.id: p for p in catalogue}
     # Frequent purchases first; lack of an offer is a real result, not a fabricated suggestion.
     suggestions = [p for p in opts if p["purchase_count"] > 0][:limit]
@@ -327,11 +373,16 @@ def recommendations_locked(db, household_id, today, limit=6):
         if suggestions
         else None
     )
-    lookup = {r["store_id"]: r["chain"] for r in stores}
+    rows = offer_rows(db, today, [p["id"] for p in suggestions]) if suggestions else []
+    counts = {}
+    for row in rows:
+        counts[row["product_id"]] = counts.get(row["product_id"], 0) + 1
+    for entry in suggestions:
+        entry["current_offer_count"] = counts.get(entry["id"], 0)
     result = []
     for entry in suggestions:
         comparison = (
-            evaluate(by_id[entry["id"]], catalogue, rows, body, lookup, today)
+            evaluate(by_id[entry["id"]], catalogue, rows, body, {}, today)
             if body
             else dict(
                 product_id=entry["id"],
@@ -355,24 +406,28 @@ def recommendations_locked(db, household_id, today, limit=6):
 
 def recommendations(db, household_id, user_id):
     with db.begin():
-        require_member(db, household_id, user_id)
-        return recommendations_locked(db, household_id, clock(db, household_id))
+        today = authorized_today(db, household_id, user_id)
+        return recommendations_locked(db, household_id, today, limit=3)
 
 
 def compare(db, household_id, user_id, body):
     with db.begin():
-        require_member(db, household_id, user_id)
-        today = clock(db, household_id)
-        catalogue, stores, rows, past = load(db, household_id, today)
-        lookup = {r["store_id"]: r["chain"] for r in stores}
+        today = authorized_today(db, household_id, user_id)
+        catalogue = products(db, product_ids=None if body.include_alternatives else body.product_ids)
+        if len(catalogue) > 1000:
+            raise HTTPException(503, "Demo data exceeds the current comparison limit.")
         by_id = {p.id: p for p in catalogue}
         if not set(body.product_ids) <= set(by_id):
             raise HTTPException(
                 422, "A selected product is unavailable. Reload options."
             )
+        targets = [by_id[pid] for pid in dict.fromkeys(body.product_ids)]
+        eligible = [p.id for p in catalogue if p.id in body.product_ids or
+                    (body.include_alternatives and any(compatible_alternative(t, p) for t in targets))]
+        rows = offer_rows(db, today, eligible)
         try:
             results = [
-                evaluate(by_id[pid], catalogue, rows, body, lookup, today)
+                evaluate(by_id[pid], catalogue, rows, body, {}, today)
                 for pid in dict.fromkeys(body.product_ids)
             ]
         except (ValueError, TypeError, ArithmeticError, KeyError):

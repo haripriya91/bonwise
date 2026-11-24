@@ -1,3 +1,4 @@
+from app.core.performance import record
 import base64
 import binascii
 import hashlib
@@ -220,6 +221,7 @@ def extract_image(encoded):
         ) from None
 
     finally:
+        record("ai_stage", (perf_counter() - clock) * 1000)
         latency_ms = round(
             (perf_counter() - clock) * 1000
         )

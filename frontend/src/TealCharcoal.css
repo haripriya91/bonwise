@@ -1,12 +1,12 @@
 /* Bonwise: teal & charcoal. Import AFTER theme.css. Remove this import to restore the previous palette. */
 :root{
  --purple:var(--color-accent);--ink:var(--color-ink);--paper:var(--color-paper);--line:var(--color-line);--muted:var(--color-muted);
- --color-paper:#88BDBC;--color-surface:#F1F8F6;--color-sidebar:#B5D9D7;
+ --color-paper:#D6E8E5;--color-surface:#F6FAF9;--color-sidebar:#B5D9D7;
  --color-line:#254E58;--color-ink:#112D32;--color-muted:#284549;
  --color-accent:#254E58;--color-accent-hover:#112D32;
  --color-lime:#D0E7E4;--color-lavender:#F1F8F6;
  --color-warn-bg:#fff2d5;--color-warn-ink:#6b480e;--color-danger:#a3362b;
- --font-heading:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--font-body:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ --font-heading:"DM Sans",ui-sans-serif,system-ui,sans-serif;--font-body:"DM Sans",ui-sans-serif,system-ui,sans-serif;--font-display:"Fraunces",Georgia,serif;
 }
 /* Important content stays charcoal; teal indicates an action or selection. */
 h1,h2,h3,h4,.analysis-stat strong,.home-budget-amount,.household-financial-summary strong{color:var(--color-ink)}
@@ -22,10 +22,10 @@ h1,h2,h3,h4,.analysis-stat strong,.home-budget-amount,.household-financial-summa
 .planner-item-estimate,.planner-product-picker li>button,.planner-offer-options{background:#F1F8F6}
 .planner-status-approved,.planner-status-settled{background:#D0E7E4;color:#112D32}
 .planner-review{border-color:#254E58}.planner-settings input,.shopping-planner input:not([type=checkbox]),.shopping-planner select,.shopping-planner textarea{border-color:#254E58}
-.page-loading{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:24px 0;color:var(--color-muted);font-size:13px;min-height:60px;max-width:680px}
-.page-loading-spinner{width:21px;height:21px;border:2px solid var(--color-line);border-top-color:var(--color-accent);border-radius:50%;animation:page-spin .8s linear infinite}
-@keyframes page-spin{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){.page-loading-spinner{animation:none}.welcome-page{scroll-behavior:auto}}
+.page-loading{padding:16px 0;min-height:44px;max-width:680px}
+.page-loading>.ai-working{margin:0}
+@media(prefers-reduced-motion:reduce){.welcome-page{scroll-behavior:auto}}
+
 
 /* Legacy component colour harmonisation. Error and warning colours remain distinct. */
 :root :is(.sidebar-account){border-top: 1px solid #d4d7d7}
@@ -152,8 +152,8 @@ h1,h2,h3,h4,.analysis-stat strong,.home-budget-amount,.household-financial-summa
 :root :is(.analysis-stat.available,.planner-money>.planner-available){background:#D0E7E4;color:#112D32}
 
 /* Reference finishing: charcoal rules, legible amounts, consistent real application surfaces. */
-:root{--line:#254E58;--paper:#88BDBC;--ink:#112D32;--purple:#254E58;--muted:#284549}
-:root :is(.app-shell,.workspace,.main-content){background:#88BDBC}
+:root{--line:#254E58;--paper:#D6E8E5;--ink:#112D32;--purple:#254E58;--muted:#284549}
+:root :is(.app-shell,.workspace,.main-content){background:#D6E8E5}
 :root :is(.sidebar){background:#B5D9D7;border-color:#254E58}
 :root :is(.app-header){background:#F1F8F6;border-color:#254E58}
 :root :is(.purchase-card,.purchase-table,.planner-card,.budget-card,.analysis-stat,.analysis-overview-panel,.analysis-ask,.household-section,.household-settings,.auth-panel){background:#F1F8F6;border-color:#254E58}
