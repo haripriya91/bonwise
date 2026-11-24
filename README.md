@@ -48,7 +48,9 @@ See [setup and Vercel deployment](docs/SETUP.md) for environment variables, acco
 
 ## Verification and demo scope
 
-The latest refinement passed **218 backend tests**, the **frontend production build** and **10 component interaction checks**. Model-dependent tests use simulated responses. Live service behavior and hosted permissions need checks against the configured deployment; automated counts are not accuracy or security guarantees.
+The reviewed snapshot (23 November 2026) passes **254 backend tests** and the **frontend production build**. The tests use simulated model responses and isolated databases. They verify implementation, not live AI accuracy or production security. The local review used Python 3.12 while the app declares 3.14; repeat the checks in your configured environment.
+
+Offer-query fixtures verify 6 → 4 reads for picker/Home offers and 6 → 3 for comparison, with equivalent fixture results. Hosted after-patch latency and real-provider quality scores are not yet measured. See [performance](docs/PERFORMANCE_RESULTS.md) and [AI evaluation](docs/EVALUATION.md).
 
 The demo uses two configured household accounts. Sample offers were used because the deadline did not allow enough time to connect a live price source and verify its permissions, accuracy and update frequency. They are clearly labelled and do not represent live quotes or guaranteed savings.
 
@@ -62,5 +64,29 @@ Saved receipts are a partial spending record. High spending alone does not mean 
 | [Technical overview](docs/TECHNICAL_OVERVIEW.md) | Architecture, security, evaluation, limitations and future work |
 | [AI purchase insights](docs/AI_INSIGHTS.md) | Evidence rules, useful actions, privacy and stale-result handling |
 | [Privacy runbook](docs/privacy/00_RUNBOOK.md) | Access and data-exposure checks |
+| [Performance](docs/PERFORMANCE_RESULTS.md) | Query changes, API/browser measurement and remaining evidence |
+| [AI evaluation](docs/EVALUATION.md) | Six AI components, reference inputs and LangSmith score feedback |
 
 API schema: [`docs/openapi.json`](docs/openapi.json). Backend code lives in `backend/app`, interface code in `frontend/src`, and import/indexing/evaluation tools in `scripts`.
+
+## Finding your way around the code
+
+| Path | Responsibility |
+| --- | --- |
+| `frontend/src/App.tsx` | Navigation, Home, purchase history and offer screens; coordinates API reads |
+| `frontend/src/analysis`, `purchase`, `planner`, `household` | Feature-specific React components |
+| `frontend/src/components` | Shared UI; `PageLoading` reuses `AIWorking` for three-dot loading feedback |
+| `backend/app/api` | HTTP endpoints: validate inputs and require an authenticated user |
+| `backend/app/services` | Database queries, financial calculations and approval rules |
+| `backend/app/ai` | Model calls, product RAG and content-free LangSmith traces |
+| `backend/app/workflows` | LangGraph planner transitions and checkpoints |
+| `backend/app/db`, `schemas` | Stored data models/connections and request/response contracts |
+| `backend/tests` | Automated regression tests; not run by the deployed app |
+| `scripts`, `data/evaluations` | Manually run setup/import/evaluation tools and labelled inputs |
+| `docs`, `evaluation-results` | Explanations and reviewed measurements; not runtime code |
+
+Long-term maintenance work includes separating the large `App.tsx` into screen files and consolidating the legacy CSS layers. This review keeps those boundaries stable while fixing the measured query overhead.
+
+## Photo credits
+
+Landing photos by Polina Tankilevitch and Kevin Malik are used under the [Pexels licence](https://www.pexels.com/license/). Sources and attribution are in [image credits](docs/IMAGE_CREDITS.md). They are stock photographs and do not imply endorsement.
