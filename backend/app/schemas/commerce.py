@@ -173,4 +173,4 @@ class ShoppingOverview(BaseModel):
     purchase_count: int
     budget: BudgetOut | None = None
     offers: Recommendations | None = None
-    offers_status: Literal["ready", "unavailable"]
+    offers_status: Literal["ready", "unavailable", "not_requested"]

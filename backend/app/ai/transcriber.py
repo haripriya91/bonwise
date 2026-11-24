@@ -1,3 +1,4 @@
+from app.core.performance import record
 import base64
 import binascii
 from datetime import datetime, timezone
@@ -148,6 +149,7 @@ def transcribe(body):
         ) from None
 
     finally:
+        record("ai_stage", (perf_counter() - clock) * 1000)
         latency_ms = round(
             (perf_counter() - clock) * 1000
         )

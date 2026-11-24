@@ -54,11 +54,12 @@ def recommended_offers(
 def home_overview(
     household_id: UUID,
     response: Response,
+    include_offers: bool = True,
     user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     no_store(response)
-    return shopping_overview.overview(db, household_id, user.id)
+    return shopping_overview.overview(db, household_id, user.id, include_offers=include_offers)
 
 
 @router.post("/offers/compare", response_model=CompareOut)

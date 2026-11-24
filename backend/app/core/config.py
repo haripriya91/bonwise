@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     database_url: SecretStr = Field(min_length=1)
     migration_database_url: SecretStr = Field(min_length=1)
 
+    # Opt-in bounded connection reuse per API process; 0 preserves NullPool.
+    database_pool_size: int = Field(default=0, ge=0, le=5)
+
     # Supabase Auth and Storage
     supabase_url: HttpUrl
     supabase_secret_key: SecretStr = Field(min_length=1)

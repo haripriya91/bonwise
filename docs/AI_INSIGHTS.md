@@ -41,6 +41,4 @@ Saved receipts remain a partial spending record. Missing records are not proof o
 
 ## Validation
 
-On the current combined source: 218 backend tests and the frontend production build passed. Fifteen new backend regressions cover actionable conditions, comparable prices, missing targets, no-pattern/model-call behavior, valid subsets and required budget constraints. Ten component checks cover section placement, compact chat markup, explicit generation, planner actions, five-record history loading and removal of Home's duplicate list/request.
-
-Model responses are simulated in automated tests. DOM checks do not certify desktop/mobile visual layout; live model and visual smoke testing remain separate.
+The automated suite covers actionable conditions, comparable prices, missing targets, empty periods, fallback, valid selections and stale-result handling. These use simulated model responses. Real-provider selection evaluation and its limits are described in [AI evaluation](EVALUATION.md). Automated correctness does not establish that people find a suggestion useful.

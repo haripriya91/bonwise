@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from sqlalchemy.exc import OperationalError, TimeoutError as PoolTimeout
+from app.core.performance import PerformanceMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.account import router as account_router
 from app.api.purchases import router as purchases_router
@@ -6,7 +8,7 @@ from app.api.purchases import router as purchases_router
 from fastapi.exceptions import RequestValidationError
 
 from app.api.extraction import router as extraction_router
-from app.core.errors import safe_validation_error
+from app.core.errors import safe_validation_error, database_unavailable
 
 from app.api.image_capture import router as image_capture_router
 from app.api.voice_capture import router as voice_capture_router
@@ -35,12 +37,19 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_origin],
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    expose_headers=["Server-Timing"],
     allow_headers=[
         "Authorization",
         "Content-Type",
         "Idempotency-Key",
     ],
 )
+app.add_middleware(PerformanceMiddleware)
+
+
+app.add_exception_handler(OperationalError, database_unavailable)
+app.add_exception_handler(PoolTimeout, database_unavailable)
+
 app.include_router(account_router)
 app.include_router(purchases_router)
 app.include_router(image_capture_router)

@@ -9,7 +9,7 @@ from app.db.models import Purchase, PurchaseDraft
 from app.services import budgets, offers
 
 
-def overview(db, household_id, user_id):
+def overview(db, household_id, user_id, *, include_offers=True):
     with db.begin():
         budgets.read_household(db, household_id, user_id)
         today = offers.clock(db, household_id)
@@ -53,13 +53,14 @@ def overview(db, household_id, user_id):
                 )
             ).one()
         suggested = None
-        status = "ready"
+        status = "ready" if include_offers else "not_requested"
         try:
             # A missing optional offers schema must not abort the ledger transaction.
-            with db.begin_nested():
-                suggested = offers.recommendations_locked(
-                    db, household_id, today, limit=3
-                )
+            if include_offers:
+                with db.begin_nested():
+                    suggested = offers.recommendations_locked(
+                        db, household_id, today, limit=3
+                    )
         except HTTPException as exc:
             if exc.status_code != 503:
                 raise

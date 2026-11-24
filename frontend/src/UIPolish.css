@@ -1,11 +1,11 @@
 /* Final presentation layer. Import after TealCharcoal.css. No data or financial rules. */
-:root .app-shell{font-size:14px;line-height:1.55}
-:root .app-shell .main-content h1{font-size:28px;line-height:1.2;letter-spacing:-.7px;margin:0 0 10px;font-weight:700}
+:root .app-shell{font-family:var(--font-body);font-size:15px;line-height:1.6}
+:root .app-shell .main-content h1{font-family:var(--font-display);font-size:30px;line-height:1.2;letter-spacing:-.6px;margin:0 0 10px;font-weight:600}
 :root .app-shell .main-content h2{font-size:19px;line-height:1.35;letter-spacing:-.25px}
 :root .app-shell .main-content h3{font-size:16px;line-height:1.4}
 :root .app-shell .main-content :is(input,select,textarea){font-size:14px}
 /* Same b-mark and wordmark as Welcome, with contrast adapted to the dark rail. */
-:root .app-shell .sidebar .wordmark{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:26px;font-weight:730;letter-spacing:-1px;gap:10px}
+:root .app-shell .sidebar .wordmark{font-family:var(--font-body);font-size:26px;font-weight:700;letter-spacing:-1px;gap:10px}
 :root .app-shell .sidebar .brand-monogram{display:grid;place-items:center;width:34px;height:37px;flex:0 0 34px;border-radius:10px 10px 10px 3px;transform:none;background:#254E58;color:#F1F8F6;font:600 25px Georgia,serif;letter-spacing:-3px;padding-right:3px}
 :root .app-shell .sidebar-footer-links{display:grid;gap:2px;margin-top:4px}
 :root .app-shell .sidebar-footer-links .privacy-link{justify-self:start;padding:5px 0;min-height:34px;font-size:13px;text-align:left}
@@ -211,3 +211,6 @@
 :root .app-shell .home-top-row .budget-stat-box+.budget-stat-box{padding:16px 18px;border:1px solid rgba(241,248,246,.45);border-radius:12px;background:rgba(241,248,246,.66);box-shadow:none}
 :root .app-shell .home-top-row .budget-stat-box.available{margin-left:0;background:#D0E7E4;border:1px solid rgba(241,248,246,.5);border-radius:12px}
 @media(max-width:480px){:root .app-shell .home-top-row .budget-grid{gap:8px}:root .app-shell .home-top-row .budget-stat-box,:root .app-shell .home-top-row .budget-stat-box:first-child,:root .app-shell .home-top-row .budget-stat-box+.budget-stat-box{padding:12px}}
+
+/* Keep money easy to compare while display headings carry the character. */
+:root .app-shell :is(.home-budget-amount,.analysis-stat strong,.household-financial-summary strong){font-family:var(--font-body);font-variant-numeric:tabular-nums;letter-spacing:-.025em}

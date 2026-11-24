@@ -1,4 +1,6 @@
-/** Lightweight feedback for code/data loading; no fake progress. */
-export function PageLoading({label="Opening this section"}:{label?:string}){
- return <div className="page-loading" role="status" aria-live="polite"><span className="page-loading-spinner" aria-hidden="true"/><span>{label}</span></div>;
+import { AIWorking } from "./AIWorking";
+
+/** Page and AI requests share the same labelled three-dot indicator. */
+export function PageLoading({ label = "Loading this section" }: { label?: string }) {
+  return <div className="page-loading"><AIWorking label={label} /></div>;
 }

@@ -1,0 +1,734 @@
+{
+  "schema_version": 1,
+  "measured_at": "2026-11-19T16:28:10.615855+00:00",
+  "frontend_origin": "https://bonwise.vercel.app",
+  "api_origin": "https://bonwise-api.vercel.app",
+  "authenticated": true,
+  "notes": [
+    "Sequential requests; a new curl process/connection per sample; no redirects followed.",
+    "First observed request is not proof of a cold start. No server time decomposition.",
+    "No browser rendering/LCP measured. p95 omitted below 20 successful samples.",
+    "Authenticated response bodies and identifiers are not saved. No model calls or writes."
+  ],
+  "scenarios": {
+    "frontend_html": {
+      "summary": {
+        "samples": 5,
+        "successful": 5,
+        "median_total_ms": 115.37,
+        "max_total_ms": 124.2,
+        "p95_total_ms": null
+      },
+      "observations": [
+        {
+          "dns_ms": 28.57,
+          "connect_ms": 43.82,
+          "tls_ms": 82.52,
+          "ttfb_ms": 116.13,
+          "total_ms": 116.34,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 392,
+          "decoded_bytes": 392,
+          "headers": {
+            "age": "1642",
+            "cache-control": "public, max-age=0, must-revalidate",
+            "x-vercel-cache": "HIT"
+          },
+          "observation": 1
+        },
+        {
+          "dns_ms": 31.73,
+          "connect_ms": 44.39,
+          "tls_ms": 80.12,
+          "ttfb_ms": 115.16,
+          "total_ms": 115.37,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 392,
+          "decoded_bytes": 392,
+          "headers": {
+            "age": "1642",
+            "cache-control": "public, max-age=0, must-revalidate",
+            "x-vercel-cache": "HIT"
+          },
+          "observation": 2
+        },
+        {
+          "dns_ms": 27.68,
+          "connect_ms": 38.5,
+          "tls_ms": 72.97,
+          "ttfb_ms": 123.98,
+          "total_ms": 124.2,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 392,
+          "decoded_bytes": 392,
+          "headers": {
+            "age": "1642",
+            "cache-control": "public, max-age=0, must-revalidate",
+            "x-vercel-cache": "HIT"
+          },
+          "observation": 3
+        },
+        {
+          "dns_ms": 25.28,
+          "connect_ms": 37.48,
+          "tls_ms": 69.23,
+          "ttfb_ms": 100.16,
+          "total_ms": 100.36,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 392,
+          "decoded_bytes": 392,
+          "headers": {
+            "age": "1642",
+            "cache-control": "public, max-age=0, must-revalidate",
+            "x-vercel-cache": "HIT"
+          },
+          "observation": 4
+        },
+        {
+          "dns_ms": 25.6,
+          "connect_ms": 37.99,
+          "tls_ms": 69.81,
+          "ttfb_ms": 106.31,
+          "total_ms": 106.51,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 392,
+          "decoded_bytes": 392,
+          "headers": {
+            "age": "1642",
+            "cache-control": "public, max-age=0, must-revalidate",
+            "x-vercel-cache": "HIT"
+          },
+          "observation": 5
+        }
+      ]
+    },
+    "api_health": {
+      "summary": {
+        "samples": 5,
+        "successful": 5,
+        "median_total_ms": 232.2,
+        "max_total_ms": 4529.5,
+        "p95_total_ms": null
+      },
+      "observations": [
+        {
+          "dns_ms": 29.07,
+          "connect_ms": 39.77,
+          "tls_ms": 72.81,
+          "ttfb_ms": 4529.31,
+          "total_ms": 4529.5,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 39,
+          "decoded_bytes": 39,
+          "headers": {
+            "age": "0",
+            "cache-control": "public, max-age=0, must-revalidate",
+            "x-vercel-cache": "MISS"
+          },
+          "observation": 1
+        },
+        {
+          "dns_ms": 29.52,
+          "connect_ms": 40.5,
+          "tls_ms": 75.25,
+          "ttfb_ms": 232.01,
+          "total_ms": 232.2,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 39,
+          "decoded_bytes": 39,
+          "headers": {
+            "age": "0",
+            "cache-control": "public, max-age=0, must-revalidate",
+            "x-vercel-cache": "MISS"
+          },
+          "observation": 2
+        },
+        {
+          "dns_ms": 31.83,
+          "connect_ms": 43.31,
+          "tls_ms": 75.23,
+          "ttfb_ms": 235.78,
+          "total_ms": 235.98,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 39,
+          "decoded_bytes": 39,
+          "headers": {
+            "age": "0",
+            "cache-control": "public, max-age=0, must-revalidate",
+            "x-vercel-cache": "MISS"
+          },
+          "observation": 3
+        },
+        {
+          "dns_ms": 26.17,
+          "connect_ms": 38.94,
+          "tls_ms": 74.29,
+          "ttfb_ms": 222.82,
+          "total_ms": 223.02,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 39,
+          "decoded_bytes": 39,
+          "headers": {
+            "age": "0",
+            "cache-control": "public, max-age=0, must-revalidate",
+            "x-vercel-cache": "MISS"
+          },
+          "observation": 4
+        },
+        {
+          "dns_ms": 31.35,
+          "connect_ms": 46.92,
+          "tls_ms": 77.47,
+          "ttfb_ms": 221.64,
+          "total_ms": 221.84,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 39,
+          "decoded_bytes": 39,
+          "headers": {
+            "age": "0",
+            "cache-control": "public, max-age=0, must-revalidate",
+            "x-vercel-cache": "MISS"
+          },
+          "observation": 5
+        }
+      ]
+    },
+    "account": {
+      "summary": {
+        "samples": 5,
+        "successful": 5,
+        "median_total_ms": 1213.55,
+        "max_total_ms": 2899.1,
+        "p95_total_ms": null
+      },
+      "observations": [
+        {
+          "dns_ms": 26.23,
+          "connect_ms": 41.13,
+          "tls_ms": 78.9,
+          "ttfb_ms": 2898.84,
+          "total_ms": 2899.1,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 152,
+          "decoded_bytes": 152,
+          "headers": {
+            "cache-control": "no-store",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 1
+        },
+        {
+          "dns_ms": 28.48,
+          "connect_ms": 39.52,
+          "tls_ms": 76.65,
+          "ttfb_ms": 1216.89,
+          "total_ms": 1220.18,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 152,
+          "decoded_bytes": 152,
+          "headers": {
+            "cache-control": "no-store",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 2
+        },
+        {
+          "dns_ms": 27.28,
+          "connect_ms": 41.61,
+          "tls_ms": 77.29,
+          "ttfb_ms": 1213.32,
+          "total_ms": 1213.55,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 152,
+          "decoded_bytes": 152,
+          "headers": {
+            "cache-control": "no-store",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 3
+        },
+        {
+          "dns_ms": 23.16,
+          "connect_ms": 34.66,
+          "tls_ms": 66.81,
+          "ttfb_ms": 1123.03,
+          "total_ms": 1123.22,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 152,
+          "decoded_bytes": 152,
+          "headers": {
+            "cache-control": "no-store",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 4
+        },
+        {
+          "dns_ms": 24.58,
+          "connect_ms": 39.02,
+          "tls_ms": 72.02,
+          "ttfb_ms": 1208.89,
+          "total_ms": 1209.13,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 152,
+          "decoded_bytes": 152,
+          "headers": {
+            "cache-control": "no-store",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 5
+        }
+      ]
+    },
+    "home_overview": {
+      "summary": {
+        "samples": 5,
+        "successful": 5,
+        "median_total_ms": 2855.39,
+        "max_total_ms": 2959.5,
+        "p95_total_ms": null
+      },
+      "observations": [
+        {
+          "dns_ms": 31.6,
+          "connect_ms": 45.52,
+          "tls_ms": 89.67,
+          "ttfb_ms": 2959.17,
+          "total_ms": 2959.5,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 921,
+          "decoded_bytes": 2655,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 1
+        },
+        {
+          "dns_ms": 23.38,
+          "connect_ms": 35.44,
+          "tls_ms": 68.12,
+          "ttfb_ms": 2855.0,
+          "total_ms": 2855.39,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 921,
+          "decoded_bytes": 2655,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 2
+        },
+        {
+          "dns_ms": 27.69,
+          "connect_ms": 40.54,
+          "tls_ms": 71.55,
+          "ttfb_ms": 2805.34,
+          "total_ms": 2808.33,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 921,
+          "decoded_bytes": 2655,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 3
+        },
+        {
+          "dns_ms": 29.69,
+          "connect_ms": 44.36,
+          "tls_ms": 75.05,
+          "ttfb_ms": 2805.82,
+          "total_ms": 2806.12,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 921,
+          "decoded_bytes": 2655,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 4
+        },
+        {
+          "dns_ms": 28.98,
+          "connect_ms": 46.46,
+          "tls_ms": 82.1,
+          "ttfb_ms": 2896.31,
+          "total_ms": 2898.06,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 921,
+          "decoded_bytes": 2655,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 5
+        }
+      ]
+    },
+    "purchases_first_page": {
+      "summary": {
+        "samples": 5,
+        "successful": 5,
+        "median_total_ms": 2123.26,
+        "max_total_ms": 2284.17,
+        "p95_total_ms": null
+      },
+      "observations": [
+        {
+          "dns_ms": 28.0,
+          "connect_ms": 48.77,
+          "tls_ms": 80.65,
+          "ttfb_ms": 2081.52,
+          "total_ms": 2082.78,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 2867,
+          "decoded_bytes": 13668,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 1
+        },
+        {
+          "dns_ms": 27.63,
+          "connect_ms": 37.92,
+          "tls_ms": 70.49,
+          "ttfb_ms": 2038.12,
+          "total_ms": 2038.51,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 2867,
+          "decoded_bytes": 13668,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 2
+        },
+        {
+          "dns_ms": 18.68,
+          "connect_ms": 30.28,
+          "tls_ms": 59.59,
+          "ttfb_ms": 2252.4,
+          "total_ms": 2253.68,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 2867,
+          "decoded_bytes": 13668,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 3
+        },
+        {
+          "dns_ms": 147.95,
+          "connect_ms": 160.54,
+          "tls_ms": 194.54,
+          "ttfb_ms": 2283.8,
+          "total_ms": 2284.17,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 2867,
+          "decoded_bytes": 13668,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 4
+        },
+        {
+          "dns_ms": 29.73,
+          "connect_ms": 41.0,
+          "tls_ms": 170.09,
+          "ttfb_ms": 2122.88,
+          "total_ms": 2123.26,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 2867,
+          "decoded_bytes": 13668,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 5
+        }
+      ]
+    },
+    "spending_summary": {
+      "summary": {
+        "samples": 5,
+        "successful": 5,
+        "median_total_ms": 1467.55,
+        "max_total_ms": 1523.07,
+        "p95_total_ms": null
+      },
+      "observations": [
+        {
+          "dns_ms": 22.3,
+          "connect_ms": 32.72,
+          "tls_ms": 63.6,
+          "ttfb_ms": 1455.24,
+          "total_ms": 1458.47,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 420,
+          "decoded_bytes": 420,
+          "headers": {
+            "cache-control": "no-store",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 1
+        },
+        {
+          "dns_ms": 31.32,
+          "connect_ms": 43.55,
+          "tls_ms": 76.16,
+          "ttfb_ms": 1454.12,
+          "total_ms": 1454.32,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 420,
+          "decoded_bytes": 420,
+          "headers": {
+            "cache-control": "no-store",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 2
+        },
+        {
+          "dns_ms": 28.96,
+          "connect_ms": 40.07,
+          "tls_ms": 73.16,
+          "ttfb_ms": 1522.84,
+          "total_ms": 1523.07,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 420,
+          "decoded_bytes": 420,
+          "headers": {
+            "cache-control": "no-store",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 3
+        },
+        {
+          "dns_ms": 26.33,
+          "connect_ms": 38.31,
+          "tls_ms": 70.89,
+          "ttfb_ms": 1521.02,
+          "total_ms": 1521.27,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 420,
+          "decoded_bytes": 420,
+          "headers": {
+            "cache-control": "no-store",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 4
+        },
+        {
+          "dns_ms": 26.39,
+          "connect_ms": 39.28,
+          "tls_ms": 76.56,
+          "ttfb_ms": 1464.01,
+          "total_ms": 1467.55,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 420,
+          "decoded_bytes": 420,
+          "headers": {
+            "cache-control": "no-store",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 5
+        }
+      ]
+    },
+    "offer_options": {
+      "summary": {
+        "samples": 5,
+        "successful": 5,
+        "median_total_ms": 2096.74,
+        "max_total_ms": 2137.26,
+        "p95_total_ms": null
+      },
+      "observations": [
+        {
+          "dns_ms": 27.47,
+          "connect_ms": 39.75,
+          "tls_ms": 73.94,
+          "ttfb_ms": 2095.82,
+          "total_ms": 2096.74,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 5714,
+          "decoded_bytes": 28674,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 1
+        },
+        {
+          "dns_ms": 41.89,
+          "connect_ms": 54.71,
+          "tls_ms": 91.14,
+          "ttfb_ms": 2135.57,
+          "total_ms": 2137.26,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 5714,
+          "decoded_bytes": 28674,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 2
+        },
+        {
+          "dns_ms": 28.56,
+          "connect_ms": 41.11,
+          "tls_ms": 73.06,
+          "ttfb_ms": 2011.53,
+          "total_ms": 2014.12,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 5714,
+          "decoded_bytes": 28674,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 3
+        },
+        {
+          "dns_ms": 28.74,
+          "connect_ms": 42.79,
+          "tls_ms": 74.03,
+          "ttfb_ms": 2056.03,
+          "total_ms": 2056.55,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 5714,
+          "decoded_bytes": 28674,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 4
+        },
+        {
+          "dns_ms": 28.92,
+          "connect_ms": 40.76,
+          "tls_ms": 72.21,
+          "ttfb_ms": 2134.54,
+          "total_ms": 2135.79,
+          "status": 200,
+          "success": true,
+          "transfer_bytes": 5714,
+          "decoded_bytes": 28674,
+          "headers": {
+            "cache-control": "no-store",
+            "content-encoding": "br",
+            "x-vercel-cache": "BYPASS"
+          },
+          "observation": 5
+        }
+      ]
+    }
+  },
+  "assets": [
+    {
+      "dns_ms": 23.23,
+      "connect_ms": 40.71,
+      "tls_ms": 74.58,
+      "ttfb_ms": 110.5,
+      "total_ms": 149.02,
+      "status": 200,
+      "success": true,
+      "transfer_bytes": 173661,
+      "decoded_bytes": 591311,
+      "headers": {
+        "age": "22889",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-encoding": "br",
+        "x-vercel-cache": "HIT"
+      },
+      "path": "/assets/index-DxxrMyc-.js",
+      "sha256": "5bdf7bc5765fba34076500d9bfa53b89437efad9458c8341d011f86a99c294b6"
+    },
+    {
+      "dns_ms": 26.48,
+      "connect_ms": 37.4,
+      "tls_ms": 72.99,
+      "ttfb_ms": 116.87,
+      "total_ms": 119.58,
+      "status": 200,
+      "success": true,
+      "transfer_bytes": 31422,
+      "decoded_bytes": 156231,
+      "headers": {
+        "age": "1691",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-encoding": "br",
+        "x-vercel-cache": "HIT"
+      },
+      "path": "/assets/index-lQsWY9G5.css",
+      "sha256": "b2b7af358f1a1d893a4e43c91b93ce82de9f7f69492e786a60808e2d543bf6da"
+    }
+  ],
+  "unauthenticated_me": {
+    "dns_ms": 24.32,
+    "connect_ms": 38.75,
+    "tls_ms": 71.61,
+    "ttfb_ms": 251.92,
+    "total_ms": 252.26,
+    "status": 401,
+    "success": false,
+    "transfer_bytes": 51,
+    "decoded_bytes": 51,
+    "headers": {
+      "age": "0",
+      "cache-control": "public, max-age=0, must-revalidate",
+      "x-vercel-cache": "MISS"
+    },
+    "expected_status": 401
+  }
+}

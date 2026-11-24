@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from functools import wraps
+from app.core.performance import measure
 from functools import lru_cache
 from uuid import UUID
 
@@ -30,6 +32,15 @@ def signing_keys():
     )
 
 
+def _time_auth(function):
+    @wraps(function)
+    def wrapped(*args, **kwargs):
+        with measure("auth"):
+            return function(*args, **kwargs)
+    return wrapped
+
+
+@_time_auth
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer),
 ) -> CurrentUser:

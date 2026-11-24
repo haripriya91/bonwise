@@ -9,6 +9,7 @@ from fastapi import HTTPException
 from langsmith import Client
 
 from app.core.config import get_settings
+from app.core.performance import record
 
 NAMES = {
     "insights_select_suggestions": "llm",
@@ -71,7 +72,7 @@ def trace_client():
 
 class AnalysisTrace:
     def __init__(self, prompt_version, model, *, root_name="ask_bonwise"):
-        if root_name not in {"spending_insights", "seasonal_needs", "ask_bonwise", "catalogue_index", "catalogue_retrieval", "product_suggestions", "weekly_planner", "planner_text_changes", "planner_evaluation", "correction_index", "correction_evaluation"}:
+        if root_name not in {"bonwise_evaluation", "spending_insights", "seasonal_needs", "ask_bonwise", "catalogue_index", "catalogue_retrieval", "product_suggestions", "weekly_planner", "planner_text_changes", "planner_evaluation", "correction_index", "correction_evaluation"}:
             raise ValueError("Unsupported trace root.")
         self.root_name = root_name
         self.id = uuid4()
@@ -107,6 +108,10 @@ class AnalysisTrace:
         finally:
             row["end_time"] = datetime.now(timezone.utc)
             metadata["latency_ms"] = round((perf_counter() - clock) * 1000)
+            if kind == "retriever":
+                record("retrieval", metadata["latency_ms"])
+            elif kind in {"llm", "embedding"}:
+                record("ai_stage", metadata["latency_ms"])
             metadata["status"] = "error" if row.get("error") else "success"
             self.children.append(row)
 
