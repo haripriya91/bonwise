@@ -22,3 +22,16 @@ private_audio/
 
 # Local tools
 .DS_Store
+
+# Generated local reports: commit only reviewed, useful measurements.
+evaluation-results/*
+!evaluation-results/authenticated-before.json
+!evaluation-results/authenticated-after.json
+!evaluation-results/performance-comparison.json
+!evaluation-results/live-ai-components.json
+*.log
+review-git-*.txt
+review-untracked-files.txt
+START_HERE.md
+*.zip
+.vercel/
